@@ -1,0 +1,2066 @@
+import { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import "./App.css";
+
+const WHATSAPP_NUMBER = "27687597884";
+const API_BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : `http://${window.location.hostname}:5000`;
+
+const categories = [
+  "All",
+  "Nuts & Premium Nuts",
+  "Peanuts & Everyday Snacks",
+  "Caramelised, Honey & Yoghurt Treats",
+  "Dried Fruit & Fruit Snacks",
+  "Diced Fruit Range",
+  "Seeds & Health Pantry",
+  "Chocolate & Candy Treats",
+  "Honey, Speciality & Savoury Snacks",
+  "Health Mixes & Breakfast Range",
+  "China Fruit Snack Packs",
+];
+
+const catalog = [
+  {
+    code: "CNL01",
+    name: "Almonds Raw NPS",
+    category: "Nuts & Premium Nuts",
+    desc: "Natural raw almonds perfect for healthy snacking and baking.",
+    variants: [
+      { size: "1kg", price: 250 },
+      { size: "500g", price: 125 },
+      { size: "250g", price: 69 },
+      { size: "100g", price: 30 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL02",
+    name: "Almond Flakes / Ground / Slivered",
+    category: "Nuts & Premium Nuts",
+    desc: "Ideal for baking, desserts, cereals and toppings.",
+    variants: [
+      { size: "1kg", price: 304 },
+      { size: "500g", price: 152 },
+      { size: "250g", price: 80 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 23 },
+    ],
+  },
+  {
+    code: "CNL03",
+    name: "Almond Sprinkles / Nibs",
+    category: "Nuts & Premium Nuts",
+    desc: "Crunchy almond pieces perfect for desserts and baking.",
+    variants: [
+      { size: "1kg", price: 304 },
+      { size: "500g", price: 152 },
+      { size: "250g", price: 80 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 23 },
+    ],
+  },
+  {
+    code: "CNL04",
+    name: "Almonds Coloured",
+    category: "Nuts & Premium Nuts",
+    desc: "Candy-coated almonds ideal for gifting and celebrations.",
+    variants: [
+      { size: "1kg", price: 365 },
+      { size: "500g", price: 182 },
+      { size: "250g", price: 97 },
+      { size: "100g", price: 43 },
+      { size: "50g", price: 25 },
+    ],
+  },
+  {
+    code: "CNL05",
+    name: "Almonds Roasted Salted",
+    category: "Nuts & Premium Nuts",
+    desc: "Classic roasted salted almonds with rich nutty flavour.",
+    variants: [
+      { size: "1kg", price: 243 },
+      { size: "500g", price: 122 },
+      { size: "250g", price: 65 },
+      { size: "100g", price: 30 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL06",
+    name: "Brazil Nuts Pieces",
+    category: "Nuts & Premium Nuts",
+    desc: "Premium Brazil nut pieces rich in flavour and nutrients.",
+    variants: [
+      { size: "1kg", price: 412 },
+      { size: "500g", price: 206 },
+      { size: "250g", price: 108 },
+      { size: "100g", price: 45 },
+      { size: "50g", price: 24 },
+    ],
+  },
+  {
+    code: "CNL07",
+    name: "Cashews Split Scorched",
+    category: "Nuts & Premium Nuts",
+    desc: "Crunchy roasted cashew pieces perfect for everyday snacking.",
+    variants: [
+      { size: "1kg", price: 207 },
+      { size: "500g", price: 103 },
+      { size: "250g", price: 55 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL08",
+    name: "Cashews Whole Raw / Salted / Peri-Peri",
+    category: "Nuts & Premium Nuts",
+    desc: "Premium whole cashews available in classic and flavoured options.",
+    variants: [
+      { size: "1kg", price: 257 },
+      { size: "500g", price: 128 },
+      { size: "250g", price: 71 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL09",
+    name: "Cashews Zesty Lime & Sea Salt",
+    category: "Nuts & Premium Nuts",
+    desc: "Tangy lime and sea salt cashews with bold flavour.",
+    variants: [
+      { size: "1kg", price: 257 },
+      { size: "500g", price: 128 },
+      { size: "250g", price: 71 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL10",
+    name: "Cashews BBQ",
+    category: "Nuts & Premium Nuts",
+    desc: "Smoky BBQ flavoured cashews perfect for entertaining.",
+    variants: [
+      { size: "1kg", price: 257 },
+      { size: "500g", price: 128 },
+      { size: "250g", price: 71 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL11",
+    name: "Cashews Cream Cheese & Chives",
+    category: "Nuts & Premium Nuts",
+    desc: "Creamy savoury cashews with rich herb flavour.",
+    variants: [
+      { size: "1kg", price: 257 },
+      { size: "500g", price: 128 },
+      { size: "250g", price: 71 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL12",
+    name: "Giant Redskin Peanuts",
+    category: "Nuts & Premium Nuts",
+    desc: "Traditional roasted redskin peanuts full of flavour.",
+    variants: [
+      { size: "1kg", price: 88 },
+      { size: "500g", price: 44 },
+      { size: "250g", price: 27 },
+      { size: "100g", price: 14 },
+      { size: "50g", price: 8 },
+    ],
+  },
+  {
+    code: "CNL13",
+    name: "Hazelnuts Natural Skin",
+    category: "Nuts & Premium Nuts",
+    desc: "Premium hazelnuts ideal for snacking and baking.",
+    variants: [
+      { size: "1kg", price: 486 },
+      { size: "500g", price: 243 },
+      { size: "250g", price: 128 },
+      { size: "100g", price: 54 },
+      { size: "50g", price: 31 },
+    ],
+  },
+  {
+    code: "CNL14",
+    name: "Hazelnuts Blanched",
+    category: "Nuts & Premium Nuts",
+    desc: "Smooth blanched hazelnuts perfect for desserts and platters.",
+    variants: [
+      { size: "1kg", price: 668 },
+      { size: "500g", price: 334 },
+      { size: "250g", price: 167 },
+      { size: "100g", price: 74 },
+      { size: "50g", price: 43 },
+    ],
+  },
+  {
+    code: "CNL15",
+    name: "Health Fanatic",
+    category: "Nuts & Premium Nuts",
+    desc: "Healthy nut and fruit blend packed with flavour and nutrition.",
+    variants: [
+      { size: "1kg", price: 216 },
+      { size: "500g", price: 108 },
+      { size: "250g", price: 59 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL16",
+    name: "Nutty Remix",
+    category: "Nuts & Premium Nuts",
+    desc: "Delicious mixed nut snack blend for everyday enjoyment.",
+    variants: [
+      { size: "1kg", price: 216 },
+      { size: "500g", price: 108 },
+      { size: "250g", price: 59 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL17",
+    name: "Macadamia & Cranberry Mix",
+    category: "Nuts & Premium Nuts",
+    desc: "Sweet and crunchy premium macadamia and cranberry blend.",
+    variants: [
+      { size: "1kg", price: 230 },
+      { size: "500g", price: 115 },
+      { size: "250g", price: 61 },
+      { size: "100g", price: 26 },
+      { size: "50g", price: 14 },
+    ],
+  },
+  {
+    code: "CNL18",
+    name: "Macadamia Halves",
+    category: "Nuts & Premium Nuts",
+    desc: "Premium buttery macadamia halves for healthy snacking.",
+    variants: [
+      { size: "1kg", price: 243 },
+      { size: "500g", price: 122 },
+      { size: "250g", price: 65 },
+      { size: "100g", price: 30 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL19",
+    name: "Macadamia Pieces",
+    category: "Nuts & Premium Nuts",
+    desc: "Crunchy macadamia pieces ideal for cereals and baking.",
+    variants: [
+      { size: "1kg", price: 230 },
+      { size: "500g", price: 115 },
+      { size: "250g", price: 61 },
+      { size: "100g", price: 26 },
+      { size: "50g", price: 14 },
+    ],
+  },
+  {
+    code: "CNL20",
+    name: "Macadamia Pieces Salted",
+    category: "Nuts & Premium Nuts",
+    desc: "Salted macadamia pieces with rich buttery flavour.",
+    variants: [
+      { size: "1kg", price: 284 },
+      { size: "500g", price: 142 },
+      { size: "250g", price: 78 },
+      { size: "100g", price: 35 },
+      { size: "50g", price: 20 },
+    ],
+  },
+  {
+    code: "CNL21",
+    name: "Macadamia Whole Plain",
+    category: "Nuts & Premium Nuts",
+    desc: "Whole premium macadamias perfect for gifting and platters.",
+    variants: [
+      { size: "1kg", price: 284 },
+      { size: "500g", price: 142 },
+      { size: "250g", price: 78 },
+      { size: "100g", price: 35 },
+      { size: "50g", price: 20 },
+    ],
+  },
+  {
+    code: "CNL22",
+    name: "Mixed Nuts Raw",
+    category: "Nuts & Premium Nuts",
+    desc: "Healthy raw mixed nuts ideal for snacking and meal prep.",
+    variants: [
+      { size: "1kg", price: 270 },
+      { size: "500g", price: 135 },
+      { size: "250g", price: 74 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL23",
+    name: "Mixed Nuts Roasted Salted",
+    category: "Nuts & Premium Nuts",
+    desc: "Premium roasted mixed nuts with savoury crunch.",
+    variants: [
+      { size: "1kg", price: 277 },
+      { size: "500g", price: 138 },
+      { size: "250g", price: 76 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 20 },
+    ],
+  },
+  {
+    code: "CNL24",
+    name: "Peanuts Blanched Raw / Salted / Peri-Peri",
+    category: "Peanuts & Everyday Snacks",
+    desc: "Classic peanuts available raw, salted or spicy peri-peri.",
+    variants: [
+      { size: "1kg", price: 97 },
+      { size: "500g", price: 51 },
+      { size: "250g", price: 34 },
+      { size: "100g", price: 14 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL25",
+    name: "Peanuts BBQ / Tomato Chilli",
+    category: "Peanuts & Everyday Snacks",
+    desc: "Bold flavoured peanuts with smoky BBQ and chilli seasoning.",
+    variants: [
+      { size: "1kg", price: 97 },
+      { size: "500g", price: 51 },
+      { size: "250g", price: 34 },
+      { size: "100g", price: 14 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL26",
+    name: "Peanuts Redskin Salted / Peri-Peri",
+    category: "Peanuts & Everyday Snacks",
+    desc: "Traditional redskin peanuts with savoury or spicy flavour.",
+    variants: [
+      { size: "1kg", price: 81 },
+      { size: "500g", price: 44 },
+      { size: "250g", price: 24 },
+      { size: "100g", price: 12 },
+      { size: "50g", price: 8 },
+    ],
+  },
+  {
+    code: "CNL27",
+    name: "Peanuts & Raisins Mix",
+    category: "Peanuts & Everyday Snacks",
+    desc: "Sweet and savoury peanut and raisin combination.",
+    variants: [
+      { size: "1kg", price: 97 },
+      { size: "500g", price: 51 },
+      { size: "250g", price: 34 },
+      { size: "100g", price: 14 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL28",
+    name: "Pecan Halves",
+    category: "Nuts & Premium Nuts",
+    desc: "Rich buttery pecans perfect for baking and snacking.",
+    variants: [
+      { size: "1kg", price: 243 },
+      { size: "500g", price: 122 },
+      { size: "250g", price: 65 },
+      { size: "100g", price: 30 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL29",
+    name: "Pecan Pieces A-Grade",
+    category: "Nuts & Premium Nuts",
+    desc: "Crunchy pecan pieces ideal for desserts and cereals.",
+    variants: [
+      { size: "1kg", price: 230 },
+      { size: "500g", price: 115 },
+      { size: "250g", price: 61 },
+      { size: "100g", price: 26 },
+      { size: "50g", price: 14 },
+    ],
+  },
+  {
+    code: "CNL30",
+    name: "Pistachio Cleaned Kernels",
+    category: "Nuts & Premium Nuts",
+    desc: "Premium pistachio kernels with rich nutty flavour.",
+    variants: [
+      { size: "1kg", price: 668 },
+      { size: "500g", price: 334 },
+      { size: "250g", price: 167 },
+      { size: "100g", price: 74 },
+      { size: "50g", price: 43 },
+    ],
+  },
+  {
+    code: "CNL31",
+    name: "Pistachio in Shell",
+    category: "Nuts & Premium Nuts",
+    desc: "Classic pistachios in shell for premium snacking.",
+    variants: [
+      { size: "1kg", price: 385 },
+      { size: "500g", price: 192 },
+      { size: "250g", price: 101 },
+      { size: "100g", price: 43 },
+      { size: "50g", price: 27 },
+    ],
+  },
+  {
+    code: "CNL32",
+    name: "Pistachio Slivered",
+    category: "Nuts & Premium Nuts",
+    desc: "Slivered pistachios perfect for gourmet baking and platters.",
+    variants: [
+      { size: "1kg", price: 1283 },
+      { size: "500g", price: 675 },
+      { size: "250g", price: 385 },
+      { size: "100g", price: 135 },
+      { size: "50g", price: 74 },
+    ],
+  },
+  {
+    code: "CNL33",
+    name: "Walnuts",
+    category: "Nuts & Premium Nuts",
+    desc: "Nutritious walnuts ideal for healthy lifestyles and baking.",
+    variants: [
+      { size: "1kg", price: 270 },
+      { size: "500g", price: 135 },
+      { size: "250g", price: 74 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL34",
+    name: "Caramelized Almonds",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Crunchy caramel-coated almonds with sweet golden flavour.",
+    variants: [
+      { size: "1kg", price: 297 },
+      { size: "500g", price: 149 },
+      { size: "250g", price: 77 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 22 },
+    ],
+  },
+  {
+    code: "CNL35",
+    name: "Caramelized Cashews",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Premium cashews coated in delicious caramel glaze.",
+    variants: [
+      { size: "1kg", price: 304 },
+      { size: "500g", price: 152 },
+      { size: "250g", price: 80 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 23 },
+    ],
+  },
+  {
+    code: "CNL36",
+    name: "Caramelized Sesame Seed Cashews",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Sweet caramelized cashews finished with sesame crunch.",
+    variants: [
+      { size: "1kg", price: 263 },
+      { size: "500g", price: 132 },
+      { size: "250g", price: 73 },
+      { size: "100g", price: 35 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL37",
+    name: "Caramelized Giant Peanuts",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Large crunchy peanuts coated in sweet caramel.",
+    variants: [
+      { size: "1kg", price: 108 },
+      { size: "500g", price: 54 },
+      { size: "250g", price: 34 },
+      { size: "100g", price: 16 },
+      { size: "50g", price: 11 },
+    ],
+  },
+  {
+    code: "CNL38",
+    name: "Caramelized Macadamia",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Luxury caramelized macadamias with buttery sweetness.",
+    variants: [
+      { size: "1kg", price: 331 },
+      { size: "500g", price: 165 },
+      { size: "250g", price: 84 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 20 },
+    ],
+  },
+  {
+    code: "CNL39",
+    name: "Caramelized Mixed Nuts",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Mixed nut blend coated in rich caramel flavour.",
+    variants: [
+      { size: "1kg", price: 243 },
+      { size: "500g", price: 122 },
+      { size: "250g", price: 65 },
+      { size: "100g", price: 30 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL40",
+    name: "Caramelized Pecans",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Premium pecans coated in crunchy caramel glaze.",
+    variants: [
+      { size: "1kg", price: 344 },
+      { size: "500g", price: 172 },
+      { size: "250g", price: 88 },
+      { size: "100g", price: 38 },
+      { size: "50g", price: 23 },
+    ],
+  },
+  {
+    code: "CNL41",
+    name: "Caramelized Small Peanuts",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Sweet caramelized peanuts ideal for snacking and sharing.",
+    variants: [
+      { size: "1kg", price: 108 },
+      { size: "500g", price: 54 },
+      { size: "250g", price: 34 },
+      { size: "100g", price: 16 },
+      { size: "50g", price: 11 },
+    ],
+  },
+  {
+    code: "CNL42",
+    name: "Salted Caramelized Cashews",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Sweet and salty caramelized cashews with rich flavour.",
+    variants: [
+      { size: "1kg", price: 304 },
+      { size: "500g", price: 152 },
+      { size: "250g", price: 80 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 23 },
+    ],
+  },
+  {
+    code: "CNL43",
+    name: "Salted Caramelized Macadamia",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Premium salted caramel macadamias with buttery crunch.",
+    variants: [
+      { size: "1kg", price: 331 },
+      { size: "500g", price: 165 },
+      { size: "250g", price: 84 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 20 },
+    ],
+  },
+  {
+    code: "CNL44",
+    name: "Salted Caramelized Mixed Nuts No Peanuts",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Luxury mixed nuts with sweet salted caramel coating.",
+    variants: [
+      { size: "1kg", price: 317 },
+      { size: "500g", price: 159 },
+      { size: "250g", price: 81 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL45",
+    name: "Salted Caramelized Peanuts",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Classic salted caramel peanuts for sweet snacking.",
+    variants: [
+      { size: "1kg", price: 108 },
+      { size: "500g", price: 54 },
+      { size: "250g", price: 34 },
+      { size: "100g", price: 16 },
+      { size: "50g", price: 11 },
+    ],
+  },
+  {
+    code: "CNL46",
+    name: "Honey Roasted Almonds",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Crunchy almonds coated in golden honey flavour.",
+    variants: [
+      { size: "1kg", price: 297 },
+      { size: "500g", price: 149 },
+      { size: "250g", price: 77 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 22 },
+    ],
+  },
+  {
+    code: "CNL47",
+    name: "Honey Roasted Cashews",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Sweet honey roasted cashews perfect for gifting and treats.",
+    variants: [
+      { size: "1kg", price: 304 },
+      { size: "500g", price: 152 },
+      { size: "250g", price: 80 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 23 },
+    ],
+  },
+  {
+    code: "CNL48",
+    name: "Honey Roasted Mixed Nuts No Peanuts",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Premium mixed nuts with sweet honey roasted finish.",
+    variants: [
+      { size: "1kg", price: 317 },
+      { size: "500g", price: 159 },
+      { size: "250g", price: 81 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 17 },
+    ],
+  },
+  {
+    code: "CNL49",
+    name: "Honey Roasted Peanuts",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Classic honey roasted peanuts with sweet crunchy coating.",
+    variants: [
+      { size: "1kg", price: 122 },
+      { size: "500g", price: 61 },
+      { size: "250g", price: 38 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 11 },
+    ],
+  },
+  {
+    code: "CNL50",
+    name: "Honey Roasted Banana Chips",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Sweet crunchy banana chips with honey flavour.",
+    variants: [
+      { size: "1kg", price: 175 },
+      { size: "500g", price: 88 },
+      { size: "250g", price: 49 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 10 },
+    ],
+  },
+  {
+    code: "CNL51",
+    name: "Yoghurt Cashews",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Creamy yoghurt-coated cashews with sweet indulgent flavour.",
+    variants: [
+      { size: "1kg", price: 263 },
+      { size: "500g", price: 132 },
+      { size: "250g", price: 73 },
+      { size: "100g", price: 35 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL52",
+    name: "Yoghurt Lemon Cashews",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Tangy lemon yoghurt cashews with refreshing sweetness.",
+    variants: [
+      { size: "1kg", price: 263 },
+      { size: "500g", price: 132 },
+      { size: "250g", price: 73 },
+      { size: "100g", price: 35 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL53",
+    name: "Yoghurt Strawberry Cashews",
+    category: "Caramelised, Honey & Yoghurt Treats",
+    desc: "Strawberry yoghurt cashews perfect for sweet snacking.",
+    variants: [
+      { size: "1kg", price: 263 },
+      { size: "500g", price: 132 },
+      { size: "250g", price: 73 },
+      { size: "100g", price: 35 },
+      { size: "50g", price: 18 },
+    ],
+  },
+    {
+    code: "CNL54",
+    name: "Apple Rings",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Sulphur-free Pink Lady apple rings for healthy snacking.",
+    variants: [
+      { size: "1kg", price: 432 },
+      { size: "500g", price: 216 },
+      { size: "250g", price: 115 },
+      { size: "100g", price: 50 },
+      { size: "50g", price: 28 },
+    ],
+  },
+  {
+    code: "CNL55",
+    name: "Coconut Flakes",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Crunchy coconut flakes ideal for cereals, baking and smoothies.",
+    variants: [
+      { size: "1kg", price: 236 },
+      { size: "500g", price: 118 },
+      { size: "250g", price: 61 },
+      { size: "100g", price: 27 },
+      { size: "50g", price: 16 },
+    ],
+  },
+  {
+    code: "CNL56",
+    name: "Coconut Desiccated",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Fine desiccated coconut perfect for baking and desserts.",
+    variants: [
+      { size: "1kg", price: 103 },
+      { size: "500g", price: 55 },
+      { size: "250g", price: 30 },
+      { size: "100g", price: 16 },
+      { size: "50g", price: 8 },
+    ],
+  },
+  {
+    code: "CNL57",
+    name: "Cranberries",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Sweet dried cranberries for snacking, salads and baking.",
+    variants: [
+      { size: "1kg", price: 230 },
+      { size: "500g", price: 115 },
+      { size: "250g", price: 61 },
+      { size: "100g", price: 26 },
+      { size: "50g", price: 14 },
+    ],
+  },
+  {
+    code: "CNL58",
+    name: "Dried Fruit Mango Cheeks Imported",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Premium imported mango cheeks with tropical sweetness.",
+    variants: [
+      { size: "1kg", price: 446 },
+      { size: "500g", price: 223 },
+      { size: "250g", price: 119 },
+      { size: "100g", price: 54 },
+      { size: "50g", price: 29 },
+    ],
+  },
+  {
+    code: "CNL59",
+    name: "Dried Fruit Mango Chunks A-Grade",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Soft mango chunks ideal for sweet healthy snacking.",
+    variants: [
+      { size: "1kg", price: 331 },
+      { size: "500g", price: 165 },
+      { size: "250g", price: 84 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 20 },
+    ],
+  },
+  {
+    code: "CNL60",
+    name: "Dried Fruit Mango Strips A-Grade",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Premium mango strips packed with tropical flavour.",
+    variants: [
+      { size: "1kg", price: 412 },
+      { size: "500g", price: 206 },
+      { size: "250g", price: 108 },
+      { size: "100g", price: 45 },
+      { size: "50g", price: 24 },
+    ],
+  },
+  {
+    code: "CNL61",
+    name: "Dried Fruit Mixed",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Classic mixed dried fruit blend including apples, peaches and apricots.",
+    variants: [
+      { size: "1kg", price: 189 },
+      { size: "500g", price: 95 },
+      { size: "250g", price: 52 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 11 },
+    ],
+  },
+  {
+    code: "CNL62",
+    name: "Dried Fruit Peaches",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Naturally sweet dried peaches for healthy snacking.",
+    variants: [
+      { size: "1kg", price: 209 },
+      { size: "500g", price: 105 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 15 },
+    ],
+  },
+  {
+    code: "CNL63",
+    name: "Peeled Fruit Pear",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Soft dried pear pieces with natural sweetness.",
+    variants: [
+      { size: "1kg", price: 209 },
+      { size: "500g", price: 105 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 15 },
+    ],
+  },
+  {
+    code: "CNL64",
+    name: "Dried Fruit Turkish Apricots",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Premium Turkish apricots for snacking and platters.",
+    variants: [
+      { size: "1kg", price: 304 },
+      { size: "500g", price: 152 },
+      { size: "250g", price: 80 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 23 },
+    ],
+  },
+  {
+    code: "CNL65",
+    name: "Dried Fruit Turkish Figs",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Sweet Turkish figs with rich chewy texture.",
+    variants: [
+      { size: "1kg", price: 277 },
+      { size: "500g", price: 138 },
+      { size: "250g", price: 76 },
+      { size: "100g", price: 32 },
+      { size: "50g", price: 20 },
+    ],
+  },
+  {
+    code: "CNL66",
+    name: "Fruit Flakes",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Colourful fruit flakes for cereals, baking and toppings.",
+    variants: [
+      { size: "1kg", price: 169 },
+      { size: "500g", price: 84 },
+      { size: "250g", price: 47 },
+      { size: "100g", price: 22 },
+      { size: "50g", price: 11 },
+    ],
+  },
+  {
+    code: "CNL67",
+    name: "Goji Berries",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Superfood goji berries packed with flavour and nutrition.",
+    variants: [
+      { size: "1kg", price: 452 },
+      { size: "500g", price: 226 },
+      { size: "250g", price: 122 },
+      { size: "100g", price: 59 },
+      { size: "50g", price: 36 },
+    ],
+  },
+  {
+    code: "CNL68",
+    name: "Luxurious Fruit Cake Mix",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Premium fruit cake mix for baking and festive treats.",
+    variants: [
+      { size: "1kg", price: 142 },
+      { size: "500g", price: 71 },
+      { size: "250g", price: 41 },
+      { size: "100g", price: 17 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL69",
+    name: "Mini Fruit Rolls",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Mini fruit rolls available in raspberry or strawberry.",
+    variants: [
+      { size: "24 Pack", price: 78 },
+      { size: "12 Pack", price: 38 },
+      { size: "5 Pack", price: 17 },
+    ],
+  },
+  {
+    code: "CNL70",
+    name: "Mixed Medley Dried Fruit Strips",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Mixed dried fruit strips with sweet tropical flavour.",
+    variants: [
+      { size: "1kg", price: 182 },
+      { size: "500g", price: 91 },
+      { size: "250g", price: 50 },
+      { size: "100g", price: 22 },
+      { size: "50g", price: 11 },
+    ],
+  },
+  {
+    code: "CNL71",
+    name: "Mebos Lollies Plain",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Traditional plain mebos lollies with tangy fruit flavour.",
+    variants: [
+      { size: "1kg", price: 128 },
+      { size: "500g", price: 64 },
+      { size: "250g", price: 36 },
+      { size: "100g", price: 16 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL72",
+    name: "Mebos Lollies Sugared",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Sugared mebos lollies for nostalgic sweet snacking.",
+    variants: [
+      { size: "1kg", price: 128 },
+      { size: "500g", price: 64 },
+      { size: "250g", price: 36 },
+      { size: "100g", price: 16 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL73",
+    name: "Pitted Dates",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Soft pitted dates for snacking, smoothies and baking.",
+    variants: [
+      { size: "1kg", price: 74 },
+      { size: "500g", price: 37 },
+    ],
+  },
+  {
+    code: "CNL74",
+    name: "Pitted Prunes",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Naturally sweet pitted prunes with chewy texture.",
+    variants: [
+      { size: "1kg", price: 209 },
+      { size: "500g", price: 105 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 15 },
+    ],
+  },
+  {
+    code: "CNL75",
+    name: "Seedless Raisins",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Classic seedless raisins for baking and everyday snacking.",
+    variants: [
+      { size: "1kg", price: 149 },
+      { size: "500g", price: 74 },
+      { size: "250g", price: 43 },
+      { size: "100g", price: 18 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL76",
+    name: "Sugared Fruit Cubes",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Colourful sugared fruit cubes for baking and treats.",
+    variants: [
+      { size: "1kg", price: 135 },
+      { size: "500g", price: 68 },
+      { size: "250g", price: 38 },
+      { size: "100g", price: 19 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL77",
+    name: "Sugared Fruit Lollies",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Sweet fruity lollies ideal for kids and party packs.",
+    variants: [
+      { size: "1kg", price: 135 },
+      { size: "500g", price: 68 },
+      { size: "250g", price: 38 },
+      { size: "100g", price: 19 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL78",
+    name: "Sultanas",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Sweet sultanas for cereals, baking and snacking.",
+    variants: [
+      { size: "1kg", price: 149 },
+      { size: "500g", price: 74 },
+      { size: "250g", price: 43 },
+      { size: "100g", price: 18 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL79",
+    name: "Tropical Mix",
+    category: "Dried Fruit & Fruit Snacks",
+    desc: "Tropical fruit mix with sweet exotic flavours.",
+    variants: [
+      { size: "1kg", price: 263 },
+      { size: "500g", price: 132 },
+      { size: "250g", price: 73 },
+      { size: "100g", price: 35 },
+      { size: "50g", price: 18 },
+    ],
+  },
+    {
+    code: "CNL80",
+    name: "Diced Berry Mix",
+    category: "Diced Fruit Range",
+    desc: "Colourful berry fruit cubes for snacking, baking and toppings.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL81",
+    name: "Diced Blueberry",
+    category: "Diced Fruit Range",
+    desc: "Sweet blueberry fruit cubes packed with fruity flavour.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL82",
+    name: "Diced Citrus Mix",
+    category: "Diced Fruit Range",
+    desc: "Tangy citrus fruit cubes ideal for baking and desserts.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL83",
+    name: "Diced Fruit Mixed",
+    category: "Diced Fruit Range",
+    desc: "Mixed tropical diced fruit blend with kiwi, strawberry, papaya and pineapple.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL84",
+    name: "Diced Gooseberry",
+    category: "Diced Fruit Range",
+    desc: "Sweet diced gooseberry pieces with vibrant fruity flavour.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL85",
+    name: "Diced Greenberry",
+    category: "Diced Fruit Range",
+    desc: "Colourful greenberry cubes perfect for baking and sweet treats.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL86",
+    name: "Diced Kiwi",
+    category: "Diced Fruit Range",
+    desc: "Sweet kiwi cubes ideal for baking, toppings and desserts.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL87",
+    name: "Diced Papaya",
+    category: "Diced Fruit Range",
+    desc: "Soft papaya cubes packed with tropical sweetness.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL88",
+    name: "Diced Passion Fruit",
+    category: "Diced Fruit Range",
+    desc: "Tangy passion fruit cubes for desserts, baking and snacking.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL89",
+    name: "Diced Pineapple",
+    category: "Diced Fruit Range",
+    desc: "Sweet pineapple cubes with juicy tropical flavour.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL90",
+    name: "Diced Strawberry",
+    category: "Diced Fruit Range",
+    desc: "Sweet strawberry fruit cubes for baking, desserts and treats.",
+    variants: [
+      { size: "1kg", price: 203 },
+      { size: "500g", price: 101 },
+      { size: "250g", price: 54 },
+      { size: "100g", price: 24 },
+      { size: "50g", price: 12 },
+    ],
+  },
+  {
+    code: "CNL91",
+    name: "Chia Seeds",
+    category: "Seeds & Health Pantry",
+    desc: "Nutrient-rich chia seeds for smoothies, breakfast bowls and baking.",
+    variants: [
+      { size: "1kg", price: 223 },
+      { size: "500g", price: 111 },
+      { size: "250g", price: 61 },
+      { size: "100g", price: 27 },
+      { size: "50g", price: 15 },
+    ],
+  },
+  {
+    code: "CNL92",
+    name: "Flax Seeds",
+    category: "Seeds & Health Pantry",
+    desc: "Healthy flax seeds ideal for cereals, smoothies and baking.",
+    variants: [
+      { size: "1kg", price: 103 },
+      { size: "500g", price: 55 },
+      { size: "250g", price: 30 },
+      { size: "100g", price: 16 },
+      { size: "50g", price: 8 },
+    ],
+  },
+  {
+    code: "CNL93",
+    name: "Mixed Seeds",
+    category: "Seeds & Health Pantry",
+    desc: "Mixed chia, sesame, pumpkin and sunflower seeds for everyday wellness.",
+    variants: [
+      { size: "1kg", price: 163 },
+      { size: "500g", price: 82 },
+      { size: "250g", price: 47 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 10 },
+    ],
+  },
+  {
+    code: "CNL94",
+    name: "Pumpkin Seeds",
+    category: "Seeds & Health Pantry",
+    desc: "Crunchy pumpkin seeds packed with flavour and nutrients.",
+    variants: [
+      { size: "1kg", price: 236 },
+      { size: "500g", price: 118 },
+      { size: "250g", price: 61 },
+      { size: "100g", price: 27 },
+      { size: "50g", price: 16 },
+    ],
+  },
+  {
+    code: "CNL95",
+    name: "Rolled Oats",
+    category: "Seeds & Health Pantry",
+    desc: "Classic rolled oats for breakfast, baking and healthy meals.",
+    variants: [
+      { size: "1kg", price: 68 },
+      { size: "500g", price: 36 },
+    ],
+  },
+  {
+    code: "CNL96",
+    name: "Sesame Seeds",
+    category: "Seeds & Health Pantry",
+    desc: "Sesame seeds for baking, cooking, toppings and salads.",
+    variants: [
+      { size: "1kg", price: 155 },
+      { size: "500g", price: 78 },
+      { size: "250g", price: 43 },
+      { size: "100g", price: 19 },
+      { size: "50g", price: 10 },
+    ],
+  },
+  {
+    code: "CNL97",
+    name: "Sesame Seeds Coloured",
+    category: "Seeds & Health Pantry",
+    desc: "Colourful sesame seeds for baking, decorating and gourmet dishes.",
+    variants: [
+      { size: "1kg", price: 189 },
+      { size: "500g", price: 95 },
+      { size: "250g", price: 52 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 11 },
+    ],
+  },
+  {
+    code: "CNL98",
+    name: "Sunflower Seeds",
+    category: "Seeds & Health Pantry",
+    desc: "Healthy sunflower seeds ideal for salads, baking and snacking.",
+    variants: [
+      { size: "1kg", price: 103 },
+      { size: "500g", price: 55 },
+      { size: "250g", price: 30 },
+      { size: "100g", price: 16 },
+      { size: "50g", price: 8 },
+    ],
+  },
+  {
+    code: "CNL99",
+    name: "Chocolate Biscuits",
+    category: "Chocolate & Candy Treats",
+    desc: "Crunchy chocolate-coated biscuit bites for sweet snacking.",
+    variants: [
+      { size: "1kg", price: 163 },
+      { size: "500g", price: 82 },
+      { size: "250g", price: 47 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 10 },
+    ],
+  },
+  {
+    code: "CNL100",
+    name: "Chocolate Peanuts",
+    category: "Chocolate & Candy Treats",
+    desc: "Crunchy peanuts coated in smooth chocolate.",
+    variants: [
+      { size: "1kg", price: 163 },
+      { size: "500g", price: 82 },
+      { size: "250g", price: 47 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 10 },
+    ],
+  },
+  {
+    code: "CNL101",
+    name: "Chocolate Raisins",
+    category: "Chocolate & Candy Treats",
+    desc: "Juicy raisins coated in creamy chocolate goodness.",
+    variants: [
+      { size: "1kg", price: 163 },
+      { size: "500g", price: 82 },
+      { size: "250g", price: 47 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 10 },
+    ],
+  },
+  {
+    code: "CNL102",
+    name: "Chocolate Cashews",
+    category: "Chocolate & Candy Treats",
+    desc: "Premium chocolate-coated cashews with rich indulgent flavour.",
+    variants: [
+      { size: "1kg", price: 263 },
+      { size: "500g", price: 132 },
+      { size: "250g", price: 73 },
+      { size: "100g", price: 35 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL103",
+    name: "Giant Astros",
+    category: "Chocolate & Candy Treats",
+    desc: "Colourful chocolate candy treats for parties, kids and sharing.",
+    variants: [
+      { size: "1kg", price: 163 },
+      { size: "500g", price: 82 },
+      { size: "250g", price: 47 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 10 },
+    ],
+  },
+  {
+    code: "CNL104",
+    name: "Giant Speckled Eggs",
+    category: "Chocolate & Candy Treats",
+    desc: "Candy-coated chocolate eggs ideal for gifting and sharing.",
+    variants: [
+      { size: "1kg", price: 163 },
+      { size: "500g", price: 82 },
+      { size: "250g", price: 47 },
+      { size: "100g", price: 20 },
+      { size: "50g", price: 10 },
+    ],
+  },
+  {
+    code: "CNL105",
+    name: "Chocolate Macadamia",
+    category: "Chocolate & Candy Treats",
+    desc: "Luxury chocolate-covered macadamias with buttery crunch.",
+    variants: [
+      { size: "1kg", price: 324 },
+      { size: "500g", price: 162 },
+      { size: "250g", price: 84 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL106",
+    name: "Cocoa Dusted Almonds",
+    category: "Chocolate & Candy Treats",
+    desc: "Cocoa-dusted almonds with rich gourmet chocolate flavour.",
+    variants: [
+      { size: "1kg", price: 324 },
+      { size: "500g", price: 162 },
+      { size: "250g", price: 84 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL107",
+    name: "Milkybar Almonds",
+    category: "Chocolate & Candy Treats",
+    desc: "Creamy white chocolate almonds for sweet indulgence.",
+    variants: [
+      { size: "1kg", price: 324 },
+      { size: "500g", price: 162 },
+      { size: "250g", price: 84 },
+      { size: "100g", price: 34 },
+      { size: "50g", price: 18 },
+    ],
+  },
+  {
+    code: "CNL108",
+    name: "Pink and White Almonds",
+    category: "Chocolate & Candy Treats",
+    desc: "Classic candy-coated almonds for celebrations and gifting.",
+    variants: [
+      { size: "1kg", price: 286 },
+      { size: "500g", price: 143 },
+      { size: "250g", price: 74 },
+      { size: "100g", price: 33 },
+      { size: "50g", price: 20 },
+    ],
+  },
+  {
+    code: "CNL109",
+    name: "Pink and White Peanuts",
+    category: "Chocolate & Candy Treats",
+    desc: "Sweet candy-coated peanuts for parties, treats and sharing.",
+    variants: [
+      { size: "1kg", price: 135 },
+      { size: "500g", price: 68 },
+      { size: "250g", price: 38 },
+      { size: "100g", price: 19 },
+      { size: "50g", price: 9 },
+    ],
+  },
+  {
+    code: "CNL110",
+    name: "Pink and White Cachous",
+    category: "Chocolate & Candy Treats",
+    desc: "Traditional crunchy candy treats with nostalgic flavour.",
+    variants: [
+      { size: "1kg", price: 89 },
+      { size: "500g", price: 54 },
+    ],
+  },
+  {
+    code: "CNL111",
+    name: "Squeeze Bottle Honey",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Pure local honey in an easy-to-use squeeze bottle.",
+    variants: [
+      { size: "500g", price: 101 },
+    ],
+  },
+  {
+    code: "CNL112",
+    name: "CrazyBee Local Honey Bucket",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Large family-size bucket of premium local honey.",
+    variants: [
+      { size: "1.4kg", price: 270 },
+    ],
+  },
+  {
+    code: "CNL113",
+    name: "CrazyBee Local Honey Glass Bottle",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Premium local honey in elegant glass packaging.",
+    variants: [
+      { size: "500g", price: 115 },
+    ],
+  },
+  {
+    code: "CNL115",
+    name: "Chevro",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Traditional savoury snack mix ideal for entertaining.",
+    variants: [
+      { size: "1kg", price: 243 },
+      { size: "500g", price: 122 },
+      { size: "300g", price: 79 },
+    ],
+  },
+  {
+    code: "CNL116",
+    name: "Murku Plain / Spring Onion",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Crunchy traditional savoury snack with authentic flavour.",
+    variants: [
+      { size: "Pack", price: 41 },
+    ],
+  },
+  {
+    code: "CNL117",
+    name: "Sev and Nuts Plain / Hot",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Classic savoury sev snack mix with crunchy nuts.",
+    variants: [
+      { size: "Pack", price: 41 },
+    ],
+  },
+  {
+    code: "CNL118",
+    name: "Sev Plain Without Nuts",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Traditional crunchy sev snack perfect for sharing.",
+    variants: [
+      { size: "Pack", price: 41 },
+    ],
+  },
+  {
+    code: "CNL119",
+    name: "Soft Ghantia",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Traditional soft savoury snack ideal for platters and tea time.",
+    variants: [
+      { size: "1kg", price: 216 },
+      { size: "250g", price: 54 },
+    ],
+  },
+  {
+    code: "CNL120",
+    name: "Sweet Sticks",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Sweet crunchy snack sticks perfect for entertaining.",
+    variants: [
+      { size: "1kg", price: 216 },
+      { size: "250g", price: 54 },
+    ],
+  },
+  {
+    code: "CNL121",
+    name: "Fried Peas",
+    category: "Honey, Speciality & Savoury Snacks",
+    desc: "Crunchy fried peas with savoury flavour and texture.",
+    variants: [
+      { size: "1kg", price: 216 },
+      { size: "250g", price: 54 },
+    ],
+  },
+  {
+    code: "CNL122",
+    name: "HealFuel Ready Mix Talbina",
+    category: "Health Mixes & Breakfast Range",
+    desc: "Healthy ready-mix barley breakfast packed with nutrition.",
+    variants: [
+      { size: "Pack", price: 81 },
+    ],
+  },
+  {
+    code: "CNL123",
+    name: "Plain Talbina Barley Porridge",
+    category: "Health Mixes & Breakfast Range",
+    desc: "Traditional barley porridge mix for healthy breakfasts.",
+    variants: [
+      { size: "Pack", price: 68 },
+    ],
+  },
+];
+
+export default function App() {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeStock, setActiveStock] = useState("All Stock");
+  const [search, setSearch] = useState("");
+  const [cart, setCart] = useState([]);
+
+  const [customer, setCustomer] = useState({
+    name: "",
+    phone: "",
+    orderType: "Collection",
+    address: "",
+    notes: "",
+  });
+const [productImages, setProductImages] = useState({});
+const [productStock, setProductStock] = useState({});
+const [isAdmin, setIsAdmin] = useState(false);
+
+const loadProductImages = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/product-images`
+    );
+
+    const fixedImages = {};
+
+      Object.entries(response.data || {}).forEach(([code, url]) => {
+        fixedImages[code] = url.replace(
+          "http://localhost:5000",
+            API_BASE_URL
+      );
+    });
+    setProductImages(fixedImages);
+    
+  } catch (err) {
+    console.error("Failed to load product images:", err);
+  }
+};
+const loadProductStock = async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:5000/product-stock"
+    );
+
+    setProductStock(response.data || {});
+  } catch (err) {
+    console.error("Failed to load stock:", err);
+  }
+};
+useEffect(() => {
+  loadProductImages();
+  loadProductStock();
+}, []);
+  const productOptions = useMemo(() => {
+    return catalog.flatMap((product) =>
+      product.variants.map((variant) => ({
+        id: `${product.code}-${variant.size}`,
+        code: product.code,
+        name: product.name,
+        category: product.category,
+        desc: product.desc,
+        size: variant.size,
+        price: variant.price,
+      }))
+    );
+  }, []);
+
+  const filteredProducts = useMemo(() => {
+  return productOptions.filter((item) => {
+    const matchesCategory =
+      activeCategory === "All" || item.category === activeCategory;
+
+    const stockStatus = productStock[item.code] || "In Stock";
+
+    const matchesStock =
+      activeStock === "All Stock" || stockStatus === activeStock;
+
+    const searchText =
+      `${item.code} ${item.name} ${item.size} ${item.category}`.toLowerCase();
+
+    const matchesSearch = searchText.includes(search.toLowerCase());
+
+    return matchesCategory && matchesStock && matchesSearch;
+  });
+}, [activeCategory, activeStock, productOptions, productStock, search]);
+
+  const addToCart = (product) => {
+    const existing = cart.find((item) => item.id === product.id);
+
+    if (existing) {
+      setCart(
+        cart.map((item) =>
+          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+        )
+      );
+    } else {
+      setCart([...cart, { ...product, qty: 1 }]);
+    }
+  };
+
+  const decreaseQty = (id) => {
+    setCart(
+      cart
+        .map((item) =>
+          item.id === id ? { ...item, qty: Math.max(item.qty - 1, 0) } : item
+        )
+        .filter((item) => item.qty > 0)
+    );
+  };
+
+  const increaseQty = (id) => {
+    setCart(
+      cart.map((item) =>
+        item.id === id ? { ...item, qty: item.qty + 1 } : item
+      )
+    );
+  };
+
+  const removeFromCart = (id) => {
+    setCart(cart.filter((item) => item.id !== id));
+  };
+
+  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  const uploadProductImage = async (productCode, file) => {
+  try {
+    const formData = new FormData();
+
+    formData.append("image", file);
+    formData.append("productCode", productCode);
+
+    const response = await axios.post(
+      "http://localhost:5000/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    const imageUrl = response.data.imageUrl;
+
+    setProductImages((prev) => ({
+      ...prev,
+      [productCode]: imageUrl,
+    }));
+
+  } catch (err) {
+    console.error(err);
+
+    alert("Image upload failed");
+  }
+};
+
+  const sendWhatsAppOrder = () => {
+    if (cart.length === 0) {
+      alert("Your cart is empty.");
+      return;
+    }
+
+    if (!customer.name.trim() || !customer.phone.trim()) {
+      alert("Please enter your name and phone number before placing the order.");
+      return;
+    }
+
+    if (customer.orderType === "Delivery" && !customer.address.trim()) {
+      alert("Please enter your delivery address.");
+      return;
+    }
+
+    let message =
+      "Hello Gideon, I would like to place an order from The Snack Merchant:\n\n";
+
+    message += "CUSTOMER DETAILS:\n";
+    message += `Name: ${customer.name}\n`;
+    message += `Phone: ${customer.phone}\n`;
+    message += `Order Type: ${customer.orderType}\n`;
+
+    if (customer.orderType === "Delivery") {
+      message += `Address: ${customer.address}\n`;
+    }
+
+    if (customer.notes.trim()) {
+      message += `Notes: ${customer.notes}\n`;
+    }
+
+    message += "\nORDER:\n";
+
+    cart.forEach((item) => {
+      const stockStatus = productStock[item.code] || "In Stock";
+
+      message += `• ${item.code} - ${item.name} (${item.size}) x ${
+        item.qty
+      } = R${item.price * item.qty}`;
+
+      if (stockStatus !== "In Stock") {
+         message += ` [${stockStatus}]`;
+      }
+
+      message += "\n";
+    });
+
+    message += `\nTOTAL: R${total}\n\nPlease confirm availability and payment details.`;
+
+    const encodedMessage = encodeURIComponent(message);
+
+    window.open(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`,
+      "_blank"
+    );
+  };
+
+  return (
+    <div className="app">
+      <div
+  style={{
+    display: "flex",
+    justifyContent: "flex-end",
+    padding: "10px 20px",
+  }}
+>
+  <button
+    onClick={() => {
+      const pin = prompt("Enter Admin PIN");
+
+      if (pin === "2026") {
+        setIsAdmin(true);
+        alert("Admin mode enabled");
+      } else {
+        alert("Incorrect PIN");
+      }
+    }}
+    style={{
+      background: "#111",
+      color: "#d4af37",
+      border: "1px solid #d4af37",
+      padding: "8px 16px",
+      borderRadius: "8px",
+      cursor: "pointer",
+      fontWeight: "bold",
+    }}
+  >
+    Admin
+  </button>
+</div>
+      <header className="hero">
+        <img
+          src="/snack-logo.png"
+          alt="The Snack Merchant Logo"
+          className="logo"
+        />
+
+        <h1>THE SNACK MERCHANT</h1>
+        <p className="tagline">Artisan Nuts • Dried Fruit • Gourmet Treats</p>
+        <p className="subtagline">Quality you can taste</p>
+
+        <div className="hero-buttons">
+          <a href="#products">Browse Products</a>
+          <a href="#cart" className="secondary">
+            View Cart
+          </a>
+        </div>
+      </header>
+
+      <section className="intro">
+        <h2>Premium Snacks Delivered</h2>
+        <p>
+          Browse our full catalog, choose your preferred size and quantity, then
+          send your order directly via WhatsApp.
+        </p>
+      </section>
+
+      <section className="search-box">
+        <input
+          type="text"
+          placeholder="Search by product, CNL code, size or category..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </section>
+
+      <section className="filters">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setActiveCategory(cat)}
+            className={activeCategory === cat ? "active" : ""}
+          >
+            {cat}
+          </button>
+        ))}
+      </section>
+        <section className="stock-filters">
+  {["All Stock", "In Stock", "Low Stock", "Available on Order", "Seasonal"].map(
+    (status) => (
+      <button
+        key={status}
+        onClick={() => setActiveStock(status)}
+        className={activeStock === status ? "active" : ""}
+      >
+        {status}
+      </button>
+    )
+  )}
+</section>
+      <p className="product-count">
+        Showing {filteredProducts.length} product options
+    </p>
+      <main id="products" className="products">
+        {filteredProducts.map((product) => (
+          <div className="card" key={product.id}>
+            <div className="product-image-box">
+  {productImages[product.code] ? (
+    <img
+      src={productImages[product.code]}
+      alt={product.name}
+      className="product-image"
+    />
+  ) : (
+    <div className="image-placeholder">
+      No photo yet
+    </div>
+  )}
+{isAdmin && (
+  <div className="stock-admin">
+    <label className="upload-label">
+      Add Photo
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => {
+          const file = e.target.files[0];
+
+          if (file) {
+            uploadProductImage(product.code, file);
+          }
+        }}
+      />
+    </label>
+
+    <label>Stock Status</label>
+
+    <select
+      value={productStock[product.code] || "In Stock"}
+      onChange={async (e) => {
+        const newStatus = e.target.value;
+
+        setProductStock({
+          ...productStock,
+          [product.code]: newStatus,
+        });
+
+        try {
+          await axios.post(
+            "http://localhost:5000/product-stock",
+            {
+              productCode: product.code,
+              stockStatus: newStatus,
+            }
+          );
+        } catch (err) {
+          console.error("Failed to save stock:", err);
+        }
+      }}
+    >
+      <option>In Stock</option>
+      <option>Low Stock</option>
+      <option>Available on Order</option>
+      <option>Seasonal</option>
+    </select>
+  </div>
+)}
+</div>
+            <div className="badge">{product.code}</div>
+
+<div
+  className={`stock-badge ${
+    (productStock[product.code] || "In Stock")
+      .toLowerCase()
+      .replaceAll(" ", "_")
+  }`}
+>
+  {productStock[product.code] || "In Stock"}
+</div>
+
+<h3>{product.name}</h3>
+
+            <p className="category">{product.category}</p>
+                        <p className="description">{product.desc}</p>
+                        <div className="product-footer">
+              <div>
+                <p className="size">{product.size}</p>
+                <p className="price">R{product.price}</p>
+              </div>
+
+              <button onClick={() => addToCart(product)}>Add</button>
+            </div>
+          </div>
+        ))}
+      </main>
+
+      <section className="checkout">
+        <h2>Checkout Details</h2>
+
+        <div className="checkout-grid">
+          <input
+            type="text"
+            placeholder="Your name"
+            value={customer.name}
+            onChange={(e) =>
+              setCustomer({ ...customer, name: e.target.value })
+            }
+          />
+
+          <input
+            type="tel"
+            placeholder="Your phone number"
+            value={customer.phone}
+            onChange={(e) =>
+              setCustomer({ ...customer, phone: e.target.value })
+            }
+          />
+
+          <select
+            value={customer.orderType}
+            onChange={(e) =>
+              setCustomer({ ...customer, orderType: e.target.value })
+            }
+          >
+            <option value="Collection">Collection</option>
+            <option value="Delivery">Delivery</option>
+          </select>
+
+          {customer.orderType === "Delivery" && (
+            <input
+              type="text"
+              placeholder="Delivery address"
+              value={customer.address}
+              onChange={(e) =>
+                setCustomer({ ...customer, address: e.target.value })
+              }
+            />
+          )}
+
+          <textarea
+            placeholder="Order notes / special instructions"
+            value={customer.notes}
+            onChange={(e) =>
+              setCustomer({ ...customer, notes: e.target.value })
+            }
+          />
+        </div>
+      </section>
+
+      <section id="cart" className="cart">
+        <h2>Your Cart</h2>
+
+        {cart.length === 0 ? (
+          <p className="empty">Your cart is empty.</p>
+        ) : (
+          <>
+            {cart.map((item) => (
+              <div className="cart-item" key={item.id}>
+                <div>
+                  <strong>
+                    {item.code} — {item.name}
+                  </strong>
+                  <p>
+                    {item.size} • R{item.price} each
+                  </p>
+                </div>
+
+                <div className="cart-actions">
+                  <span>R{item.price * item.qty}</span>
+
+                  <div className="qty-controls">
+                    <button onClick={() => decreaseQty(item.id)}>-</button>
+                    <strong>{item.qty}</strong>
+                    <button onClick={() => increaseQty(item.id)}>+</button>
+                  </div>
+
+                  <button onClick={() => removeFromCart(item.id)}>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="cart-total">
+              <strong>Total</strong>
+              <strong>R{total}</strong>
+            </div>
+
+            <button className="whatsapp" onClick={sendWhatsAppOrder}>
+              Send Order via WhatsApp
+            </button>
+          </>
+        )}
+      </section>
+
+      <footer>
+        <p>The Snack Merchant</p>
+        <p>Gideon Fick • 068 759 7884</p>
+      </footer>
+    </div>
+  );
+}
