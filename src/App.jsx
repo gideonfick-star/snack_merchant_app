@@ -6,7 +6,7 @@ const WHATSAPP_NUMBER = "27687597884";
 const API_BASE_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : `http://${window.location.hostname}:5000`;
+    : "https://snack-merchant-app.onrender.com";
 
 const categories = [
   "All",
