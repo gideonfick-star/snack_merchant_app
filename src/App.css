@@ -624,3 +624,10 @@ footer {
     font-size: 13px;
   }
 }
+.orders-admin-panel h2 {
+  color: #d7d6d0;
+}
+
+.order-card {
+  color: white;
+}
