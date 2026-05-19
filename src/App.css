@@ -765,3 +765,30 @@ footer {
 .order-cancelled {
   background: #7f1d1d;
 }
+/* ================= ADMIN TABLE IMPROVEMENTS ================= */
+
+.orders-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.orders-table {
+  width: 100%;
+  min-width: 1200px;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 10px 8px;
+  font-size: 14px;
+}
+
+.status-select {
+  font-size: 12px;
+  padding: 5px 8px;
+}
+
+.view-items-btn {
+  font-size: 12px;
+  padding: 8px 10px;
+}
