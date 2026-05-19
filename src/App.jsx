@@ -1561,6 +1561,7 @@ export default function App() {
   const [activeStock, setActiveStock] = useState("All Stock");
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const [customer, setCustomer] = useState({
     name: "",
@@ -1803,9 +1804,9 @@ useEffect(() => {
 </div>
       <header className="hero">
         <img
-          src="/snack-logo.png"
-          alt="The Snack Merchant Logo"
-          className="logo"
+           src="/snack-logo.png"
+           alt="The Snack Merchant Logo"
+           className="logo"
         />
 
         <h1>THE SNACK MERCHANT</h1>
@@ -1871,9 +1872,15 @@ useEffect(() => {
   {productImages[product.code] ? (
     <img
       src={productImages[product.code]}
-      alt={product.name}
-      className="product-image"
-    />
+       alt={product.name}
+       className="product-image"
+        onClick={() =>
+           setSelectedImage({
+            src: productImages[product.code],
+            alt: product.name,
+    })
+  }
+/>
   ) : (
     <div className="image-placeholder">
       No photo yet
@@ -2060,6 +2067,21 @@ useEffect(() => {
         <p>The Snack Merchant</p>
         <p>Gideon Fick • 068 759 7884</p>
       </footer>
+      {selectedImage && (
+  <div className="image-modal" onClick={() => setSelectedImage(null)}>
+    <div className="image-modal-content">
+      <button
+        className="image-modal-close"
+        onClick={() => setSelectedImage(null)}
+      >
+        ×
+      </button>
+
+      <img src={selectedImage.src} alt={selectedImage.alt} />
+      <p>{selectedImage.alt}</p>
+    </div>
+  </div>
+)}
     </div>
   );
 }
