@@ -1929,8 +1929,50 @@ useEffect(() => {
                 <td>{order.customer_phone}</td>
                 <td>{order.order_type}</td>
                 <td>R{order.total_amount}</td>
-                <td>{order.payment_status || "Unpaid"}</td>
-                <td>{order.order_status || "New"}</td>
+                <td>
+                  <select
+                    value={order.payment_status || "Unpaid"}
+                    onChange={async (e) => {
+                     const newPaymentStatus = e.target.value;
+
+                     await axios.patch(
+                       `${API_BASE_URL}/orders/${order.id}/status`,
+                        {
+                          paymentStatus: newPaymentStatus,
+                        }
+                     );
+
+                     loadOrders();
+                    }}
+                   >
+                     <option>Unpaid</option>
+                     <option>Paid</option>
+                  </select>
+                </td>
+               <td>
+                 <select
+                    value={order.order_status || "New"}
+                     onChange={async (e) => {
+                        const newOrderStatus = e.target.value;
+
+                         await axios.patch(
+                          `${API_BASE_URL}/orders/${order.id}/status`,
+                           {
+                            orderStatus: newOrderStatus,
+                           }
+                          );
+
+                          loadOrders();
+                         }}
+                       >
+                         <option>New</option>
+                         <option>Preparing</option>
+                         <option>Ready</option>
+                         <option>Collected</option>
+                         <option>Delivered</option>
+                         <option>Cancelled</option>
+                       </select>
+                    </td>
               </tr>
             ))}
           </tbody>
