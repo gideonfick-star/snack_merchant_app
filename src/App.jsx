@@ -19,8 +19,7 @@ const categories = [
   "Chocolate & Candy Treats",
   "Honey, Speciality & Savoury Snacks",
   "Health Mixes & Breakfast Range",
-  "China Fruit Snack Packs",
-];
+  ];
 
 const catalog = [
   {
