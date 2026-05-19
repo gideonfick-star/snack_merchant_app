@@ -720,3 +720,48 @@ footer {
   color: #d4af37;
   margin-bottom: 10px;
 }
+/* ================= STATUS BADGES ================= */
+
+.status-select {
+  border: none;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-weight: bold;
+  color: white;
+}
+
+/* PAYMENT STATUS */
+
+.payment-paid {
+  background: #1f7a1f;
+}
+
+.payment-unpaid {
+  background: #a12626;
+}
+
+/* ORDER STATUS */
+
+.order-new {
+  background: #2563eb;
+}
+
+.order-preparing {
+  background: #d97706;
+}
+
+.order-ready {
+  background: #0f766e;
+}
+
+.order-collected {
+  background: #6b21a8;
+}
+
+.order-delivered {
+  background: #15803d;
+}
+
+.order-cancelled {
+  background: #7f1d1d;
+}

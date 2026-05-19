@@ -1932,6 +1932,7 @@ useEffect(() => {
                 <td>R{order.total_amount}</td>
                 <td>
                   <select
+                    className={`status-select payment-${(order.payment_status || "Unpaid").toLowerCase()}`}
                     value={order.payment_status || "Unpaid"}
                     onChange={async (e) => {
                      const newPaymentStatus = e.target.value;
@@ -1952,8 +1953,9 @@ useEffect(() => {
                 </td>
                <td>
                  <select
-                    value={order.order_status || "New"}
-                     onChange={async (e) => {
+                   className={`status-select order-${(order.order_status || "New").toLowerCase()}`}
+                     value={order.order_status || "New"}
+                                         onChange={async (e) => {
                         const newOrderStatus = e.target.value;
 
                          await axios.patch(
