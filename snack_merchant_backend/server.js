@@ -251,6 +251,69 @@ app.post("/product-stock", async (req, res) => {
     });
   }
 });
+// ================= CREATE ORDER =================
+
+app.post("/orders", async (req, res) => {
+  try {
+    const {
+      customerName,
+      customerPhone,
+      orderType,
+      deliveryAddress,
+      customerNotes,
+      items,
+      totalAmount,
+    } = req.body;
+
+    if (!customerName || !customerPhone || !orderType || !items || !totalAmount) {
+      return res.status(400).json({
+        error: "Missing required order fields",
+      });
+    }
+
+    const orderNumber = `SM-${Date.now()}`;
+
+    const result = await pool.query(
+      `
+      INSERT INTO public.orders (
+        order_number,
+        customer_name,
+        customer_phone,
+        order_type,
+        delivery_address,
+        customer_notes,
+        items,
+        total_amount
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+      `,
+      [
+        orderNumber,
+        customerName,
+        customerPhone,
+        orderType,
+        deliveryAddress || null,
+        customerNotes || null,
+        JSON.stringify(items),
+        totalAmount,
+      ]
+    );
+
+    res.json({
+      success: true,
+      order: result.rows[0],
+    });
+  } catch (err) {
+    console.error("CREATE ORDER ERROR:", err);
+
+    res.status(500).json({
+      error: "Failed to create order",
+      details: err.message,
+    });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, "0.0.0.0", () => {
