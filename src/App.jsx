@@ -1711,7 +1711,7 @@ useEffect(() => {
   }
 };
 
-  const sendWhatsAppOrder = () => {
+  const sendWhatsAppOrder = async () => {
     if (cart.length === 0) {
       alert("Your cart is empty.");
       return;
@@ -1763,12 +1763,32 @@ useEffect(() => {
 
     const encodedMessage = encodeURIComponent(message);
 
-    window.open(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`,
-      "_blank"
-    );
-  };
+    try {
+     await fetch("https://snack-merchant-app.onrender.com/orders", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      customerName: customer.name,
+      customerPhone: customer.phone,
+      orderType: customer.orderType,
+      deliveryAddress: customer.address,
+      customerNotes: customer.notes,
+      items: cart,
+      totalAmount: total,
+    }),
+  });
 
+  window.open(
+    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`,
+    "_blank"
+  );
+} catch (error) {
+  console.error(error);
+  alert("Failed to save order.");
+}
+;}
   return (
     <div className="app">
       <div
@@ -1950,11 +1970,11 @@ useEffect(() => {
 
 <h3>{product.name}</h3>
 
-            <p className="category">{product.category}</p>
-                        <p className="description">{product.desc}</p>
+                <p className="size product-size-top">{product.size}</p>
+                <p className="category">{product.category}</p>
+                <p className="description">{product.desc}</p>
                         <div className="product-footer">
               <div>
-                <p className="size">{product.size}</p>
                 <p className="price">R{product.price}</p>
               </div>
 

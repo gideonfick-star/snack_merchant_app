@@ -574,3 +574,53 @@ footer {
   font-weight: bold;
   cursor: pointer;
 }
+.product-size-top {
+  color: #d4af37;
+  font-weight: bold;
+  font-size: 18px;
+  margin-top: 8px;
+  margin-bottom: 6px;
+}
+@media (max-width: 600px) {
+  .products {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 0 12px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .product-image-box {
+    height: 140px;
+  }
+
+  .product-image {
+    height: 140px;
+    object-fit: cover;
+  }
+
+  .card h3 {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+
+  .description {
+    display: none;
+  }
+
+  .product-size-top {
+    font-size: 14px;
+  }
+
+  .price {
+    font-size: 22px;
+  }
+
+  .product-footer button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
