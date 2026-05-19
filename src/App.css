@@ -792,3 +792,44 @@ footer {
   font-size: 12px;
   padding: 8px 10px;
 }
+/* ================= MOBILE NAV ================= */
+
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.95);
+  border-top: 1px solid #d4af37;
+
+  padding: 12px 8px;
+  z-index: 9999;
+}
+
+.mobile-nav a,
+.mobile-nav button {
+  background: none;
+  border: none;
+  color: #d4af37;
+  text-decoration: none;
+
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.mobile-nav a:hover,
+.mobile-nav button:hover {
+  color: white;
+}
+
+/* Prevent nav covering content */
+
+body {
+  padding-bottom: 80px;
+}

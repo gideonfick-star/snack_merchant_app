@@ -1858,7 +1858,7 @@ useEffect(() => {
         </p>
       </section>
 
-      <section className="search-box">
+      <section id="search" className="search-box">
         <input
           type="text"
           placeholder="Search by product, CNL code, size or category..."
@@ -2129,7 +2129,7 @@ useEffect(() => {
         ))}
       </main>
 
-      <section className="checkout">
+      <section id="checkout" className="checkout">
         <h2>Checkout Details</h2>
 
         <div className="checkout-grid">
@@ -2227,6 +2227,24 @@ useEffect(() => {
           </>
         )}
       </section>
+      
+      <nav className="mobile-nav">
+  <a href="#products">Products</a>
+  <a href="#search">Search</a>
+  <a href="#cart">Cart</a>
+  <a href="#checkout">Checkout</a>
+
+  <button
+    onClick={() =>
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
+    }
+  >
+    Top
+  </button>
+</nav>
 
       <footer>
         <p>The Snack Merchant</p>
