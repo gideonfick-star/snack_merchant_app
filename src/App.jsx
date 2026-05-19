@@ -1574,6 +1574,7 @@ const [productImages, setProductImages] = useState({});
 const [productStock, setProductStock] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
 const [orders, setOrders] = useState([]);
+const [expandedOrderId, setExpandedOrderId] = useState(null);
 
 const loadProductImages = async () => {
   try {
@@ -1923,6 +1924,7 @@ useEffect(() => {
 
           <tbody>
             {orders.map((order) => (
+              <>
               <tr key={order.id}>
                 <td>{order.order_number}</td>
                 <td>{new Date(order.created_at).toLocaleString()}</td>
@@ -1975,23 +1977,33 @@ useEffect(() => {
                        </select>
                     </td>
                     <td>
-                     <button
+                    <button
                        className="view-items-btn"
-                       onClick={() => {
-                       alert(
-                        order.items
-                        ?.map(
-                        (item) =>
-                       `${item.product_name} | ${item.size} | Qty: ${item.quantity}`
-                     )
-                     .join("\n")
-                     );
-                    }}
-                    >
-                    View Items
-                     </button>
-              </td>
+                        onClick={() =>
+                          setExpandedOrderId(expandedOrderId === order.id ? null : order.id)
+                         }
+                         >
+                          {expandedOrderId === order.id ? "Hide Items" : "View Items"}
+                        </button>
+                    </td>
               </tr>
+                   {expandedOrderId === order.id && (
+                   <tr className="expanded-items-row">
+                   <td colSpan="9">
+                    <div className="expanded-items-box">
+                    <h4>Ordered Items</h4>
+
+                        {order.items?.map((item, index) => (
+                        <div key={index} className="expanded-item">
+                       <strong>{item.name}</strong> | {item.size} | Qty: {item.qty} | R
+                     {item.price}
+                </div>
+                ))}
+          </div>
+        </td>
+      </tr>
+        )}
+            </>
             ))}
           </tbody>
         </table>
