@@ -1993,12 +1993,31 @@ useEffect(() => {
                     <div className="expanded-items-box">
                     <h4>Ordered Items</h4>
 
-                        {order.items?.map((item, index) => (
-                        <div key={index} className="expanded-item">
-                       <strong>{item.name}</strong> | {item.size} | Qty: {item.qty} | R
-                     {item.price}
-                </div>
-                ))}
+<table className="items-table">
+  <thead>
+    <tr>
+      <th>Code</th>
+      <th>Product</th>
+      <th>Size</th>
+      <th>Qty</th>
+      <th>Unit Price</th>
+      <th>Line Total</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {order.items?.map((item, index) => (
+      <tr key={index}>
+        <td>{item.code}</td>
+        <td>{item.name}</td>
+        <td>{item.size}</td>
+        <td>{item.qty}</td>
+        <td>R{item.price}</td>
+        <td>R{item.price * item.qty}</td>
+      </tr>
+    ))}
+  </tbody>
+</table>
           </div>
         </td>
       </tr>
