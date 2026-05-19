@@ -271,6 +271,41 @@ app.get("/orders", async (req, res) => {
     });
   }
 });
+
+// ================= UPDATE ORDER STATUS =================
+
+app.patch("/orders/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentStatus, orderStatus } = req.body;
+
+    const result = await pool.query(
+      `
+      UPDATE public.orders
+      SET
+        payment_status = COALESCE($1, payment_status),
+        order_status = COALESCE($2, order_status),
+        updated_at = CURRENT_TIMESTAMP
+      WHERE id = $3
+      RETURNING *
+      `,
+      [paymentStatus || null, orderStatus || null, id]
+    );
+
+    res.json({
+      success: true,
+      order: result.rows[0],
+    });
+  } catch (err) {
+    console.error("UPDATE ORDER STATUS ERROR:", err);
+
+    res.status(500).json({
+      error: "Failed to update order status",
+      details: err.message,
+    });
+  }
+});
+
 // ================= CREATE ORDER =================
 
 app.post("/orders", async (req, res) => {
