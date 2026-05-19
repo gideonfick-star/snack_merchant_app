@@ -1895,31 +1895,47 @@ useEffect(() => {
       <p className="product-count">
         Showing {filteredProducts.length} product options
     </p>
-    {isAdmin && (
+   {isAdmin && (
   <section className="orders-admin-panel">
-    <h2>Customer Orders</h2>
+    <div className="orders-admin-header">
+      <h2>Admin Orders Dashboard</h2>
+      <button onClick={loadOrders}>Refresh Orders</button>
+    </div>
 
     {orders.length === 0 ? (
-      <p>No orders yet</p>
+      <p className="no-orders">No orders yet</p>
     ) : (
-      orders.map((order) => (
-        <div key={order.id} className="order-card">
-          <h3>{order.customer_name}</h3>
-          <p><strong>Phone:</strong> {order.customer_phone}</p>
-          <p><strong>Order Type:</strong> {order.order_type}</p>
-          <p><strong>Total:</strong> R{order.total_amount}</p>
-          <p><strong>Payment Status:</strong> {order.payment_status || "Unpaid"}
-        </p>
+      <div className="orders-table-wrap">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>Order #</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Type</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
+            </tr>
+          </thead>
 
-        <p>
-          <strong>Order Status:</strong> {order.order_status || "New"}
-      </p>
-
-      <p>
-        <strong>Date:</strong> {new Date(order.created_at).toLocaleString()}
-    </p>
-        </div>
-      ))
+          <tbody>
+            {orders.map((order) => (
+              <tr key={order.id}>
+                <td>{order.order_number}</td>
+                <td>{new Date(order.created_at).toLocaleString()}</td>
+                <td>{order.customer_name}</td>
+                <td>{order.customer_phone}</td>
+                <td>{order.order_type}</td>
+                <td>R{order.total_amount}</td>
+                <td>{order.payment_status || "Unpaid"}</td>
+                <td>{order.order_status || "New"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     )}
   </section>
 )}
