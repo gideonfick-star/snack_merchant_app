@@ -631,3 +631,69 @@ footer {
 .order-card {
   color: white;
 }
+.orders-admin-panel {
+  margin: 40px 0;
+  padding: 24px;
+  border: 1px solid #d4af37;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.orders-admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.orders-admin-header h2 {
+  color: #d4af37;
+  margin: 0;
+}
+
+.orders-admin-header button {
+  background: #d4af37;
+  color: black;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.orders-table-wrap {
+  overflow-x: auto;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: white;
+  min-width: 900px;
+}
+
+.orders-table thead {
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.orders-table th {
+  color: #d4af37;
+  text-align: left;
+  padding: 14px;
+  border-bottom: 2px solid #d4af37;
+}
+
+.orders-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.orders-table tr:hover {
+  background: rgba(255,255,255,0.04);
+}
+
+.no-orders {
+  color: white;
+  text-align: center;
+  padding: 20px;
+}
