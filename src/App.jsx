@@ -1573,6 +1573,7 @@ export default function App() {
 const [productImages, setProductImages] = useState({});
 const [productStock, setProductStock] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
+const [orders, setOrders] = useState([]);
 
 const loadProductImages = async () => {
   try {
@@ -1605,9 +1606,18 @@ const loadProductStock = async () => {
     console.error("Failed to load stock:", err);
   }
 };
+const loadOrders = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/orders`);
+    setOrders(response.data || []);
+  } catch (err) {
+    console.error("Failed to load orders:", err);
+  }
+};
 useEffect(() => {
   loadProductImages();
   loadProductStock();
+  loadOrders();
 }, []);
   const productOptions = useMemo(() => {
     return catalog.flatMap((product) =>
@@ -1885,6 +1895,25 @@ useEffect(() => {
       <p className="product-count">
         Showing {filteredProducts.length} product options
     </p>
+    {isAdmin && (
+  <section className="orders-admin-panel">
+    <h2>Customer Orders</h2>
+
+    {orders.length === 0 ? (
+      <p>No orders yet</p>
+    ) : (
+      orders.map((order) => (
+        <div key={order.id} className="order-card">
+          <h3>{order.customer_name}</h3>
+          <p><strong>Phone:</strong> {order.customer_phone}</p>
+          <p><strong>Order Type:</strong> {order.order_type}</p>
+          <p><strong>Total:</strong> R{order.total_amount}</p>
+          <p><strong>Date:</strong> {new Date(order.created_at).toLocaleString()}</p>
+        </div>
+      ))
+    )}
+  </section>
+)}
       <main id="products" className="products">
         {filteredProducts.map((product) => (
           <div className="card" key={product.id}>
