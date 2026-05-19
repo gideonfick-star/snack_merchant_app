@@ -251,6 +251,26 @@ app.post("/product-stock", async (req, res) => {
     });
   }
 });
+// ================= LOAD ORDERS =================
+
+app.get("/orders", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT *
+      FROM public.orders
+      ORDER BY created_at DESC
+    `);
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error("LOAD ORDERS ERROR:", err);
+
+    res.status(500).json({
+      error: "Failed to load orders",
+      details: err.message,
+    });
+  }
+});
 // ================= CREATE ORDER =================
 
 app.post("/orders", async (req, res) => {
