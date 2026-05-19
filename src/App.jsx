@@ -1917,6 +1917,7 @@ useEffect(() => {
               <th>Total</th>
               <th>Payment</th>
               <th>Status</th>
+              <th>Items</th>
             </tr>
           </thead>
 
@@ -1973,6 +1974,23 @@ useEffect(() => {
                          <option>Cancelled</option>
                        </select>
                     </td>
+                    <td>
+                     <button
+                       className="view-items-btn"
+                       onClick={() => {
+                       alert(
+                        order.items
+                        ?.map(
+                        (item) =>
+                       `${item.product_name} | ${item.size} | Qty: ${item.quantity}`
+                     )
+                     .join("\n")
+                     );
+                    }}
+                    >
+                    View Items
+                     </button>
+              </td>
               </tr>
             ))}
           </tbody>
