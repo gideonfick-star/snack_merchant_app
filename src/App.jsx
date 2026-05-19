@@ -1791,10 +1791,8 @@ useEffect(() => {
     }),
   });
 
-  window.open(
-    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`,
-    "_blank"
-  );
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+  window.location.href = whatsappUrl;
 } catch (error) {
   console.error(error);
   alert("Failed to save order.");
