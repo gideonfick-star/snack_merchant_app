@@ -1908,7 +1908,16 @@ useEffect(() => {
           <p><strong>Phone:</strong> {order.customer_phone}</p>
           <p><strong>Order Type:</strong> {order.order_type}</p>
           <p><strong>Total:</strong> R{order.total_amount}</p>
-          <p><strong>Date:</strong> {new Date(order.created_at).toLocaleString()}</p>
+          <p><strong>Payment Status:</strong> {order.payment_status || "Unpaid"}
+        </p>
+
+        <p>
+          <strong>Order Status:</strong> {order.order_status || "New"}
+      </p>
+
+      <p>
+        <strong>Date:</strong> {new Date(order.created_at).toLocaleString()}
+    </p>
         </div>
       ))
     )}
