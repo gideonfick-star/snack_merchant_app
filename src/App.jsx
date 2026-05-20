@@ -1575,6 +1575,7 @@ const [productStock, setProductStock] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
 const [orders, setOrders] = useState([]);
 const [expandedOrderId, setExpandedOrderId] = useState(null);
+const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 
 const loadProductImages = async () => {
   try {
@@ -2218,9 +2219,12 @@ useEffect(() => {
               <strong>R{total}</strong>
             </div>
 
-            <button className="whatsapp" onClick={sendWhatsAppOrder}>
-              Send Order via WhatsApp
-            </button>
+            <button
+             className="whatsapp"
+             onClick={() => setShowOrderConfirm(true)}
+>
+             Review Order Before Sending
+          </button>
           </>
         )}
       </section>
@@ -2265,6 +2269,74 @@ useEffect(() => {
   <p>The Snack Merchant</p>
   <p>Gideon Fick • 068 759 7884</p>
 </footer>
+
+{showOrderConfirm && (
+  <div
+    className="order-confirm-modal"
+    onClick={() => setShowOrderConfirm(false)}
+  >
+    <div
+      className="order-confirm-content"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h2>Confirm Your Order</h2>
+
+      <div className="confirm-customer-details">
+        <p><strong>Name:</strong> {customer.name}</p>
+        <p><strong>Phone:</strong> {customer.phone}</p>
+        <p><strong>Order Type:</strong> {customer.orderType}</p>
+
+        {customer.orderType === "Delivery" && (
+          <p><strong>Address:</strong> {customer.address}</p>
+        )}
+
+        {customer.notes && (
+          <p><strong>Notes:</strong> {customer.notes}</p>
+        )}
+      </div>
+
+      <div className="confirm-order-items">
+        {cart.map((item, index) => (
+          <div key={index} className="confirm-order-row">
+            <span>
+              {item.name} ({item.size})
+            </span>
+
+            <span>
+              x {item.qty}
+            </span>
+
+            <span>
+              R{item.price * item.qty}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <h3>Total: R{total}</h3>
+
+      <div className="confirm-buttons">
+        <button
+          className="cancel-confirm-btn"
+          onClick={() => setShowOrderConfirm(false)}
+        >
+          Edit Order
+        </button>
+
+        <button
+          className="confirm-send-btn"
+          onClick={() => {
+            setShowOrderConfirm(false);
+            sendWhatsAppOrder();
+          }}
+        >
+          Confirm & Send
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
       {selectedImage && (
   <div className="image-modal" onClick={() => setSelectedImage(null)}>
     <div className="image-modal-content">
