@@ -1576,6 +1576,7 @@ const [isAdmin, setIsAdmin] = useState(false);
 const [orders, setOrders] = useState([]);
 const [expandedOrderId, setExpandedOrderId] = useState(null);
 const [showOrderConfirm, setShowOrderConfirm] = useState(false);
+const [paymentMethod, setPaymentMethod] = useState("Pay Online");
 
 const loadProductImages = async () => {
   try {
@@ -1746,6 +1747,7 @@ useEffect(() => {
     message += `Name: ${customer.name}\n`;
     message += `Phone: ${customer.phone}\n`;
     message += `Order Type: ${customer.orderType}\n`;
+    message += `Payment Method: ${paymentMethod}\n`;
 
     if (customer.orderType === "Delivery") {
       message += `Address: ${customer.address}\n`;
@@ -1785,6 +1787,7 @@ useEffect(() => {
       customerName: customer.name,
       customerPhone: customer.phone,
       orderType: customer.orderType,
+      paymentMethod: paymentMethod,
       deliveryAddress: customer.address,
       customerNotes: customer.notes,
       items: cart,
@@ -1916,6 +1919,7 @@ useEffect(() => {
               <th>Type</th>
               <th>Total</th>
               <th>Payment</th>
+              <th>Method</th>
               <th>Status</th>
               <th>Items</th>
             </tr>
@@ -1952,6 +1956,7 @@ useEffect(() => {
                      <option>Paid</option>
                   </select>
                 </td>
+                <td>{order.payment_method || "-"}</td>
                <td>
                  <select
                    className={`status-select order-${(order.order_status || "New").toLowerCase()}`}
@@ -2158,7 +2163,18 @@ useEffect(() => {
             <option value="Collection">Collection</option>
             <option value="Delivery">Delivery</option>
           </select>
-
+          <select
+  value={paymentMethod}
+  onChange={(e) => setPaymentMethod(e.target.value)}
+>
+  <option value="Pay Online">Pay Online</option>
+  <option value="EFT / Proof of Payment">
+    EFT / Proof of Payment
+  </option>
+  <option value="Pay on Collection">
+    Pay on Collection
+  </option>
+</select>
           {customer.orderType === "Delivery" && (
             <input
               type="text"
@@ -2285,6 +2301,7 @@ useEffect(() => {
         <p><strong>Name:</strong> {customer.name}</p>
         <p><strong>Phone:</strong> {customer.phone}</p>
         <p><strong>Order Type:</strong> {customer.orderType}</p>
+        <p><strong>Payment Method:</strong> {paymentMethod}</p>
 
         {customer.orderType === "Delivery" && (
           <p><strong>Address:</strong> {customer.address}</p>
