@@ -859,3 +859,12 @@ body {
 .app-link-box a:hover {
   color: #d4a017;
 }
+.footer-qr-code {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  background: white;
+  padding: 6px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}

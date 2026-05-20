@@ -2247,6 +2247,12 @@ useEffect(() => {
 </nav>
 
 <div className="app-link-box">
+  
+  <img
+  src="/qr-code_snack_merchant.png"
+  alt="Scan to open The Snack Merchant app"
+  className="footer-qr-code"
+/>
   <p>Open Store Directly:</p>
 
   <a
