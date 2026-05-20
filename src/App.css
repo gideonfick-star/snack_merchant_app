@@ -833,3 +833,29 @@ footer {
 body {
   padding-bottom: 80px;
 }
+.app-link-box {
+  text-align: center;
+  margin: 20px auto;
+  padding: 12px;
+  border: 1px solid #d4a017;
+  border-radius: 12px;
+  background: #111;
+  max-width: 500px;
+}
+
+.app-link-box p {
+  color: #d4a017;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.app-link-box a {
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+  word-break: break-all;
+}
+
+.app-link-box a:hover {
+  color: #d4a017;
+}

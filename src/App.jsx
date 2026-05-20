@@ -2246,10 +2246,22 @@ useEffect(() => {
   </button>
 </nav>
 
-      <footer>
-        <p>The Snack Merchant</p>
-        <p>Gideon Fick • 068 759 7884</p>
-      </footer>
+<div className="app-link-box">
+  <p>Open Store Directly:</p>
+
+  <a
+    href="https://snack-merchant-app.vercel.app/"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    snack-merchant-app.vercel.app
+  </a>
+</div>
+
+<footer>
+  <p>The Snack Merchant</p>
+  <p>Gideon Fick • 068 759 7884</p>
+</footer>
       {selectedImage && (
   <div className="image-modal" onClick={() => setSelectedImage(null)}>
     <div className="image-modal-content">
