@@ -1599,7 +1599,7 @@ const loadProductImages = async () => {
 const loadProductStock = async () => {
   try {
     const response = await axios.get(
-      "http://localhost:5000/product-stock"
+      `${API_BASE_URL}/product-stock`
     );
 
     setProductStock(response.data || {});
@@ -2081,13 +2081,10 @@ useEffect(() => {
         });
 
         try {
-          await axios.post(
-            "http://localhost:5000/product-stock",
-            {
-              productCode: product.code,
+          await axios.post(`${API_BASE_URL}/product-stock`, {
+            productCode: product.code,
               stockStatus: newStatus,
-            }
-          );
+          });
         } catch (err) {
           console.error("Failed to save stock:", err);
         }
