@@ -2219,7 +2219,9 @@ const payWithPayFast = async () => {
   value={paymentMethod}
   onChange={(e) => setPaymentMethod(e.target.value)}
 >
-  <option value="Pay Online">Pay Online</option>
+  <option value="Pay Online" disabled>
+  Pay Online - Temporarily unavailable
+</option>
   <option value="EFT / Proof of Payment">
     EFT / Proof of Payment
   </option>
