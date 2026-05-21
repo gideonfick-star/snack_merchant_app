@@ -2373,7 +2373,79 @@ setShowOrderSuccess(true);
         ))}
       </main>
 
-      <section id="checkout" className="checkout">
+      
+
+      <section id="cart" className="cart">
+        <h2>Your Cart</h2>
+
+        {cart.length === 0 ? (
+          <p className="empty">Your cart is empty.</p>
+        ) : (
+          <>
+            {cart.map((item) => (
+              <div className="cart-item" key={item.id}>
+                <div>
+                  <strong>
+                    {item.code} — {item.name}
+                  </strong>
+                  <p>
+                    {item.size} • R{item.price} each
+                  </p>
+                </div>
+
+                <div className="cart-actions">
+                  <span>R{item.price * item.qty}</span>
+
+                  <div className="qty-controls">
+                    <button onClick={() => decreaseQty(item.id)}>-</button>
+                    <strong>{item.qty}</strong>
+                    <button onClick={() => increaseQty(item.id)}>+</button>
+                  </div>
+
+                  <button onClick={() => removeFromCart(item.id)}>
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            <div className="cart-total">
+              <strong>Total</strong>
+              <strong>R{total}</strong>
+            </div>
+
+            <button
+             className="whatsapp"
+             onClick={() => setShowOrderConfirm(true)}
+>
+            <p className="checkout-reminder">
+  Please complete your name, phone number, order type and payment method above before reviewing your order.
+</p>
+             Review Order Before Sending
+          </button>
+          </>
+        )}
+      </section>
+      
+      <nav className="mobile-nav">
+  <a href="#products">Products</a>
+  <a href="#search">Search</a>
+  <a href="#cart">Cart</a>
+  <a href="#checkout">Checkout</a>
+
+  <button
+    onClick={() =>
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      })
+    }
+  >
+    Top
+  </button>
+</nav>
+
+<section id="checkout" className="checkout">
         <h2>Checkout Details</h2>
 
         <div className="checkout-grid">
@@ -2446,75 +2518,6 @@ setShowOrderSuccess(true);
         </div>
       </section>
 
-      <section id="cart" className="cart">
-        <h2>Your Cart</h2>
-
-        {cart.length === 0 ? (
-          <p className="empty">Your cart is empty.</p>
-        ) : (
-          <>
-            {cart.map((item) => (
-              <div className="cart-item" key={item.id}>
-                <div>
-                  <strong>
-                    {item.code} — {item.name}
-                  </strong>
-                  <p>
-                    {item.size} • R{item.price} each
-                  </p>
-                </div>
-
-                <div className="cart-actions">
-                  <span>R{item.price * item.qty}</span>
-
-                  <div className="qty-controls">
-                    <button onClick={() => decreaseQty(item.id)}>-</button>
-                    <strong>{item.qty}</strong>
-                    <button onClick={() => increaseQty(item.id)}>+</button>
-                  </div>
-
-                  <button onClick={() => removeFromCart(item.id)}>
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            <div className="cart-total">
-              <strong>Total</strong>
-              <strong>R{total}</strong>
-            </div>
-
-            <button
-             className="whatsapp"
-             onClick={() => setShowOrderConfirm(true)}
->
-            <p className="checkout-reminder">
-  Please complete your name, phone number, order type and payment method above before reviewing your order.
-</p>
-             Review Order Before Sending
-          </button>
-          </>
-        )}
-      </section>
-      
-      <nav className="mobile-nav">
-  <a href="#products">Products</a>
-  <a href="#search">Search</a>
-  <a href="#cart">Cart</a>
-  <a href="#checkout">Checkout</a>
-
-  <button
-    onClick={() =>
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      })
-    }
-  >
-    Top
-  </button>
-</nav>
 <div className="eft-static-box">
   <h3>EFT Banking Details</h3>
   <p><strong>Bank:</strong> {EFT_BANK}</p>
