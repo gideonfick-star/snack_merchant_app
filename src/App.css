@@ -1254,8 +1254,7 @@ body {
   font-size: 15px;
 }
 .orders-admin-panel {
-  width: calc(100vw - 40px);
-  max-width: calc(100vw - 40px);
+  max-width: 1400px;
   margin: 30px auto;
   padding: 20px;
   box-sizing: border-box;
