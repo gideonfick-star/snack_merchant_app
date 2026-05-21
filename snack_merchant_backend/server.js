@@ -5,6 +5,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { Pool } = require("pg");
+const crypto = require("crypto");
 
 const app = express();
 
@@ -381,23 +382,52 @@ app.post("/create-payment", async (req, res) => {
     const { amount, customerName, customerEmail } = req.body;
 
     const paymentData = {
-      merchant_id: process.env.PAYFAST_MERCHANT_ID,
-      merchant_key: process.env.PAYFAST_MERCHANT_KEY,
+  merchant_id: process.env.PAYFAST_MERCHANT_ID,
+  merchant_key: process.env.PAYFAST_MERCHANT_KEY,
 
-      return_url: `${process.env.APP_URL}`,
-      cancel_url: `${process.env.APP_URL}`,
-      notify_url: `${process.env.APP_URL}`,
+  return_url: `${process.env.APP_URL}`,
+  cancel_url: `${process.env.APP_URL}`,
+  notify_url: `${process.env.APP_URL}`,
 
-      name_first: customerName || "Customer",
-      email_address:
-        customerEmail || "gideonfick@gmail.com",
+  name_first: customerName || "Customer",
 
-      m_payment_id: `SM-${Date.now()}`,
+  email_address:
+    customerEmail || "gideonfick@gmail.com",
 
-      amount: Number(amount).toFixed(2),
+  m_payment_id: `SM-${Date.now()}`,
 
-      item_name: "Snack Merchant Order",
-    };
+  amount: Number(amount).toFixed(2),
+
+  item_name: "Snack Merchant Order",
+};
+
+// ================= SIGNATURE =================
+const passphrase = "";
+
+let pfOutput = "";
+
+for (let key in paymentData) {
+  if (paymentData[key] !== "") {
+    pfOutput += `${key}=${encodeURIComponent(
+      paymentData[key]
+    ).replace(/%20/g, "+")}&`;
+  }
+}
+
+pfOutput = pfOutput.slice(0, -1);
+
+if (passphrase !== "") {
+  pfOutput += `&passphrase=${encodeURIComponent(
+    passphrase.trim()
+  ).replace(/%20/g, "+")}`;
+}
+
+const signature = crypto
+  .createHash("md5")
+  .update(pfOutput)
+  .digest("hex");
+
+paymentData.signature = signature;
 
     const queryString = new URLSearchParams(paymentData).toString();
 
