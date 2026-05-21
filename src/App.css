@@ -1031,8 +1031,8 @@ body {
   position: absolute;
   top: -5px;
   right: -5px;
-  background: #00c2a8;
-  color: white;
+  background: #dbe2e2;
+  color: rgb(14, 11, 11);
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -1123,4 +1123,56 @@ body {
   color: #111;
   font-weight: 800;
   cursor: pointer;
+}
+.order-success-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.order-success-card {
+  background: #111;
+  border: 2px solid #d4af37;
+  border-radius: 18px;
+  padding: 30px;
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 0 25px rgba(212, 175, 55, 0.3);
+}
+
+.order-success-card h2 {
+  color: #d4af37;
+  margin-bottom: 20px;
+}
+
+.order-success-card p {
+  margin-bottom: 15px;
+  line-height: 1.6;
+}
+
+.order-success-note {
+  color: #d4af37;
+  font-weight: bold;
+}
+
+.order-success-btn {
+  background: #d4af37;
+  color: black;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-top: 15px;
+  transition: 0.2s ease;
+}
+
+.order-success-btn:hover {
+  opacity: 0.9;
 }

@@ -1586,6 +1586,7 @@ const [paymentMethod, setPaymentMethod] = useState("Pay Online");
 const [cartToast, setCartToast] = useState("");
 const [showEftConfirm, setShowEftConfirm] = useState(false);
 const [pendingWhatsappUrl, setPendingWhatsappUrl] = useState("");
+const [showOrderSuccess, setShowOrderSuccess] = useState(false);
 
 const loadProductImages = async () => {
   try {
@@ -1875,7 +1876,7 @@ const payWithPayFast = async () => {
   <div className="eft-confirm-overlay">
     <div className="eft-confirm-card">
       <h2>Thank you for your order 🙌</h2>
-      <p>Your order has been received successfully.</p>
+      <p>Your order is ready to submit. Please review the EFT details below before sending your order via WhatsApp.</p>
 
       <div className="eft-highlight">
         <strong>Please complete EFT payment using the details below.</strong>
@@ -1897,11 +1898,40 @@ const payWithPayFast = async () => {
   className="eft-confirm-btn"
   onClick={() => {
     setShowEftConfirm(false);
-    window.location.href = pendingWhatsappUrl;
+    window.open(pendingWhatsappUrl, "_blank");
+setCart([]);
+setShowOrderSuccess(true);
   }}
+  
 >
-  Send Order on WhatsApp
+  Submit Order via WhatsApp
 </button>
+    </div>
+  </div>
+)}
+{showOrderSuccess && (
+  <div className="order-success-overlay">
+    <div className="order-success-card">
+      <h2>Order Submitted Successfully ✅</h2>
+
+      <p>
+        Thank you for your order with The Snack Merchant.
+      </p>
+
+      <p>
+        Your WhatsApp order message has been prepared successfully.
+      </p>
+
+      <p className="order-success-note">
+        For EFT orders, please send proof of payment on WhatsApp after payment is completed.
+      </p>
+
+      <button
+        className="order-success-btn"
+        onClick={() => setShowOrderSuccess(false)}
+      >
+        Close
+      </button>
     </div>
   </div>
 )}
@@ -1913,11 +1943,12 @@ const payWithPayFast = async () => {
     </span>
   )}
 </div>
-    <div
+ <div
   style={{
-    display: "flex",
-    justifyContent: "flex-end",
-    padding: "10px 20px",
+    position: "fixed",
+    top: "15px",
+    left: "15px",
+    zIndex: 9999,
   }}
 >
   <button
@@ -1936,7 +1967,7 @@ const payWithPayFast = async () => {
       color: "#d4af37",
       border: "1px solid #d4af37",
       padding: "8px 16px",
-      borderRadius: "8px",
+      borderRadius: "10px",
       cursor: "pointer",
       fontWeight: "bold",
     }}
