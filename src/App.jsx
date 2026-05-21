@@ -1686,6 +1686,31 @@ useEffect(() => {
   }, 1800);
 };
 const cartItemCount = cart.reduce((total, item) => total + item.qty, 0);
+const buildCustomerConfirmationMessage = (order) => {
+  return `Hi ${order.customer_name},
+
+Thank you for your order with The Snack Merchant 🙌
+
+We have received your order:
+
+Order Number: ${order.order_number}
+Total: R${order.total_amount}
+Payment Method: ${order.payment_method || "-"}
+
+For EFT payment, please use the details below:
+
+Bank: ${EFT_BANK}
+Account Name: ${EFT_ACCOUNT_NAME}
+Account Number: ${EFT_ACCOUNT_NUMBER}
+Branch Code: ${EFT_BRANCH_CODE}
+
+Reference:
+${order.customer_name} ${order.customer_phone}
+
+Please send proof of payment on WhatsApp once completed.
+
+Thank you for supporting The Snack Merchant 🌰`;
+};
   const decreaseQty = (id) => {
     setCart(
       cart
@@ -2120,6 +2145,15 @@ setShowOrderSuccess(true);
         >
           {expandedOrderId === order.id ? "Hide Items" : "View Items"}
         </button>
+        <button
+  className="copy-confirmation-btn"
+  onClick={() => {
+    navigator.clipboard.writeText(buildCustomerConfirmationMessage(order));
+    alert("Customer confirmation message copied.");
+  }}
+>
+  Copy Confirmation
+</button>
       </div>
 
       {expandedOrderId === order.id && (

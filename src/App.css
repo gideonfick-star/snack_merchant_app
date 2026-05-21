@@ -1405,3 +1405,12 @@ body {
   font-weight: bold;
   margin-top: 12px;
 }
+.copy-confirmation-btn {
+  background: #d4af37;
+  color: #111;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+}
