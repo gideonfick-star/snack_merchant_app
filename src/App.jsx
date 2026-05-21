@@ -1800,7 +1800,8 @@ const generateInvoicePDF = (order) => {
     finalY + 75
   );
 
-  doc.save(`Invoice-${order.order_number}.pdf`);
+  const blobUrl = doc.output("bloburl");
+window.open(blobUrl, "_blank");
 };
   const decreaseQty = (id) => {
     setCart(
