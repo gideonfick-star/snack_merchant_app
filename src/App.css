@@ -982,8 +982,8 @@ body {
 }
 .floating-cart {
   position: fixed;
-  bottom: 90px;
-  left: 20px;
+  top: 20px;
+  right: 20px;
   width: 64px;
   height: 64px;
   background: linear-gradient(145deg, #111, #1c1c1c);
