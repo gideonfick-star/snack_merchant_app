@@ -318,6 +318,7 @@ app.post("/orders", async (req, res) => {
       customerNotes,
       items,
       totalAmount,
+      paymentMethod,
     } = req.body;
 
     if (!customerName || !customerPhone || !orderType || !items || !totalAmount) {
@@ -338,9 +339,10 @@ app.post("/orders", async (req, res) => {
         delivery_address,
         customer_notes,
         items,
-        total_amount
+        total_amount,
+        payment_method
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
       `,
       [
@@ -352,6 +354,7 @@ app.post("/orders", async (req, res) => {
         customerNotes || null,
         JSON.stringify(items),
         totalAmount,
+        paymentMethod,
       ]
     );
 
