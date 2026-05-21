@@ -1584,6 +1584,8 @@ const [expandedOrderId, setExpandedOrderId] = useState(null);
 const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 const [paymentMethod, setPaymentMethod] = useState("Pay Online");
 const [cartToast, setCartToast] = useState("");
+const [showEftConfirm, setShowEftConfirm] = useState(false);
+const [pendingWhatsappUrl, setPendingWhatsappUrl] = useState("");
 
 const loadProductImages = async () => {
   try {
@@ -1820,7 +1822,12 @@ Reference: ${customer.name} ${customer.phone}
 
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
-window.location.href = whatsappUrl;
+if (paymentMethod === "EFT / Proof of Payment") {
+  setPendingWhatsappUrl(whatsappUrl);
+  setShowEftConfirm(true);
+} else {
+  window.location.href = whatsappUrl;
+}
 } catch (error) {
   console.error(error);
   alert("Failed to save order.");
@@ -1864,6 +1871,40 @@ const payWithPayFast = async () => {
         {cartToast}
       </div>
     )}
+    {showEftConfirm && (
+  <div className="eft-confirm-overlay">
+    <div className="eft-confirm-card">
+      <h2>Thank you for your order 🙌</h2>
+      <p>Your order has been received successfully.</p>
+
+      <div className="eft-highlight">
+        <strong>Please complete EFT payment using the details below.</strong>
+      </div>
+
+      <div className="eft-details">
+        <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
+        <p><span>Account Name</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
+        <p><span>Account Number</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
+        <p><span>Branch Code</span><strong>{EFT_BRANCH_CODE}</strong></p>
+        <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
+      </div>
+
+      <p className="eft-note">
+        Please send your proof of payment on WhatsApp so we can confirm and prepare your order.
+      </p>
+
+      <button
+  className="eft-confirm-btn"
+  onClick={() => {
+    setShowEftConfirm(false);
+    window.location.href = pendingWhatsappUrl;
+  }}
+>
+  Send Order on WhatsApp
+</button>
+    </div>
+  </div>
+)}
 <div className="floating-cart">
 <span className="cart-icon">🛒</span>
   {cartItemCount > 0 && (
