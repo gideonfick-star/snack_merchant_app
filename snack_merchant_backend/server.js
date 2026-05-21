@@ -374,6 +374,48 @@ app.post("/orders", async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+// ================= PAYFAST PAYMENT ROUTE =================
+
+app.post("/create-payment", async (req, res) => {
+  try {
+    const { amount, customerName, customerEmail } = req.body;
+
+    const paymentData = {
+      merchant_id: process.env.PAYFAST_MERCHANT_ID,
+      merchant_key: process.env.PAYFAST_MERCHANT_KEY,
+
+      return_url: `${process.env.APP_URL}`,
+      cancel_url: `${process.env.APP_URL}`,
+      notify_url: `${process.env.APP_URL}`,
+
+      name_first: customerName || "Customer",
+      email_address:
+        customerEmail || "gideonfick@gmail.com",
+
+      m_payment_id: `SM-${Date.now()}`,
+
+      amount: Number(amount).toFixed(2),
+
+      item_name: "Snack Merchant Order",
+    };
+
+    const queryString = new URLSearchParams(paymentData).toString();
+
+    const paymentUrl = `${process.env.PAYFAST_URL}?${queryString}`;
+
+    res.json({
+      success: true,
+      paymentUrl,
+    });
+  } catch (error) {
+    console.error("PAYFAST ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
