@@ -1747,7 +1747,7 @@ const cartItemCount = cart.reduce((total, item) => total + item.qty, 0);
     }
 
     if (!customer.name.trim() || !customer.phone.trim()) {
-      alert("Please enter your name and phone number above before placing the order.");
+      alert("Please enter your name and phone number before placing the order.");
       return;
     }
 
@@ -2345,7 +2345,7 @@ setShowOrderSuccess(true);
              onClick={() => setShowOrderConfirm(true)}
 >
             <p className="checkout-reminder">
-  Please complete your name, phone number, order type and payment method before reviewing your order.
+  Please complete your name, phone number, order type and payment method above before reviewing your order.
 </p>
              Review Order Before Sending
           </button>
