@@ -2419,7 +2419,7 @@ setShowOrderSuccess(true);
              onClick={() => setShowOrderConfirm(true)}
 >
             <p className="checkout-reminder">
-  Please complete your name, phone number, order type and payment method above before reviewing your order.
+  Please complete your name, phone number, order type and payment method below before reviewing your order.
 </p>
              Review Order Before Sending
           </button>
