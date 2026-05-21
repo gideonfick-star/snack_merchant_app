@@ -1042,3 +1042,85 @@ body {
   font-size: 12px;
   font-weight: bold;
 }
+.eft-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.78);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.eft-confirm-card {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(145deg, #080808, #161616);
+  border: 1px solid #d4a017;
+  border-radius: 18px;
+  padding: 26px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.55);
+}
+
+.eft-confirm-card h2 {
+  color: #f5c542;
+  margin-bottom: 10px;
+  font-size: 26px;
+}
+
+.eft-confirm-card p {
+  color: #f2f2f2;
+  line-height: 1.5;
+}
+
+.eft-highlight {
+  background: rgba(245, 197, 66, 0.12);
+  border: 1px solid rgba(245, 197, 66, 0.35);
+  color: #f5c542;
+  padding: 12px;
+  border-radius: 12px;
+  margin: 18px 0;
+}
+
+.eft-details {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.eft-details p {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid rgba(245, 197, 66, 0.18);
+  padding-bottom: 8px;
+  margin: 0;
+}
+
+.eft-details span {
+  color: #bdbdbd;
+}
+
+.eft-details strong {
+  color: #f5c542;
+  text-align: right;
+}
+
+.eft-note {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.eft-confirm-btn {
+  width: 100%;
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 999px;
+  border: none;
+  background: #f5c542;
+  color: #111;
+  font-weight: 800;
+  cursor: pointer;
+}
