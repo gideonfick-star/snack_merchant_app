@@ -982,7 +982,7 @@ body {
 }
 .floating-cart {
   position: fixed;
-  bottom: 20px;
+  bottom: 90px;
   left: 20px;
   width: 64px;
   height: 64px;
