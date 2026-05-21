@@ -2371,24 +2371,29 @@ const payWithPayFast = async () => {
           Edit Order
         </button>
 
-        <button
-          className="confirm-send-btn"
-          onClick={() => {
-            setShowOrderConfirm(false);
-            sendWhatsAppOrder();
-          }}
-        >
-          Confirm & Send
-        </button>
-        <button
-         className="confirm-payfast-btn"
-         onClick={() => {
-          setShowOrderConfirm(false);
-          payWithPayFast();
-         }}
-        >
-  Pay Online with PayFast
-</button>
+        {paymentMethod !== "Pay Online" && (
+  <button
+    className="confirm-send-btn"
+    onClick={() => {
+      setShowOrderConfirm(false);
+      sendWhatsAppOrder();
+    }}
+  >
+    Confirm & Send
+  </button>
+)}
+
+{paymentMethod === "Pay Online" && (
+  <button
+    className="confirm-payfast-btn"
+    onClick={() => {
+      setShowOrderConfirm(false);
+      payWithPayFast();
+    }}
+  >
+    Pay Online with PayFast
+  </button>
+)}
       </div>
     </div>
   </div>
