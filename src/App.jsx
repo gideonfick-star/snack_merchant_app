@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import "./App.css";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const WHATSAPP_NUMBER = "27687597884";
 const EFT_BANK = "FNB";
@@ -1711,6 +1713,88 @@ Please send proof of payment on WhatsApp once completed.
 
 Thank you for supporting The Snack Merchant 🌰`;
 };
+const generateInvoicePDF = (order) => {
+  const doc = new jsPDF();
+
+  // ================= HEADER =================
+  doc.setFontSize(22);
+  doc.setTextColor(212, 175, 55);
+  doc.text("THE SNACK MERCHANT", 20, 20);
+
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Artisan Nuts • Dried Fruit • Snacks", 20, 28);
+
+  // ================= INVOICE INFO =================
+  doc.setFontSize(16);
+  doc.text("INVOICE", 150, 20);
+
+  doc.setFontSize(11);
+  doc.text(`Invoice #: ${order.order_number}`, 150, 30);
+  doc.text(
+    `Date: ${new Date(order.created_at).toLocaleString()}`,
+    150,
+    38
+  );
+
+  // ================= CUSTOMER DETAILS =================
+  doc.setFontSize(13);
+  doc.text("Customer Details", 20, 55);
+
+  doc.setFontSize(11);
+  doc.text(`Name: ${order.customer_name}`, 20, 65);
+  doc.text(`Phone: ${order.customer_phone}`, 20, 73);
+  doc.text(
+    `Email: ${order.customer_email || "Not provided"}`,
+    20,
+    81
+  );
+  doc.text(`Order Type: ${order.order_type}`, 20, 89);
+  doc.text(
+    `Payment Method: ${order.payment_method || "-"}`,
+    20,
+    97
+  );
+
+  // ================= ITEMS TABLE =================
+  autoTable(doc, {
+    startY: 110,
+    head: [["Product", "Size", "Qty", "Unit Price", "Line Total"]],
+    body: order.items.map((item) => [
+      item.name,
+      item.size,
+      item.qty,
+      `R${item.price}`,
+      `R${item.price * item.qty}`,
+    ]),
+  });
+
+  // ================= TOTAL =================
+  const finalY = doc.lastAutoTable.finalY + 15;
+
+  doc.setFontSize(14);
+  doc.text(`Total: R${order.total_amount}`, 150, finalY);
+
+  // ================= EFT DETAILS =================
+  doc.setFontSize(13);
+  doc.text("EFT Banking Details", 20, finalY + 20);
+
+  doc.setFontSize(11);
+  doc.text(`Bank: ${EFT_BANK}`, 20, finalY + 30);
+  doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, finalY + 38);
+  doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, finalY + 46);
+  doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, finalY + 54);
+
+  // ================= FOOTER =================
+  doc.setFontSize(10);
+  doc.text(
+    "The Snack Merchant • Quality You Can Taste",
+    20,
+    finalY + 75
+  );
+
+  doc.save(`Invoice-${order.order_number}.pdf`);
+};
   const decreaseQty = (id) => {
     setCart(
       cart
@@ -2154,7 +2238,15 @@ setShowOrderSuccess(true);
 >
   Copy Confirmation
 </button>
-      </div>
+
+<button
+  className="copy-confirmation-btn"
+  onClick={() => generateInvoicePDF(order)}
+>
+  Download Invoice
+</button>
+
+</div>
 
       {expandedOrderId === order.id && (
         <div className="admin-order-items">
