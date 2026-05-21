@@ -1577,6 +1577,7 @@ const [orders, setOrders] = useState([]);
 const [expandedOrderId, setExpandedOrderId] = useState(null);
 const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 const [paymentMethod, setPaymentMethod] = useState("Pay Online");
+const [cartToast, setCartToast] = useState("");
 
 const loadProductImages = async () => {
   try {
@@ -1656,18 +1657,24 @@ useEffect(() => {
 }, [activeCategory, activeStock, productOptions, productStock, search]);
 
   const addToCart = (product) => {
-    const existing = cart.find((item) => item.id === product.id);
+  const existing = cart.find((item) => item.id === product.id);
 
-    if (existing) {
-      setCart(
-        cart.map((item) =>
-          item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-        )
-      );
-    } else {
-      setCart([...cart, { ...product, qty: 1 }]);
-    }
-  };
+  if (existing) {
+    setCart(
+      cart.map((item) =>
+        item.id === product.id ? { ...item, qty: item.qty + 1 } : item
+      )
+    );
+  } else {
+    setCart([...cart, { ...product, qty: 1 }]);
+  }
+
+  setCartToast(`${product.name} added to cart`);
+
+  setTimeout(() => {
+    setCartToast("");
+  }, 1800);
+};
 
   const decreaseQty = (id) => {
     setCart(
@@ -1833,9 +1840,16 @@ const payWithPayFast = async () => {
     alert("Payment could not be started.");
   }
 };
-  return (
-    <div className="app">
-      <div
+ return (
+  <div className="app">
+
+    {cartToast && (
+      <div className="cart-toast">
+        {cartToast}
+      </div>
+    )}
+
+    <div
   style={{
     display: "flex",
     justifyContent: "flex-end",
