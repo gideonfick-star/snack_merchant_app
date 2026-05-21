@@ -1718,19 +1718,19 @@ const generateInvoicePDF = (order) => {
   const doc = new jsPDF();
 
   // ================= HEADER =================
-  doc.addImage("/invoice-logo.png", "PNG", 20, 10, 40, 40);
+  doc.addImage("/invoice-logo.png", "PNG", 18, 10, 28, 28);
 
   doc.setFontSize(22);
   doc.setTextColor(212, 175, 55);
-  doc.text("THE SNACK MERCHANT", 70, 22);
+  doc.text("THE SNACK MERCHANT", 52, 22);
 
   doc.setFontSize(11);
   doc.setTextColor(0, 0, 0);
-  doc.text("Artisan Nuts • Dried Fruit • Snacks", 70, 30);
+  doc.text("Artisan Nuts • Dried Fruit • Snacks", 52, 30);
 
   doc.setFontSize(10);
   doc.setTextColor(80, 80, 80);
-  doc.text("https://snack-merchant-app.vercel.app/", 70, 38);
+  doc.text("https://snack-merchant-app.vercel.app/", 52, 38);
 
   // ================= INVOICE INFO =================
   doc.setFontSize(16);
