@@ -2381,7 +2381,17 @@ setShowOrderSuccess(true);
     Top
   </button>
 </nav>
-
+<div className="eft-static-box">
+  <h3>EFT Banking Details</h3>
+  <p><strong>Bank:</strong> {EFT_BANK}</p>
+  <p><strong>Account Name:</strong> {EFT_ACCOUNT_NAME}</p>
+  <p><strong>Account Number:</strong> {EFT_ACCOUNT_NUMBER}</p>
+  <p><strong>Branch Code:</strong> {EFT_BRANCH_CODE}</p>
+  <p><strong>Reference:</strong> Your name + cellphone number</p>
+  <p className="eft-static-note">
+    Please send proof of payment via WhatsApp after payment.
+  </p>
+</div>
 <div className="app-link-box">
   
   <img

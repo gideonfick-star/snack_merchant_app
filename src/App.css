@@ -1380,3 +1380,28 @@ body {
 .orders-admin-header button {
   white-space: nowrap;
 }
+.eft-static-box {
+  max-width: 500px;
+  margin: 30px auto;
+  padding: 20px;
+  border: 1px solid #d4af37;
+  border-radius: 14px;
+  background: #111;
+  color: white;
+  text-align: center;
+}
+
+.eft-static-box h3 {
+  color: #d4af37;
+  margin-bottom: 12px;
+}
+
+.eft-static-box p {
+  margin: 6px 0;
+}
+
+.eft-static-note {
+  color: #d4af37;
+  font-weight: bold;
+  margin-top: 12px;
+}
