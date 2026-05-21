@@ -432,6 +432,7 @@ paymentData.signature = signature;
     const queryString = new URLSearchParams(paymentData).toString();
 
     const paymentUrl = `${process.env.PAYFAST_URL}?${queryString}`;
+    console.log("PAYFAST URL:", paymentUrl);
 
     res.json({
       success: true,
