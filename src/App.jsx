@@ -1797,7 +1797,7 @@ useEffect(() => {
 
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
 
-window.open(whatsappUrl, "_blank");
+window.location.href = whatsappUrl;
 } catch (error) {
   console.error(error);
   alert("Failed to save order.");
