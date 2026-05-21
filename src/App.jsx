@@ -1787,43 +1787,15 @@ const cartItemCount = cart.reduce((total, item) => total + item.qty, 0);
     });
 
    if (paymentMethod === "EFT / Proof of Payment") {
-  message += `
+ message += `
 
 ━━━━━━━━━━━━━━━
 ORDER TOTAL: R${total}
 ━━━━━━━━━━━━━━━
 
-Thank you for your order with The Snack Merchant 🙌
-
-Your order has been received successfully and is now awaiting EFT payment confirmation.
-
-BANKING DETAILS
-🏦 Bank: ${EFT_BANK}
-👤 Account Name: ${EFT_ACCOUNT_NAME}
-💳 Account Number: ${EFT_ACCOUNT_NUMBER}
-🏷 Branch Code: ${EFT_BRANCH_CODE}
-🌍 Swift Code: ${EFT_SWIFT}
-
-REFERENCE:
-${customer.name} ${customer.phone}
-
-Once payment is completed, please send your proof of payment on this WhatsApp chat so we can confirm and prepare your order 😊
-
-Thank you for supporting The Snack Merchant 🌰`;
-} else {
-  message += `
-
-━━━━━━━━━━━━━━━
-ORDER TOTAL: R${total}
-━━━━━━━━━━━━━━━
-
-Thank you for your order with The Snack Merchant 🙌
-
-Your order has been received successfully.
-
-Please confirm availability, collection/delivery arrangements and any final details 😊
-
-We appreciate your support 🌰`;
+Payment Method: ${paymentMethod}
+Reference: ${customer.name} ${customer.phone}
+`;
 }
 
     const encodedMessage = encodeURIComponent(message);
@@ -1847,26 +1819,6 @@ We appreciate your support 🌰`;
   });
 
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
-
-if (paymentMethod === "EFT / Proof of Payment") {
-  alert(`
-Thank you for your order with The Snack Merchant 🙌
-
-Your order has been received successfully.
-
-Please complete EFT payment using the following details:
-
-Bank: ${EFT_BANK}
-Account Name: ${EFT_ACCOUNT_NAME}
-Account Number: ${EFT_ACCOUNT_NUMBER}
-Branch Code: ${EFT_BRANCH_CODE}
-
-Reference:
-${customer.name} ${customer.phone}
-
-Please send your proof of payment via WhatsApp after payment is completed 😊
-  `);
-}
 
 window.location.href = whatsappUrl;
 } catch (error) {
