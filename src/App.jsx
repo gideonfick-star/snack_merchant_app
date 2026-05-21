@@ -1582,7 +1582,7 @@ const [isAdmin, setIsAdmin] = useState(false);
 const [orders, setOrders] = useState([]);
 const [expandedOrderId, setExpandedOrderId] = useState(null);
 const [showOrderConfirm, setShowOrderConfirm] = useState(false);
-const [paymentMethod, setPaymentMethod] = useState("Pay Online");
+const [paymentMethod, setPaymentMethod] = useState("EFT / Proof of Payment");
 const [cartToast, setCartToast] = useState("");
 const [showEftConfirm, setShowEftConfirm] = useState(false);
 const [pendingWhatsappUrl, setPendingWhatsappUrl] = useState("");
@@ -2381,6 +2381,9 @@ setShowOrderSuccess(true);
              className="whatsapp"
              onClick={() => setShowOrderConfirm(true)}
 >
+            <p className="checkout-reminder">
+  Please complete your name, phone number, order type and payment method before reviewing your order.
+</p>
              Review Order Before Sending
           </button>
           </>
