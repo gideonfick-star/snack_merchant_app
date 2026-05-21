@@ -1675,7 +1675,7 @@ useEffect(() => {
     setCartToast("");
   }, 1800);
 };
-
+const cartItemCount = cart.reduce((total, item) => total + item.qty, 0);
   const decreaseQty = (id) => {
     setCart(
       cart
@@ -1848,7 +1848,14 @@ const payWithPayFast = async () => {
         {cartToast}
       </div>
     )}
-
+<div className="floating-cart" style={{ position: "fixed", bottom: "20px", left: "20px", background: "red", color: "white", padding: "20px", zIndex: 99999 }}>
+  🛒
+  {cartItemCount > 0 && (
+    <span className="cart-badge">
+      {cartItemCount}
+    </span>
+  )}
+</div>
     <div
   style={{
     display: "flex",
