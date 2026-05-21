@@ -1849,6 +1849,7 @@ const payWithPayFast = async () => {
       </div>
     )}
 <div className="floating-cart">
+<span className="cart-icon">🛒</span>
   {cartItemCount > 0 && (
     <span className="cart-badge">
       {cartItemCount}
