@@ -1570,12 +1570,13 @@ export default function App() {
   const [selectedImage, setSelectedImage] = useState(null);
 
   const [customer, setCustomer] = useState({
-    name: "",
-    phone: "",
-    orderType: "Collection",
-    address: "",
-    notes: "",
-  });
+  name: "",
+  phone: "",
+  email: "",
+  orderType: "Collection",
+  address: "",
+  notes: "",
+});
 const [productImages, setProductImages] = useState({});
 const [productStock, setProductStock] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
@@ -1762,6 +1763,7 @@ const cartItemCount = cart.reduce((total, item) => total + item.qty, 0);
     message += "CUSTOMER DETAILS:\n";
     message += `Name: ${customer.name}\n`;
     message += `Phone: ${customer.phone}\n`;
+    message += `Email: ${customer.email || "Not provided"}\n`;
     message += `Order Type: ${customer.orderType}\n`;
     message += `Payment Method: ${paymentMethod}\n`;
 
@@ -1812,6 +1814,7 @@ Reference: ${customer.name} ${customer.phone}
     body: JSON.stringify({
       customerName: customer.name,
       customerPhone: customer.phone,
+      customerEmail: customer.email,
       orderType: customer.orderType,
       paymentMethod: paymentMethod,
       deliveryAddress: customer.address,
@@ -2063,6 +2066,7 @@ setShowOrderSuccess(true);
       <div className="admin-order-grid">
         <p><span>Customer</span>{order.customer_name}</p>
         <p><span>Phone</span>{order.customer_phone}</p>
+        <p><span>Email</span>{order.customer_email || "Not provided"}</p>
         <p><span>Type</span>{order.order_type}</p>
         <p><span>Method</span>{order.payment_method || "-"}</p>
       </div>
@@ -2256,7 +2260,14 @@ setShowOrderSuccess(true);
               setCustomer({ ...customer, phone: e.target.value })
             }
           />
-
+          <input
+            type="email"
+             placeholder="Your email address (optional)"
+             value={customer.email}
+              onChange={(e) =>
+               setCustomer({ ...customer, email: e.target.value })
+            }
+          />
           <select
             value={customer.orderType}
             onChange={(e) =>

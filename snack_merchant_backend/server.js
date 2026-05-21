@@ -314,6 +314,7 @@ app.post("/orders", async (req, res) => {
     const {
       customerName,
       customerPhone,
+      customerEmail,
       orderType,
       deliveryAddress,
       customerNotes,
@@ -336,6 +337,7 @@ app.post("/orders", async (req, res) => {
         order_number,
         customer_name,
         customer_phone,
+        customer_email,
         order_type,
         delivery_address,
         customer_notes,
@@ -343,13 +345,14 @@ app.post("/orders", async (req, res) => {
         total_amount,
         payment_method
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
       `,
       [
         orderNumber,
         customerName,
         customerPhone,
+        customerEmail,
         orderType,
         deliveryAddress || null,
         customerNotes || null,

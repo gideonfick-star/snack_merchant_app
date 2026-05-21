@@ -1301,7 +1301,7 @@ body {
 
 .admin-order-grid {
   display: grid;
-  grid-template-columns: 180px 180px 180px 1fr;
+  grid-template-columns: 170px 170px 240px 150px 1fr;
   gap: 8px;
   align-items: center;
 }
