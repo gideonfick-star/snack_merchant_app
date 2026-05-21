@@ -1803,6 +1803,36 @@ window.location.href = whatsappUrl;
   alert("Failed to save order.");
 }
 ;}
+const payWithPayFast = async () => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/create-payment`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount: total,
+          customerName: customer.name,
+          customerEmail: customer.email || "gideonfick@gmail.com",
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.paymentUrl) {
+      alert("Could not create payment link.");
+      return;
+    }
+
+    window.location.href = data.paymentUrl;
+  } catch (error) {
+    console.error("PayFast error:", error);
+    alert("Payment could not be started.");
+  }
+};
   return (
     <div className="app">
       <div
@@ -2350,6 +2380,15 @@ window.location.href = whatsappUrl;
         >
           Confirm & Send
         </button>
+        <button
+         className="confirm-payfast-btn"
+         onClick={() => {
+          setShowOrderConfirm(false);
+          payWithPayFast();
+         }}
+        >
+  Pay Online with PayFast
+</button>
       </div>
     </div>
   </div>

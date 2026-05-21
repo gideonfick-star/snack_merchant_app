@@ -930,3 +930,17 @@ body {
   color: black;
   border: none;
 }
+.confirm-payfast-btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  background: #d4a017;
+  color: black;
+  border: none;
+}
+
+.confirm-payfast-btn:hover {
+  background: #f5c542;
+}
