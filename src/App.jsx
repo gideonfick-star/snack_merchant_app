@@ -4,6 +4,7 @@ import "./App.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+
 const WHATSAPP_NUMBER = "27687597884";
 const EFT_BANK = "FNB";
 const EFT_ACCOUNT_NAME = "HS FICK T/A THE SNACK MERCHANT";
@@ -1717,13 +1718,19 @@ const generateInvoicePDF = (order) => {
   const doc = new jsPDF();
 
   // ================= HEADER =================
+  doc.addImage("/invoice-logo.png", "PNG", 20, 10, 40, 40);
+
   doc.setFontSize(22);
   doc.setTextColor(212, 175, 55);
-  doc.text("THE SNACK MERCHANT", 20, 20);
+  doc.text("THE SNACK MERCHANT", 70, 22);
 
   doc.setFontSize(11);
   doc.setTextColor(0, 0, 0);
-  doc.text("Artisan Nuts • Dried Fruit • Snacks", 20, 28);
+  doc.text("Artisan Nuts • Dried Fruit • Snacks", 70, 30);
+
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text("https://snack-merchant-app.vercel.app/", 70, 38);
 
   // ================= INVOICE INFO =================
   doc.setFontSize(16);
