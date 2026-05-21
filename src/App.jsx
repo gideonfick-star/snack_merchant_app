@@ -1747,7 +1747,7 @@ const cartItemCount = cart.reduce((total, item) => total + item.qty, 0);
     }
 
     if (!customer.name.trim() || !customer.phone.trim()) {
-      alert("Please enter your name and phone number before placing the order.");
+      alert("Please enter your name and phone number above before placing the order.");
       return;
     }
 
@@ -2048,131 +2048,94 @@ setShowOrderSuccess(true);
     {orders.length === 0 ? (
       <p className="no-orders">No orders yet</p>
     ) : (
-      <div className="orders-table-wrap">
-        <table className="orders-table">
-          <thead>
-            <tr>
-              <th>Order #</th>
-              <th>Date</th>
-              <th>Customer</th>
-              <th>Phone</th>
-              <th>Type</th>
-              <th>Total</th>
-              <th>Payment</th>
-              <th>Method</th>
-              <th>Status</th>
-              <th>Items</th>
-            </tr>
-          </thead>
+      <div className="admin-order-cards">
+  {orders.map((order) => (
+    <div key={order.id} className="admin-order-card">
+      <div className="admin-order-card-header">
+        <div>
+          <h3>{order.order_number}</h3>
+          <p>{new Date(order.created_at).toLocaleString()}</p>
+        </div>
 
-          <tbody>
-            {orders.map((order) => (
-              <>
-              <tr key={order.id}>
-                <td>{order.order_number}</td>
-                <td>{new Date(order.created_at).toLocaleString()}</td>
-                <td>{order.customer_name}</td>
-                <td>{order.customer_phone}</td>
-                <td>{order.order_type}</td>
-                <td>R{order.total_amount}</td>
-                <td>
-                  <select
-                    className={`status-select payment-${(order.payment_status || "Unpaid").toLowerCase()}`}
-                    value={order.payment_status || "Unpaid"}
-                    onChange={async (e) => {
-                     const newPaymentStatus = e.target.value;
-
-                     await axios.patch(
-                       `${API_BASE_URL}/orders/${order.id}/status`,
-                        {
-                          paymentStatus: newPaymentStatus,
-                        }
-                     );
-
-                     loadOrders();
-                    }}
-                   >
-                     <option>Unpaid</option>
-                     <option>Paid</option>
-                  </select>
-                </td>
-                <td>{order.payment_method || "-"}</td>
-               <td>
-                 <select
-                   className={`status-select order-${(order.order_status || "New").toLowerCase()}`}
-                     value={order.order_status || "New"}
-                                         onChange={async (e) => {
-                        const newOrderStatus = e.target.value;
-
-                         await axios.patch(
-                          `${API_BASE_URL}/orders/${order.id}/status`,
-                           {
-                            orderStatus: newOrderStatus,
-                           }
-                          );
-
-                          loadOrders();
-                         }}
-                       >
-                         <option>New</option>
-                         <option>Preparing</option>
-                         <option>Ready</option>
-                         <option>Collected</option>
-                         <option>Delivered</option>
-                         <option>Cancelled</option>
-                       </select>
-                    </td>
-                    <td>
-                    <button
-                       className="view-items-btn"
-                        onClick={() =>
-                          setExpandedOrderId(expandedOrderId === order.id ? null : order.id)
-                         }
-                         >
-                          {expandedOrderId === order.id ? "Hide Items" : "View Items"}
-                        </button>
-                    </td>
-              </tr>
-                   {expandedOrderId === order.id && (
-                   <tr className="expanded-items-row">
-                   <td colSpan="9">
-                    <div className="expanded-items-box">
-                    <h4>Ordered Items</h4>
-
-<table className="items-table">
-  <thead>
-    <tr>
-      <th>Code</th>
-      <th>Product</th>
-      <th>Size</th>
-      <th>Qty</th>
-      <th>Unit Price</th>
-      <th>Line Total</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    {order.items?.map((item, index) => (
-      <tr key={index}>
-        <td>{item.code}</td>
-        <td>{item.name}</td>
-        <td>{item.size}</td>
-        <td>{item.qty}</td>
-        <td>R{item.price}</td>
-        <td>R{item.price * item.qty}</td>
-      </tr>
-    ))}
-  </tbody>
-</table>
-          </div>
-        </td>
-      </tr>
-        )}
-            </>
-            ))}
-          </tbody>
-        </table>
+        <strong>R{order.total_amount}</strong>
       </div>
+
+      <div className="admin-order-grid">
+        <p><span>Customer</span>{order.customer_name}</p>
+        <p><span>Phone</span>{order.customer_phone}</p>
+        <p><span>Type</span>{order.order_type}</p>
+        <p><span>Method</span>{order.payment_method || "-"}</p>
+      </div>
+
+      <div className="admin-order-actions">
+        <select
+          className={`status-select payment-${(order.payment_status || "Unpaid").toLowerCase()}`}
+          value={order.payment_status || "Unpaid"}
+          onChange={async (e) => {
+            const newPaymentStatus = e.target.value;
+
+            await axios.patch(
+              `${API_BASE_URL}/orders/${order.id}/status`,
+              { paymentStatus: newPaymentStatus }
+            );
+
+            loadOrders();
+          }}
+        >
+          <option>Unpaid</option>
+          <option>Paid</option>
+        </select>
+
+        <select
+          className={`status-select order-${(order.order_status || "New").toLowerCase()}`}
+          value={order.order_status || "New"}
+          onChange={async (e) => {
+            const newOrderStatus = e.target.value;
+
+            await axios.patch(
+              `${API_BASE_URL}/orders/${order.id}/status`,
+              { orderStatus: newOrderStatus }
+            );
+
+            loadOrders();
+          }}
+        >
+          <option>New</option>
+          <option>Preparing</option>
+          <option>Ready</option>
+          <option>Collected</option>
+          <option>Delivered</option>
+          <option>Cancelled</option>
+        </select>
+
+        <button
+          className="view-items-btn"
+          onClick={() =>
+            setExpandedOrderId(expandedOrderId === order.id ? null : order.id)
+          }
+        >
+          {expandedOrderId === order.id ? "Hide Items" : "View Items"}
+        </button>
+      </div>
+
+      {expandedOrderId === order.id && (
+        <div className="admin-order-items">
+          <h4>Ordered Items</h4>
+
+          {order.items?.map((item, index) => (
+            <div key={index} className="admin-order-item">
+              <span>{item.code}</span>
+              <strong>{item.name}</strong>
+              <span>{item.size}</span>
+              <span>x {item.qty}</span>
+              <span>R{item.price}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  ))}
+</div>
     )}
   </section>
 )}
