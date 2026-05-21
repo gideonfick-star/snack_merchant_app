@@ -1347,3 +1347,16 @@ body {
     grid-template-columns: 1fr;
   }
 }
+.orders-admin-panel {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  margin-left: 50% !important;
+  transform: translateX(-50%) !important;
+  padding: 24px 40px !important;
+  box-sizing: border-box;
+}
+
+.admin-order-cards {
+  max-width: 1000px;
+  margin: 0 auto;
+}
