@@ -1657,8 +1657,7 @@ useEffect(() => {
 }, [activeCategory, activeStock, productOptions, productStock, search]);
 
   const addToCart = (product) => {
-    alert("Add button clicked");
-  const existing = cart.find((item) => item.id === product.id);
+      const existing = cart.find((item) => item.id === product.id);
 
   if (existing) {
     setCart(
