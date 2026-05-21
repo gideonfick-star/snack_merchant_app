@@ -1812,8 +1812,7 @@ window.location.href = whatsappUrl;
 ;}
 const payWithPayFast = async () => {
   try {
-    alert("Calling backend: " + `${API_BASE_URL}/create-payment`);
-    const response = await fetch(
+        const response = await fetch(
       `${API_BASE_URL}/create-payment`,
       {
         method: "POST",
