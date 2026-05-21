@@ -385,9 +385,9 @@ app.post("/create-payment", async (req, res) => {
   merchant_id: process.env.PAYFAST_MERCHANT_ID,
   merchant_key: process.env.PAYFAST_MERCHANT_KEY,
 
-  return_url: `${process.env.APP_URL}`,
-  cancel_url: `${process.env.APP_URL}`,
-  notify_url: `${process.env.APP_URL}`,
+   return_url: `${process.env.APP_URL}/payment-success`,
+   cancel_url: `${process.env.APP_URL}/payment-cancelled`,
+   notify_url: `${process.env.BACKEND_URL}/payfast-notify`,
 
   name_first: customerName || "Customer",
 
