@@ -662,30 +662,50 @@ footer {
 }
 
 .orders-table-wrap {
+  width: 100%;
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 75vh;
+
+  border: 1px solid #d4af37;
+  border-radius: 12px;
+
+  scrollbar-width: thin;
+  scrollbar-color: #d4af37 #111;
+
+  position: relative;
 }
 
 .orders-table {
   width: 100%;
+  min-width: 1600px;
   border-collapse: collapse;
   color: white;
-  min-width: 900px;
+  font-size: 13px;
 }
 
 .orders-table thead {
   background: rgba(212, 175, 55, 0.15);
 }
+.orders-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #111;
+}
 
 .orders-table th {
   color: #d4af37;
   text-align: left;
-  padding: 14px;
+  padding: 10px 12px;
   border-bottom: 2px solid #d4af37;
+  white-space: nowrap;
 }
 
 .orders-table td {
-  padding: 14px;
+  padding: 10px 12px;
   border-bottom: 1px solid rgba(255,255,255,0.12);
+  white-space: nowrap;
 }
 
 .orders-table tr:hover {
