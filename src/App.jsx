@@ -1804,13 +1804,18 @@ const generateInvoicePDF = (order) => {
   autoTable(doc, {
     startY: order.order_type === "Delivery" ? 118 : 110,
     head: [["Product", "Size", "Qty", "Unit Price", "Line Total"]],
-    body: order.items.map((item) => [
-      item.name,
-      item.size,
-      item.qty,
-      `R${item.price}`,
-      `R${item.price * item.qty}`,
-    ]),
+    body: [
+  ...order.items.map((item) => [
+    item.name,
+    item.size,
+    item.qty,
+    `R${item.price}`,
+    `R${item.price * item.qty}`,
+  ]),
+  ...(order.order_type === "Delivery"
+    ? [["PUDO Delivery", "-", 1, `R${order.delivery_fee || 0}`, `R${order.delivery_fee || 0}`]]
+    : []),
+],
   });
 
   // ================= TOTAL =================
@@ -2457,7 +2462,13 @@ setShowOrderSuccess(true);
             ))}
             {customer.orderType === "Delivery" && (
   <div className="delivery-preview-box">
-    <strong>PUDO Delivery:</strong> Delivery fees are based on total order weight.
+    {customer.orderType === "Delivery" && (
+  <div className="delivery-preview-box">
+    <strong>PUDO Delivery</strong>
+    <p>Total order weight: {cartWeightKg.toFixed(2)} kg</p>
+    <p>Delivery fee for this order: R{deliveryFee}</p>
+  </div>
+)}
 
     <div className="delivery-preview-rates">
       <span>0–5kg: R69</span>
