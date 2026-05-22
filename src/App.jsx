@@ -1729,7 +1729,6 @@ We have received your order:
 Order Number: ${order.order_number}
 Total: R${order.total_amount}
 Payment Method: ${order.payment_method || "-"}
-
 ${order.payment_method === "Payment Link"
   ? `A secure payment link will be sent to you shortly for the final order amount.
 
@@ -1745,6 +1744,22 @@ Reference:
 ${order.customer_name} ${order.customer_phone}
 
 Please send proof of payment on WhatsApp once completed.`}
+Thank you for supporting The Snack Merchant 🌰`;
+};
+const buildPaymentLinkMessage = (order) => {
+  return `Hi ${order.customer_name},
+
+Thank you for your order with The Snack Merchant 🙌
+
+Please complete payment using the secure payment link below:
+
+[PASTE PAYMENT LINK HERE]
+
+Order Number: ${order.order_number}
+Amount Due: R${order.total_amount}
+
+Once payment is completed, we will confirm and prepare your order.
+
 Thank you for supporting The Snack Merchant 🌰`;
 };
 const generateInvoicePDF = (order) => {
@@ -2338,7 +2353,17 @@ setShowOrderSuccess(true);
 >
   Download Invoice
 </button>
-
+{order.payment_method === "Payment Link" && (
+  <button
+    className="copy-confirmation-btn"
+    onClick={() => {
+      navigator.clipboard.writeText(buildPaymentLinkMessage(order));
+      alert("Payment link message copied.");
+    }}
+  >
+    Copy Payment Link Message
+  </button>
+)}
 </div>
 
       {expandedOrderId === order.id && (
