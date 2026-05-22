@@ -1450,7 +1450,7 @@ body {
   background: rgba(212, 175, 55, 0.08);
   color: white;
   text-align: center;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .delivery-preview-rates {
@@ -1464,4 +1464,31 @@ body {
 .delivery-preview-rates span {
   color: #d4af37;
   font-weight: bold;
+  font-size: 15px;
+}
+.admin-nav-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 15px 0 20px;
+  flex-wrap: wrap;
+}
+
+.admin-nav-tabs button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #111827;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.admin-nav-tabs button:hover {
+  opacity: 0.9;
+}
+
+.admin-nav-tabs .active-admin-tab {
+  background: #111827;
+  color: white;
 }
