@@ -1468,27 +1468,28 @@ body {
 }
 .admin-nav-tabs {
   display: flex;
-  gap: 10px;
-  margin: 15px 0 20px;
+  gap: 12px;
+  margin: 18px 0 20px;
   flex-wrap: wrap;
 }
 
 .admin-nav-tabs button {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background: #e5e7eb;
-  color: #111827;
-  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: 2px solid #d4af37;
+  background: transparent;
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .admin-nav-tabs button:hover {
-  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .admin-nav-tabs .active-admin-tab {
-  background: #111827;
-  color: white;
+  background: #d4af37;
+  color: #000;
 }
