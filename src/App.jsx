@@ -2122,8 +2122,10 @@ setShowOrderSuccess(true);
       </p>
 
       <p className="order-success-note">
-        For EFT orders, please send proof of payment on WhatsApp after payment is completed.
-      </p>
+  {paymentMethod === "Payment Link"
+    ? "A secure payment link will be sent to you on WhatsApp shortly after we receive your order."
+    : "For EFT orders, please send proof of payment on WhatsApp after payment is completed."}
+</p>
 
       <button
         className="order-success-btn"
