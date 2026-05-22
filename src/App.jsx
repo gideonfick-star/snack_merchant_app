@@ -2269,7 +2269,7 @@ setShowOrderSuccess(true);
       <p className="product-count">
         Showing {filteredProducts.length} product options
     </p>
-   {isAdmin && (
+   {isAdmin && adminView === "orders" && (
   <section className="orders-admin-panel">
     <div className="orders-admin-header">
       <h2>Admin Orders Dashboard</h2>
