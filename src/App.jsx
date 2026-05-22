@@ -1730,7 +1730,11 @@ Order Number: ${order.order_number}
 Total: R${order.total_amount}
 Payment Method: ${order.payment_method || "-"}
 
-For EFT payment, please use the details below:
+${order.payment_method === "Payment Link"
+  ? `A secure payment link will be sent to you shortly for the final order amount.
+
+Once payment is completed, we will confirm and prepare your order.`
+  : `For EFT payment, please use the details below:
 
 Bank: ${EFT_BANK}
 Account Name: ${EFT_ACCOUNT_NAME}
@@ -1740,8 +1744,7 @@ Branch Code: ${EFT_BRANCH_CODE}
 Reference:
 ${order.customer_name} ${order.customer_phone}
 
-Please send proof of payment on WhatsApp once completed.
-
+Please send proof of payment on WhatsApp once completed.`}
 Thank you for supporting The Snack Merchant 🌰`;
 };
 const generateInvoicePDF = (order) => {
