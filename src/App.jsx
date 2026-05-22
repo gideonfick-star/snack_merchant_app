@@ -2631,6 +2631,19 @@ setShowOrderSuccess(true);
         ))}
       </div>
 
+       {customer.orderType === "Delivery" && (
+  <div className="delivery-info-box">
+    <h4>PUDO Delivery Fees</h4>
+    <p>Delivery is calculated automatically based on total order weight.</p>
+    <ul>
+      <li>Up to 5kg: R69</li>
+      <li>5kg – 10kg: R119</li>
+      <li>10kg – 15kg: R179</li>
+      <li>15kg – 20kg: R249</li>
+    </ul>
+  </div>
+)} 
+
       <div className="cart-summary">
   <p>Products Total: R{productTotal}</p>
 
