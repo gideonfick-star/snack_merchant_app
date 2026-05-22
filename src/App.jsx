@@ -2126,7 +2126,7 @@ setShowOrderSuccess(true);
     onClick={() => {
       const pin = prompt("Enter Admin PIN");
 
-      if (pin === "2026") {
+      if (pin === "7106") {
         setIsAdmin(true);
         alert("Admin mode enabled");
       } else {
