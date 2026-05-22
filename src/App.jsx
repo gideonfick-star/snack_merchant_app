@@ -1842,8 +1842,19 @@ const generateInvoicePDF = (order) => {
   doc.setFontSize(14);
   doc.text(`Total: R${order.total_amount}`, 150, finalY);
 
-  // ================= EFT DETAILS =================
-  doc.setFontSize(13);
+// ================= PAYMENT INSTRUCTIONS =================
+doc.setFontSize(13);
+
+if (order.payment_method === "Payment Link") {
+  doc.text("Payment Instructions", 20, finalY + 20);
+
+  doc.setFontSize(11);
+  doc.text(
+    "A secure payment link will be sent separately via WhatsApp.",
+    20,
+    finalY + 30
+  );
+} else {
   doc.text("EFT Banking Details", 20, finalY + 20);
 
   doc.setFontSize(11);
@@ -1851,7 +1862,7 @@ const generateInvoicePDF = (order) => {
   doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, finalY + 38);
   doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, finalY + 46);
   doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, finalY + 54);
-
+}
   // ================= FOOTER =================
   doc.setFontSize(10);
   doc.text(
