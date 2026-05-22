@@ -2266,33 +2266,33 @@ setShowOrderSuccess(true);
     )
   )}
 </section>
-      <p className="product-count">
-        Showing {filteredProducts.length} product options
-    </p>
+      {isAdmin && (
+  <div className="admin-nav-tabs">
+    <button
+      className={adminView === "products" ? "active-admin-tab" : ""}
+      onClick={() => setAdminView("products")}
+    >
+      Product Admin
+    </button>
+
+    <button
+      className={adminView === "orders" ? "active-admin-tab" : ""}
+      onClick={() => setAdminView("orders")}
+    >
+      Orders Dashboard
+    </button>
+  </div>
+)}
+
+<p className="product-count">
+  Showing {filteredProducts.length} product options
+</p>
    {isAdmin && adminView === "orders" && (
   <section className="orders-admin-panel">
     <div className="orders-admin-header">
       <h2>Admin Orders Dashboard</h2>
-      <h2>Admin Orders Dashboard</h2>
-
-<div className="admin-nav-tabs">
-  <button
-    className={adminView === "products" ? "active-admin-tab" : ""}
-    onClick={() => setAdminView("products")}
-  >
-    Product Admin
-  </button>
-
-  <button
-    className={adminView === "orders" ? "active-admin-tab" : ""}
-    onClick={() => setAdminView("orders")}
-  >
-    Orders Dashboard
-  </button>
-</div>
 
 <button onClick={loadOrders}>Refresh Orders</button>
-      <button onClick={loadOrders}>Refresh Orders</button>
     </div>
 
     {orders.length === 0 ? (
