@@ -1442,3 +1442,26 @@ body {
 .delivery-info-box li {
   margin: 4px 0;
 }
+.delivery-preview-box {
+  margin-top: 18px;
+  padding: 12px;
+  border: 1px solid #d4af37;
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.08);
+  color: white;
+  text-align: center;
+  font-size: 14px;
+}
+
+.delivery-preview-rates {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.delivery-preview-rates span {
+  color: #d4af37;
+  font-weight: bold;
+}
