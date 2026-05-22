@@ -12,6 +12,14 @@ const EFT_ACCOUNT_NUMBER = "63210867826";
 const EFT_BRANCH_CODE = "251145";
 const EFT_SWIFT = "FIRNZAJJ";
 const EFT_REFERENCE = "Customer Name + Cell";
+const DELIVERY_TIERS = [
+  { maxKg: 5, fee: 69 },
+  { maxKg: 10, fee: 119 },
+  { maxKg: 15, fee: 179 },
+  { maxKg: 20, fee: 249 },
+];
+
+const DELIVERY_METHOD = "PUDO Delivery";
 const API_BASE_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
@@ -1689,6 +1697,28 @@ useEffect(() => {
   }, 1800);
 };
 const cartItemCount = cart.reduce((total, item) => total + item.qty, 0);
+const getItemWeightKg = (item) => {
+  const sizeText = String(item.size || "").toLowerCase();
+
+  if (sizeText.includes("kg")) {
+    return parseFloat(sizeText.replace("kg", "").trim()) || 0;
+  }
+
+  if (sizeText.includes("g")) {
+    return (parseFloat(sizeText.replace("g", "").trim()) || 0) / 1000;
+  }
+
+  return 0;
+};
+const cartWeightKg = cart.reduce(
+  (total, item) => total + getItemWeightKg(item) * item.qty,
+  0
+);
+
+const deliveryFee =
+  customer.orderType === "Delivery"
+    ? DELIVERY_TIERS.find((tier) => cartWeightKg <= tier.maxKg)?.fee || 0
+    : 0;
 const buildCustomerConfirmationMessage = (order) => {
   return `Hi ${order.customer_name},
 
@@ -1825,7 +1855,12 @@ window.open(blobUrl, "_blank");
     setCart(cart.filter((item) => item.id !== id));
   };
 
-  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+  const productTotal = cart.reduce(
+  (sum, item) => sum + item.price * item.qty,
+  0
+);
+
+const total = productTotal + deliveryFee;
 
   const uploadProductImage = async (productCode, file) => {
   try {
@@ -2596,7 +2631,18 @@ setShowOrderSuccess(true);
         ))}
       </div>
 
-      <h3>Total: R{total}</h3>
+      <div className="cart-summary">
+  <p>Products Total: R{productTotal}</p>
+
+  {customer.orderType === "Delivery" && (
+    <>
+      <p>Delivery Weight: {cartWeightKg.toFixed(2)} kg</p>
+      <p>Delivery Fee: R{deliveryFee}</p>
+    </>
+  )}
+
+  <h3>Total: R{total}</h3>
+</div>
 
       <div className="confirm-buttons">
         <button
