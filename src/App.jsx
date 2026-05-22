@@ -2001,7 +2001,9 @@ if (paymentMethod === "EFT / Proof of Payment") {
   setPendingWhatsappUrl(whatsappUrl);
   setShowEftConfirm(true);
 } else {
-  window.location.href = whatsappUrl;
+  window.open(whatsappUrl, "_blank");
+setCart([]);
+setShowOrderSuccess(true);
 }
 } catch (error) {
   console.error(error);
