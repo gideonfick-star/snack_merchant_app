@@ -1792,10 +1792,17 @@ const generateInvoicePDF = (order) => {
     20,
     97
   );
+  if (order.order_type === "Delivery") {
+  doc.text(
+    `Delivery Fee: R${order.delivery_fee || 0}`,
+    20,
+    105
+  );
+}
 
   // ================= ITEMS TABLE =================
   autoTable(doc, {
-    startY: 110,
+    startY: order.order_type === "Delivery" ? 118 : 110,
     head: [["Product", "Size", "Qty", "Unit Price", "Line Total"]],
     body: order.items.map((item) => [
       item.name,
@@ -1918,6 +1925,9 @@ const total = productTotal + deliveryFee;
     message += `Email: ${customer.email || "Not provided"}\n`;
     message += `Order Type: ${customer.orderType}\n`;
     message += `Payment Method: ${paymentMethod}\n`;
+    if (customer.orderType === "Delivery") {
+  message += `Delivery Fee: R${deliveryFee}\n`;
+}
 
     if (customer.orderType === "Delivery") {
       message += `Address: ${customer.address}\n`;
@@ -1973,6 +1983,7 @@ Reference: ${customer.name} ${customer.phone}
       customerNotes: customer.notes,
       items: cart,
       totalAmount: total,
+      deliveryFee: deliveryFee,
     }),
   });
 
@@ -2221,6 +2232,7 @@ setShowOrderSuccess(true);
         <p><span>Email</span>{order.customer_email || "Not provided"}</p>
         <p><span>Type</span>{order.order_type}</p>
         <p><span>Method</span>{order.payment_method || "-"}</p>
+        <p><span>Delivery Fee</span>R{order.delivery_fee || 0}</p>
       </div>
 
       <div className="admin-order-actions">
