@@ -1930,6 +1930,9 @@ const total = productTotal + deliveryFee;
     message += `Email: ${customer.email || "Not provided"}\n`;
     message += `Order Type: ${customer.orderType}\n`;
     message += `Payment Method: ${paymentMethod}\n`;
+    if (paymentMethod === "Payment Link") {
+  message += `Payment Link Requested: Yes\n`;
+}
     if (customer.orderType === "Delivery") {
   message += `Delivery Fee: R${deliveryFee}\n`;
 }
@@ -2047,23 +2050,46 @@ const payWithPayFast = async () => {
   <div className="eft-confirm-overlay">
     <div className="eft-confirm-card">
       <h2>Thank you for your order 🙌</h2>
-      <p>Your order is ready to submit. Please review the EFT details below before sending your order via WhatsApp.</p>
 
-      <div className="eft-highlight">
-        <strong>Please complete EFT payment using the details below.</strong>
-      </div>
+{paymentMethod === "Payment Link" ? (
+  <p>
+    Your order is ready to submit. A secure payment link will be sent to you on WhatsApp after your order is received.
+  </p>
+) : (
+  <p>
+    Your order is ready to submit. Please review the EFT details below before sending your order via WhatsApp.
+  </p>
+)}
 
-      <div className="eft-details">
-        <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
-        <p><span>Account Name</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
-        <p><span>Account Number</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
-        <p><span>Branch Code</span><strong>{EFT_BRANCH_CODE}</strong></p>
-        <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
-      </div>
+      {paymentMethod === "EFT / Proof of Payment" && (
+  <>
+    <div className="eft-highlight">
+      <strong>Please complete EFT payment using the details below.</strong>
+    </div>
 
-      <p className="eft-note">
-        Please send your proof of payment on WhatsApp so we can confirm and prepare your order.
-      </p>
+    <div className="eft-details">
+      <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
+      <p><span>Account Name</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
+      <p><span>Account Number</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
+      <p><span>Branch Code</span><strong>{EFT_BRANCH_CODE}</strong></p>
+      <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
+    </div>
+  </>
+)}
+
+{paymentMethod === "Payment Link" && (
+  <div className="eft-highlight">
+    <strong>
+      A secure payment link will be sent to your WhatsApp number shortly after we receive your order.
+    </strong>
+  </div>
+)}
+
+    <p className="eft-note">
+  {paymentMethod === "Payment Link"
+    ? "Please submit your order on WhatsApp. We will reply with a secure payment link for the final amount."
+    : "Please send your proof of payment on WhatsApp so we can confirm and prepare your order."}
+</p>
 
       <button
   className="eft-confirm-btn"
@@ -2558,6 +2584,9 @@ setShowOrderSuccess(true);
 >
   <option value="Pay Online" disabled>
   Pay Online - Temporarily unavailable
+</option>
+<option value="Payment Link">
+  Payment Link
 </option>
   <option value="EFT / Proof of Payment">
     EFT / Proof of Payment
