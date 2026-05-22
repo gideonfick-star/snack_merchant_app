@@ -2625,8 +2625,8 @@ setShowOrderSuccess(true);
   value={paymentMethod}
   onChange={(e) => setPaymentMethod(e.target.value)}
 >
- <option value="Pay Online">
-  Pay Online
+<option value="Pay Online" disabled>
+  Pay Online - Temporarily unavailable
 </option>
 <option value="Payment Link">
   Payment Link
