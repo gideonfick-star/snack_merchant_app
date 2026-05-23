@@ -2766,14 +2766,14 @@ setShowOrderSuccess(true);
     </div>
   </div>
 )}
-<div className="floating-cart">
+<a href="#cart" className="floating-cart">
 <span className="cart-icon">🛒</span>
   {cartItemCount > 0 && (
     <span className="cart-badge">
       {cartItemCount}
     </span>
   )}
-</div>
+</a>
  <div
   style={{
     position: "fixed",
@@ -2818,10 +2818,7 @@ setShowOrderSuccess(true);
         <p className="subtagline">Quality you can taste</p>
 
         <div className="hero-buttons">
-          <a href="#products">Browse Products</a>
-          <a href="#cart" className="secondary">
-            View Cart
-          </a>
+         
         </div>
       </header>
 
@@ -2993,7 +2990,12 @@ setShowOrderSuccess(true);
         <p><span>Email</span>{order.customer_email || "Not provided"}</p>
         <p><span>Type</span>{order.order_type}</p>
         <p><span>Method</span>{order.payment_method || "-"}</p>
-        <p><span>Delivery Fee</span>R{order.delivery_fee || 0}</p>
+       <p>
+  <span>Delivery Fee</span>
+  {order.order_type === "Collection"
+    ? "N/A"
+    : `R${order.delivery_fee || 0}`}
+</p>
       </div>
 
       <div className="admin-order-actions">
@@ -3294,21 +3296,33 @@ setShowOrderSuccess(true);
         )}
       </section>
       
-      <nav className="mobile-nav">
-  <a href="#products">Products</a>
-  <a href="#search">Search</a>
-  <a href="#cart">Cart</a>
-  <a href="#checkout">Checkout</a>
+    <nav className="floating-side-nav">
+  <a href="#products">
+    <span className="nav-icon">🌰</span>
+    <span>Products</span>
+  </a>
+
+  <a href="#search">
+    <span className="nav-icon">🔍</span>
+    <span>Search</span>
+  </a>
+
+  <a href="#cart">
+    <span className="nav-icon">🛒</span>
+    <span>Cart</span>
+  </a>
+
+  <a href="#checkout">
+    <span className="nav-icon">💳</span>
+    <span>Checkout</span>
+  </a>
 
   <button
-    onClick={() =>
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      })
-    }
+    type="button"
+    onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
   >
-    Top
+    <span className="nav-icon">🔝</span>
+    <span>Top</span>
   </button>
 </nav>
 

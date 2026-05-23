@@ -1742,3 +1742,104 @@ body {
 .top-product-row strong {
   color: #d4af37;
 }
+.admin-price-label {
+  display: block;
+  margin-top: 10px;
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.admin-price-input {
+  width: 100%;
+  margin-top: 6px;
+  padding: 9px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(212, 175, 55, 0.6);
+  background: #050505;
+  color: white;
+}
+
+.admin-calculated-price {
+  margin-top: 6px;
+  color: white;
+  font-size: 0.85rem;
+}
+.floating-side-nav {
+  position: fixed;
+  left: 12px;
+  top: 120px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.floating-side-nav a,
+.floating-side-nav button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+
+  min-width: 140px;
+  padding: 12px 16px;
+
+  border: 1px solid #d4af37;
+  border-radius: 12px;
+
+  background: #d4af37;
+  color: #000;
+
+  font-weight: 700;
+  font-size: 15px;
+  text-align: left;
+  text-decoration: none;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+.floating-side-nav a:hover,
+.floating-side-nav button:hover {
+  background: #000;
+  color: #d4af37;
+  transform: translateX(3px);
+}
+
+.nav-icon {
+  width: 22px;
+  text-align: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .floating-side-nav {
+    position: fixed;
+    left: 8px;
+    top: 70px;
+    bottom: auto;
+    z-index: 999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .floating-side-nav a,
+  .floating-side-nav button {
+    width: 115px;
+    min-width: 115px;
+    padding: 8px 10px;
+    font-size: 12px;
+    border-radius: 10px;
+  }
+
+  .nav-icon {
+    width: 18px;
+    text-align: center;
+    font-size: 14px;
+  }
+}
