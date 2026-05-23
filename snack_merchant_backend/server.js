@@ -252,6 +252,59 @@ app.post("/product-stock", async (req, res) => {
     });
   }
 });
+
+// ================= PRODUCT PRICING ROUTES =================
+
+app.get("/product-pricing", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT pricing_key, wholesale_price
+      FROM public.product_pricing
+    `);
+
+    const pricing = {};
+
+    result.rows.forEach((row) => {
+      pricing[row.pricing_key] = Number(row.wholesale_price);
+    });
+
+    res.json(pricing);
+  } catch (err) {
+    console.error("LOAD PRICING ERROR:", err);
+    res.status(500).json({
+      error: "Failed to load product pricing",
+      details: err.message,
+    });
+  }
+});
+
+app.post("/product-pricing", async (req, res) => {
+  try {
+    const { key, wholesalePrice } = req.body;
+
+    await pool.query(
+      `
+      INSERT INTO public.product_pricing
+        (pricing_key, wholesale_price, updated_at)
+      VALUES ($1, $2, CURRENT_TIMESTAMP)
+      ON CONFLICT (pricing_key)
+      DO UPDATE SET
+        wholesale_price = EXCLUDED.wholesale_price,
+        updated_at = CURRENT_TIMESTAMP
+      `,
+      [key, Number(wholesalePrice)]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error("SAVE PRICING ERROR:", err);
+    res.status(500).json({
+      error: "Failed to save product pricing",
+      details: err.message,
+    });
+  }
+});
+
 // ================= LOAD ORDERS =================
 
 app.get("/orders", async (req, res) => {
