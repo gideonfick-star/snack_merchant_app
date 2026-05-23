@@ -2284,17 +2284,94 @@ setShowOrderSuccess(true);
   </div>
 )}
 
-<p className="product-count">
-  Showing {filteredProducts.length} product options
-</p>
+{adminView === "products" && (
+  <p className="product-count">
+    Showing {filteredProducts.length} product options
+  </p>
+)}
    {isAdmin && adminView === "orders" && (
-  <section className="orders-admin-panel">
-    <div className="orders-admin-header">
-      <h2>Admin Orders Dashboard</h2>
+  <section className="orders-admin-panel" id="orders-dashboard">
+    <div className="orders-dashboard-header">
+  <h2>Admin Orders Dashboard</h2>
 
-<button onClick={loadOrders}>Refresh Orders</button>
-    </div>
+  <button onClick={loadOrders}>
+    Refresh Orders
+  </button>
+</div>
+<div className="admin-metrics-grid">
+  <div className="admin-metric-card">
+    <span>Total Orders</span>
+    <strong>{orders.length}</strong>
+  </div>
 
+  <div className="admin-metric-card">
+    <span>Total Sales</span>
+    <strong>
+      R{orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0)}
+    </strong>
+  </div>
+
+  <div className="admin-metric-card">
+    <span>EFT Orders</span>
+    <strong>
+      {orders.filter((order) => order.payment_method !== "Payment Link").length}
+    </strong>
+  </div>
+
+  <div className="admin-metric-card">
+    <span>Payment Link Orders</span>
+    <strong>
+      {orders.filter((order) => order.payment_method === "Payment Link").length}
+    </strong>
+  </div>
+</div>
+<div className="top-products-card">
+  <h3>Top Selling Products</h3>
+
+  {Object.entries(
+    orders.reduce((acc, order) => {
+      (order.items || []).forEach((item) => {
+        const key = `${item.name} (${item.size})`;
+        acc[key] = (acc[key] || 0) + Number(item.qty || 0);
+      });
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([product, qty]) => (
+      <div className="top-product-row" key={product}>
+        <span>{product}</span>
+        <strong>{qty} sold</strong>
+      </div>
+    ))}
+</div>
+<div className="top-products-card">
+  <h3>Low Stock Alerts</h3>
+
+  {filteredProducts
+    .filter((product) => product.stock_status === "Low Stock")
+    .slice(0, 8)
+    .map((product) => (
+      <div className="top-product-row" key={product.id}>
+        <span>
+          {product.code} — {product.name}
+        </span>
+
+        <strong style={{ color: "#ff4d4f" }}>
+          Low Stock
+        </strong>
+      </div>
+    ))}
+
+  {filteredProducts.filter(
+    (product) => product.stock_status === "Low Stock"
+  ).length === 0 && (
+    <p style={{ color: "#999" }}>
+      No low stock products currently
+    </p>
+  )}
+</div>
     {orders.length === 0 ? (
       <p className="no-orders">No orders yet</p>
     ) : (
