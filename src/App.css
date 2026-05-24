@@ -1517,7 +1517,10 @@ body {
 .admin-metric-card strong {
   color: white;
   font-size: 1.6rem;
+  line-height: 1;
+  white-space: nowrap;
 }
+
 .orders-dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -1888,11 +1891,28 @@ body {
     min-height: 120px;
   }
 
-  .admin-metric-card strong {
-    font-size: 28px;
-    line-height: 1.1;
-    word-break: break-word;
-  }
+  .admin-metrics-grid {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.admin-metric-card {
+  padding: 10px 4px;
+  min-height: 90px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-metric-card span {
+  font-size: 0.65rem;
+  line-height: 1.05;
+}
+
+.admin-metric-card strong {
+  font-size: 0.9rem;
+  line-height: 1;
+  white-space: nowrap;
+}
 
   .orders-admin-panel {
     padding: 18px 10px;
@@ -2013,22 +2033,64 @@ body {
   }
 
   .admin-metrics-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 6px !important;
+}
+
+.admin-metric-card {
+  min-height: 85px !important;
+  padding: 8px 4px !important;
+  overflow: hidden !important;
+}
+
+.admin-metric-card span {
+  font-size: 10px !important;
+  line-height: 1.05 !important;
+}
+
+.admin-metric-card strong {
+  font-size: 16px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+}
+}
+@media (max-width: 768px) and (orientation: portrait) {
+  .product-card {
+    min-height: auto !important;
   }
 
-  .admin-metric-card {
-    min-height: 105px !important;
-    padding: 12px 8px !important;
+  .product-card .description,
+  .product-card .desc,
+  .product-card .category {
+    display: none !important;
   }
 
-  .admin-metric-card span {
+  .product-card h3 {
+    font-size: 15px !important;
+    line-height: 1 !important;
+    margin: 4px 0 !important;
+  }
+
+  .product-card .size {
+    font-size: 14px !important;
+    margin: 2px 0 !important;
+  }
+
+  .admin-price-label {
+    font-size: 11px !important;
+    margin-top: 4px !important;
+  }
+
+  .admin-calculated-price {
     font-size: 12px !important;
-    line-height: 1.15 !important;
+    line-height: 1 !important;
   }
 
   .admin-metric-card strong {
-    font-size: 24px !important;
-    line-height: 1.05 !important;
+    font-size: 18px !important;
+  }
+
+  .admin-metric-card span {
+    font-size: 10px !important;
   }
 }
