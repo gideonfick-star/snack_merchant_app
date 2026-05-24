@@ -1898,3 +1898,33 @@ body {
     padding: 18px 10px;
   }
 }
+@media (max-width: 1024px) and (orientation: landscape) {
+  .product-card {
+    min-height: auto;
+  }
+
+  .product-card h3,
+  .product-card .product-name {
+    font-size: 16px;
+    line-height: 1.1;
+  }
+
+  .product-card .desc,
+  .product-card .description {
+    display: none;
+  }
+
+  .admin-price-label,
+  .admin-calculated-price {
+    font-size: 12px;
+  }
+
+  .admin-price-input {
+    padding: 6px 8px;
+    font-size: 13px;
+  }
+
+  .product-footer {
+    margin-top: 6px;
+  }
+}
