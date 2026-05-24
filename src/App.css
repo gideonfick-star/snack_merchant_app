@@ -1940,3 +1940,34 @@ body {
     margin: 0 auto;
   }
 }
+@media (max-width: 768px) and (orientation: portrait) {
+  .admin-mode .product-card .price {
+    display: none !important;
+  }
+
+  .admin-nav-tabs button {
+    padding: 9px 14px;
+    font-size: 13px;
+    min-width: auto;
+  }
+
+  .admin-metrics-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px;
+  }
+
+  .admin-metric-card {
+    padding: 12px 6px;
+    min-height: 95px;
+  }
+
+  .admin-metric-card span {
+    font-size: 12px;
+    line-height: 1.15;
+  }
+
+  .admin-metric-card strong {
+    font-size: 22px;
+    line-height: 1.05;
+  }
+}
