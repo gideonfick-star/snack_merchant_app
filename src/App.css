@@ -1867,3 +1867,34 @@ body {
     padding-bottom: 74px;
   }
 }
+@media (max-width: 768px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .product-card {
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  .admin-metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .admin-metric-card {
+    padding: 18px 10px;
+    min-height: 120px;
+  }
+
+  .admin-metric-card strong {
+    font-size: 28px;
+    line-height: 1.1;
+    word-break: break-word;
+  }
+
+  .orders-admin-panel {
+    padding: 18px 10px;
+  }
+}
