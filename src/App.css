@@ -2094,3 +2094,28 @@ body {
     font-size: 10px !important;
   }
 }
+@media (max-width: 768px) and (orientation: portrait) {
+  .product-card {
+    padding-bottom: 28px !important;
+  }
+
+  .product-card h3 {
+    margin-top: 14px !important;
+    margin-bottom: 8px !important;
+    line-height: 1.15 !important;
+  }
+
+  .product-card .size,
+  .product-card .product-size-top {
+    margin: 8px 0 !important;
+    line-height: 1.2 !important;
+  }
+
+  .admin-price-label {
+    margin-top: 12px !important;
+  }
+
+  .admin-calculated-price {
+    margin-bottom: 12px !important;
+  }
+}
