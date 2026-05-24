@@ -2074,10 +2074,34 @@ body {
   white-space: nowrap !important;
 }
 .admin-mode .product-card h3 {
-  font-size: 18px !important;
-  line-height: 1.2 !important;
-  margin: 10px 0 !important;
+  position: static !important;
+  display: block !important;
+  font-size: 16px !important;
+  line-height: 1.25 !important;
+  margin: 18px 0 12px 0 !important;
+  padding: 0 10px !important;
   text-align: center !important;
+  color: white !important;
+  white-space: normal !important;
+  overflow: visible !important;
+}
+
+.admin-mode .product-size-top {
+  display: block !important;
+  font-size: 18px !important;
+  margin-top: 6px !important;
+  margin-bottom: 16px !important;
+  text-align: center !important;
+  color: #d4af37 !important;
+  font-weight: bold !important;
+}
+
+.admin-mode .stock-badge {
+  display: none !important;
+}
+
+.admin-mode .product-card {
+  min-height: 620px !important;
 }
 
 .admin-mode .stock-badge {
