@@ -1997,6 +1997,19 @@ body {
     font-size: 22px;
     line-height: 1.05;
   }
+.products {
+  grid-template-columns: 1fr !important;
+  justify-items: center !important;
+}
+
+.product-card,
+.card {
+  width: 95% !important;
+  max-width: 360px !important;
+  min-height: auto !important;
+  padding: 18px !important;
+}
+
 }
 @media (max-width: 768px) and (orientation: portrait) {
   .admin-nav-tabs {
