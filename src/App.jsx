@@ -2278,6 +2278,29 @@ Number((variant.price / 1.35).toFixed(2));
   });
 }, [activeCategory, activeStock, productOptions, productStock, search]);
 
+const groupedProducts = useMemo(() => {
+  const groups = {};
+
+  filteredProducts.forEach((item) => {
+    const key = item.code;
+
+    if (!groups[key]) {
+      groups[key] = {
+        code: item.code,
+        name: item.name,
+        category: item.category,
+        desc: item.desc,
+        image: productImages[item.code],
+        variants: [],
+      };
+    }
+
+    groups[key].variants.push(item);
+  });
+
+  return Object.values(groups);
+}, [filteredProducts, productImages]);
+
   const addToCart = (product) => {
       const existing = cart.find((item) => item.id === product.id);
 
@@ -3098,7 +3121,8 @@ setShowOrderSuccess(true);
   </section>
 )}
       <main id="products" className="products">
-        {filteredProducts.map((product) => (
+        {
+        groupedProducts.map((product) => (
           <div className={`card ${isAdmin ? "admin-product-card" : ""}`} key={product.id}>
             <div className="product-image-box">
   {productImages[product.code] ? (
@@ -3204,30 +3228,32 @@ setShowOrderSuccess(true);
     {productStock[product.code] || "In Stock"}
   </div>
 ) : null}
-
 <h3>{product.name}</h3>
 
-                <p className="size product-size-top">{product.size}</p>
-                <p className="category">{product.category}</p>
-                <p className="description">{product.desc}</p>
-                        <div className="product-footer">
-              <div>
-               {!isAdmin && (
-  <p className="price">
-    R{calculateSellingPrice(
-      productPricing[getPricingKey(product.code, product.size)] ??
-        supplierWholesalePrices[getPricingKey(product.code, product.size)] ??
-        product.wholesalePrice
-    )}
-  </p>
-)}
-              </div>
+<p className="category">{product.category}</p>
+<p className="description">{product.desc}</p>
 
-              {!isAdmin && (
-  <button onClick={() => addToCart(product)}>
-    Add
-  </button>
-)}
+<div className="variant-list">
+  {product.variants.map((variant) => {
+    const variantPrice = calculateSellingPrice(
+      productPricing[getPricingKey(variant.code, variant.size)] ??
+        supplierWholesalePrices[getPricingKey(variant.code, variant.size)] ??
+        variant.wholesalePrice
+    );
+
+    return (
+      <button
+        type="button"
+        key={variant.id}
+        className="variant-row"
+        onClick={() => addToCart(variant)}
+      >
+        <span>{variant.size}</span>
+        <strong>R{variantPrice}</strong>
+      </button>
+    );
+  })}
+
             </div>
           </div>
         ))}
