@@ -2719,3 +2719,26 @@ body.admin-mode .admin-variant-row select {
     margin-top: 18px !important;
   }
 }
+.cancel-order-btn {
+  margin: 10px 0 18px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid #d9a928;
+  background: #050505;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.cancel-order-btn:hover {
+  background: #d9a928;
+  color: #000;
+}
+
+@media (max-width: 768px) {
+  .cancel-order-btn {
+    width: 100%;
+    padding: 12px 18px;
+    font-size: 15px;
+  }
+}

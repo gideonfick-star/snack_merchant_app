@@ -2306,7 +2306,31 @@ const groupedProducts = useMemo(() => {
 
   return Object.values(groups);
 }, [filteredProducts, productImages]);
+const cancelCurrentOrder = () => {
+  setCart([]);
 
+  setCustomer({
+    name: "",
+    phone: "",
+    email: "",
+    orderType: "Collection",
+    address: "",
+    notes: "",
+  });
+
+  setPaymentMethod("EFT / Proof of Payment");
+  setShowOrderConfirm(false);
+  setShowEftConfirm(false);
+  setPendingWhatsappUrl("");
+  setShowOrderSuccess(false);
+  setCartToast("Order cancelled. Your cart has been cleared.");
+
+  setTimeout(() => {
+    setCartToast("");
+  }, 2500);
+
+  window.location.hash = "#products";
+};
   const addToCart = (product) => {
       const existing = cart.find((item) => item.id === product.id);
 
@@ -3338,6 +3362,14 @@ setShowOrderSuccess(true);
 
       <section id="cart" className="cart">
         <h2>Your Cart</h2>
+        {cart.length > 0 && (
+  <button
+    className="cancel-order-btn"
+    onClick={cancelCurrentOrder}
+  >
+    Cancel Order
+  </button>
+)}
 
         {cart.length === 0 ? (
           <p className="empty">Your cart is empty.</p>
@@ -3622,6 +3654,12 @@ setShowOrderSuccess(true);
         >
           Edit Order
         </button>
+        <button
+  className="cancel-order-btn"
+  onClick={cancelCurrentOrder}
+>
+  Cancel Order
+</button>
 
         {paymentMethod !== "Pay Online" && (
   <button
