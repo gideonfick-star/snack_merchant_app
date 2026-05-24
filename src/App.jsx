@@ -3099,7 +3099,7 @@ setShowOrderSuccess(true);
 )}
       <main id="products" className="products">
         {filteredProducts.map((product) => (
-          <div className="card" key={product.id}>
+          <div className={`card ${isAdmin ? "admin-product-card" : ""}`} key={product.id}>
             <div className="product-image-box">
   {productImages[product.code] ? (
     <img

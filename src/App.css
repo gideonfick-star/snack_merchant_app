@@ -2119,3 +2119,24 @@ body {
     margin-bottom: 12px !important;
   }
 }
+@media (max-width: 768px) and (orientation: portrait) {
+  .admin-product-card {
+    width: 92% !important;
+    max-width: 360px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    min-height: 520px !important;
+  }
+
+  .admin-product-card h3 {
+    font-size: 20px !important;
+    line-height: 1.15 !important;
+    margin: 14px 0 8px !important;
+  }
+
+  .admin-product-card .product-size-top,
+  .admin-product-card .size {
+    font-size: 18px !important;
+    margin: 8px 0 !important;
+  }
+}
