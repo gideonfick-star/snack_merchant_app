@@ -3193,15 +3193,17 @@ setShowOrderSuccess(true);
 </div>
             <div className="badge">{product.code}</div>
 
-<div
-  className={`stock-badge ${
-    (productStock[product.code] || "In Stock")
-      .toLowerCase()
-      .replaceAll(" ", "_")
-  }`}
->
-  {productStock[product.code] || "In Stock"}
-</div>
+{!isAdmin ? (
+  <div
+    className={`stock-badge ${
+      (productStock[product.code] || "In Stock")
+        .toLowerCase()
+        .replaceAll(" ", "-")
+    }`}
+  >
+    {productStock[product.code] || "In Stock"}
+  </div>
+) : null}
 
 <h3>{product.name}</h3>
 
