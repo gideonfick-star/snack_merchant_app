@@ -1872,9 +1872,16 @@ body {
 }
 @media (max-width: 768px) {
   .products-grid {
-    grid-template-columns: 1fr;
-    gap: 18px;
-  }
+  grid-template-columns: 1fr !important;
+  gap: 18px !important;
+}
+
+.admin-product-card {
+  max-width: 95% !important;
+  width: 95% !important;
+  min-height: auto !important;
+  padding-bottom: 24px !important;
+}
 
   .product-card {
     max-width: 360px;
