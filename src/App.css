@@ -1971,3 +1971,64 @@ body {
     line-height: 1.05;
   }
 }
+@media (max-width: 768px) and (orientation: portrait) {
+  .admin-nav-tabs {
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+
+  .admin-nav-tabs button {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    min-width: 120px !important;
+    border-radius: 18px !important;
+  }
+
+  .admin-price-label {
+    font-size: 13px !important;
+    margin-top: 6px !important;
+  }
+
+  .admin-price-input {
+    height: 34px !important;
+    padding: 5px 8px !important;
+    font-size: 14px !important;
+  }
+
+  .admin-calculated-price {
+    font-size: 14px !important;
+    margin-top: 4px !important;
+  }
+
+  .product-card h3 {
+    font-size: 19px !important;
+    line-height: 1.05 !important;
+  }
+
+  .product-card .size,
+  .product-card .category {
+    font-size: 16px !important;
+    line-height: 1.05 !important;
+  }
+
+  .admin-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .admin-metric-card {
+    min-height: 105px !important;
+    padding: 12px 8px !important;
+  }
+
+  .admin-metric-card span {
+    font-size: 12px !important;
+    line-height: 1.15 !important;
+  }
+
+  .admin-metric-card strong {
+    font-size: 24px !important;
+    line-height: 1.05 !important;
+  }
+}
