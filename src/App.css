@@ -2341,10 +2341,10 @@ body {
   }
 
   .products .card h3 {
-    font-size: 14px !important;
-    line-height: 1.15 !important;
-    margin: 10px 0 6px !important;
-  }
+  color: #d9a928 !important;
+  font-weight: 900 !important;
+  text-shadow: 0 0 8px rgba(217, 169, 40, 0.18);
+}
 
   .products .card .category {
     font-size: 10px !important;
@@ -2381,6 +2381,7 @@ body {
     border-radius: 7px !important;
   }
 }
+
 .products .card h3 {
   color: #d9a928 !important;
   font-weight: 900 !important;
@@ -2438,4 +2439,11 @@ body {
 
 .stock-badge {
   font-weight: 900 !important;
+}
+.products .card h3,
+.card h3,
+.product-card h3 {
+  color: #d9a928 !important;
+  font-weight: 900 !important;
+  text-shadow: 0 0 8px rgba(217, 169, 40, 0.2) !important;
 }
