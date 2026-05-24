@@ -2073,6 +2073,32 @@ body {
   line-height: 1 !important;
   white-space: nowrap !important;
 }
+.admin-mode .product-card h3 {
+  font-size: 18px !important;
+  line-height: 1.2 !important;
+  margin: 10px 0 !important;
+  text-align: center !important;
+}
+
+.admin-mode .stock-badge {
+  display: none !important;
+}
+
+.admin-mode .product-size-top {
+  font-size: 18px !important;
+  margin-bottom: 10px !important;
+}
+
+.admin-mode .category,
+.admin-mode .description,
+.admin-mode .desc {
+  font-size: 14px !important;
+  line-height: 1.3 !important;
+}
+
+.admin-mode .product-card {
+  min-height: 540px !important;
+}
 }
 @media (max-width: 768px) and (orientation: portrait) {
   .product-card {
