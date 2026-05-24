@@ -2241,9 +2241,14 @@ const productOptions = useMemo(() => {
       const pricingKey = getPricingKey(product.code, variant.size);
 
       const wholesalePrice =
-       productPricing[pricingKey] ??
-supplierWholesalePrices[pricingKey] ??
-Number((variant.price / 1.35).toFixed(2));
+        productPricing[pricingKey] ??
+        supplierWholesalePrices[pricingKey] ??
+        Number((variant.price / 1.35).toFixed(2));
+
+      const stockStatus =
+        productStock[pricingKey] ??
+        productStock[product.code] ??
+        "In Stock";
 
       return {
         id: `${product.code}-${variant.size}`,
@@ -2254,17 +2259,18 @@ Number((variant.price / 1.35).toFixed(2));
         size: variant.size,
         wholesalePrice,
         price: calculateSellingPrice(wholesalePrice),
+        stockStatus,
       };
     })
   );
-}, [productPricing]);
+}, [productPricing, productStock]);
 
   const filteredProducts = useMemo(() => {
   return productOptions.filter((item) => {
     const matchesCategory =
       activeCategory === "All" || item.category === activeCategory;
 
-    const stockStatus = productStock[item.code] || "In Stock";
+    const stockStatus = item.stockStatus || productStock[item.code] || "In Stock";
 
     const matchesStock =
       activeStock === "All Stock" || stockStatus === activeStock;
@@ -2601,7 +2607,7 @@ const total = productTotal + deliveryFee;
     message += "\nORDER:\n";
 
     cart.forEach((item) => {
-      const stockStatus = productStock[item.code] || "In Stock";
+      const stockStatus = item.stockStatus || productStock[item.code] || "In Stock";
 
       message += `• ${item.code} - ${item.name} (${item.size}) x ${
         item.qty
@@ -2906,7 +2912,7 @@ setShowOrderSuccess(true);
 
 {adminView === "products" && (
   <p className="product-count">
-    Showing {filteredProducts.length} product options
+    Showing {groupedProducts.length} products
   </p>
 )}
    {isAdmin && adminView === "orders" && (
@@ -3120,141 +3126,210 @@ setShowOrderSuccess(true);
     )}
   </section>
 )}
-      <main id="products" className="products">
-        {
-        groupedProducts.map((product) => (
-          <div className={`card ${isAdmin ? "admin-product-card" : ""}`} key={product.id}>
+      <main
+  id="products"
+  className={isAdmin ? "products admin-products-grid" : "products"}
+>
+        {groupedProducts.map((product) => (
+          <div
+            className={`card ${isAdmin ? "admin-product-card" : ""}`}
+            key={product.code}
+          >
             <div className="product-image-box">
-  {productImages[product.code] ? (
-    <img
-      src={productImages[product.code]}
-       alt={product.name}
-       className="product-image"
-        onClick={() =>
-           setSelectedImage({
-            src: productImages[product.code],
-            alt: product.name,
-    })
-  }
-/>
-  ) : (
-    <div className="image-placeholder">
-      No photo yet
-    </div>
-  )}
-{isAdmin && (
-  <div className="stock-admin">
-    <label className="upload-label">
-      Add Photo
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
-          const file = e.target.files[0];
+              {productImages[product.code] ? (
+                <img
+                  src={productImages[product.code]}
+                  alt={product.name}
+                  className="product-image"
+                  onClick={() =>
+                    setSelectedImage({
+                      src: productImages[product.code],
+                      alt: product.name,
+                    })
+                  }
+                />
+              ) : (
+                <div className="image-placeholder">No photo yet</div>
+              )}
 
-          if (file) {
-            uploadProductImage(product.code, file);
-          }
-        }}
-      />
-    </label>
+              {isAdmin && (
+                <div className="stock-admin">
+                  <label className="upload-label">
+                    Add Photo
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files[0];
 
-    <label>Stock Status</label>
+                        if (file) {
+                          uploadProductImage(product.code, file);
+                        }
+                      }}
+                    />
+                  </label>
 
-    <select
-      value={productStock[product.code] || "In Stock"}
-      onChange={async (e) => {
-        const newStatus = e.target.value;
+                  <label>Overall Stock Status</label>
 
-        setProductStock({
-          ...productStock,
-          [product.code]: newStatus,
-        });
+                  <select
+                    value={productStock[product.code] || "In Stock"}
+                    onChange={async (e) => {
+                      const newStatus = e.target.value;
 
-        try {
-          await axios.post(`${API_BASE_URL}/product-stock`, {
-            productCode: product.code,
-              stockStatus: newStatus,
-          });
-        } catch (err) {
-          console.error("Failed to save stock:", err);
-        }
-      }}
-    >
-      <option>In Stock</option>
-      <option>Low Stock</option>
-      <option>Available on Order</option>
-      <option>Seasonal</option>
-    </select>
-    <label className="admin-price-label">
-  Wholesale Price
-</label>
+                      setProductStock({
+                        ...productStock,
+                        [product.code]: newStatus,
+                      });
 
-<input
-  className="admin-price-input"
-  type="number"
-  step="0.01"
-  value={product.wholesalePrice?.toFixed(2) || ""}
-  onChange={(e) => {
-    const key = getPricingKey(product.code, product.size);
+                      try {
+                        await axios.post(`${API_BASE_URL}/product-stock`, {
+                          productCode: product.code,
+                          stockStatus: newStatus,
+                        });
+                      } catch (err) {
+                        console.error("Failed to save stock:", err);
+                      }
+                    }}
+                  >
+                    <option>In Stock</option>
+                    <option>Low Stock</option>
+                    <option>Available on Order</option>
+                    <option>Seasonal</option>
+                  </select>
+                </div>
+              )}
+            </div>
 
-    setProductPricing({
-      ...productPricing,
-      [key]: Number(e.target.value),
-    });
-    axios.post(`${API_BASE_URL}/product-pricing`, {
-  key,
-  wholesalePrice: Number(e.target.value),
-});
-  }}
-/>
-
-<p className="admin-calculated-price">
-  Selling Price: R{calculateSellingPrice(product.wholesalePrice)}
-</p>
-  </div>
-)}
-</div>
             <div className="badge">{product.code}</div>
 
-{!isAdmin ? (
-  <div
-    className={`stock-badge ${
-      (productStock[product.code] || "In Stock")
-        .toLowerCase()
-        .replaceAll(" ", "-")
-    }`}
-  >
-    {productStock[product.code] || "In Stock"}
-  </div>
-) : null}
-<h3>{product.name}</h3>
+            {!isAdmin ? (
+              <div
+                className={`stock-badge ${
+                  (productStock[product.code] || "In Stock")
+                    .toLowerCase()
+                    .replaceAll(" ", "-")
+                }`}
+              >
+                {productStock[product.code] || "In Stock"}
+              </div>
+            ) : null}
 
-<p className="category">{product.category}</p>
-<p className="description">{product.desc}</p>
+            <h3>{product.name}</h3>
 
-<div className="variant-list">
-  {product.variants.map((variant) => {
-    const variantPrice = calculateSellingPrice(
-      productPricing[getPricingKey(variant.code, variant.size)] ??
-        supplierWholesalePrices[getPricingKey(variant.code, variant.size)] ??
-        variant.wholesalePrice
-    );
+            <p className="category">{product.category}</p>
+            <p className="description">{product.desc}</p>
 
-    return (
-      <button
-        type="button"
-        key={variant.id}
-        className="variant-row"
-        onClick={() => addToCart(variant)}
-      >
-        <span>{variant.size}</span>
-        <strong>R{variantPrice}</strong>
-      </button>
-    );
-  })}
+            {isAdmin ? (
+              <div className="admin-variant-panel">
+                <div className="admin-variant-header">
+                  <span>Size</span>
+                  <span>Wholesale</span>
+                  <span>Selling</span>
+                  <span>Status</span>
+                </div>
 
-            </div>
+                {product.variants.map((variant) => {
+                  const key = getPricingKey(variant.code, variant.size);
+
+                  const wholesaleValue =
+                    productPricing[key] ??
+                    supplierWholesalePrices[key] ??
+                    variant.wholesalePrice ??
+                    0;
+
+                  const sellingPrice = calculateSellingPrice(
+                    Number(wholesaleValue || 0)
+                  );
+
+                  const variantStockStatus =
+                    productStock[key] ??
+                    productStock[variant.code] ??
+                    "In Stock";
+
+                  return (
+                    <div className="admin-variant-row" key={variant.id}>
+                      <strong>{variant.size}</strong>
+
+                      <input
+                        className="admin-variant-input"
+                        type="number"
+                        step="0.01"
+                        value={wholesaleValue}
+                        onChange={async (e) => {
+                          const newWholesale = Number(e.target.value);
+
+                          setProductPricing({
+                            ...productPricing,
+                            [key]: newWholesale,
+                          });
+
+                          try {
+                            await axios.post(`${API_BASE_URL}/product-pricing`, {
+                              key,
+                              wholesalePrice: newWholesale,
+                            });
+                          } catch (err) {
+                            console.error("Failed to save pricing:", err);
+                          }
+                        }}
+                      />
+
+                      <span>R{sellingPrice}</span>
+
+                      <select
+                        value={variantStockStatus}
+                        onChange={async (e) => {
+                          const newStatus = e.target.value;
+
+                          setProductStock({
+                            ...productStock,
+                            [key]: newStatus,
+                          });
+
+                          try {
+                            await axios.post(`${API_BASE_URL}/product-stock`, {
+                              productCode: key,
+                              stockStatus: newStatus,
+                            });
+                          } catch (err) {
+                            console.error("Failed to save stock:", err);
+                          }
+                        }}
+                      >
+                        <option>In Stock</option>
+                        <option>Low Stock</option>
+                        <option>Available on Order</option>
+                        <option>Seasonal</option>
+                      </select>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="variant-list">
+                {product.variants.map((variant) => {
+                  const variantPrice = calculateSellingPrice(
+                    productPricing[getPricingKey(variant.code, variant.size)] ??
+                      supplierWholesalePrices[
+                        getPricingKey(variant.code, variant.size)
+                      ] ??
+                      variant.wholesalePrice
+                  );
+
+                  return (
+                    <button
+                      type="button"
+                      key={variant.id}
+                      className="variant-row"
+                      onClick={() => addToCart(variant)}
+                    >
+                      <span>{variant.size}</span>
+                      <strong>R{variantPrice}</strong>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         ))}
       </main>
