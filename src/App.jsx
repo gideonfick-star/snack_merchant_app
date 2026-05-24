@@ -3219,7 +3219,11 @@ setShowOrderSuccess(true);
 </p>
               </div>
 
-              <button onClick={() => addToCart(product)}>Add</button>
+              {!isAdmin && (
+  <button onClick={() => addToCart(product)}>
+    Add
+  </button>
+)}
             </div>
           </div>
         ))}
