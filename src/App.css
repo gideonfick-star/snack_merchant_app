@@ -2381,3 +2381,61 @@ body {
     border-radius: 7px !important;
   }
 }
+.products .card h3 {
+  color: #d9a928 !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 768px) {
+  .products .card h3 {
+    font-size: 13px !important;
+    color: #d9a928 !important;
+    font-weight: 900 !important;
+  }
+
+  .variant-list::before,
+  .variant-row {
+    grid-template-columns: 44px 1fr 44px !important;
+  }
+
+  .variant-list::before {
+    font-size: 9px !important;
+    padding-left: 4px !important;
+  }
+
+  .variant-row {
+    padding: 7px 4px !important;
+  }
+
+  .variant-row span,
+  .variant-row strong {
+    font-size: 11px !important;
+  }
+
+  .variant-row strong {
+    text-align: center !important;
+  }
+
+  .variant-row::after {
+    justify-self: end !important;
+  }
+}
+.stock-badge.in-stock {
+  color: #35d07f !important;
+}
+
+.stock-badge.low-stock {
+  color: #ffb020 !important;
+}
+
+.stock-badge.available-on-order {
+  color: #4da3ff !important;
+}
+
+.stock-badge.seasonal {
+  color: #d9a928 !important;
+}
+
+.stock-badge {
+  font-weight: 900 !important;
+}
