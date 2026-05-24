@@ -1816,7 +1816,7 @@ body {
 }
 
 /* MOBILE RESPONSIVE */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .floating-side-nav {
     position: fixed !important;
     left: 0 !important;
