@@ -3210,13 +3210,15 @@ setShowOrderSuccess(true);
                 <p className="description">{product.desc}</p>
                         <div className="product-footer">
               <div>
-                <p className="price">
-  R{calculateSellingPrice(
-    productPricing[getPricingKey(product.code, product.size)] ??
-      supplierWholesalePrices[getPricingKey(product.code, product.size)] ??
-      product.wholesalePrice
-  )}
-</p>
+               {!isAdmin && (
+  <p className="price">
+    R{calculateSellingPrice(
+      productPricing[getPricingKey(product.code, product.size)] ??
+        supplierWholesalePrices[getPricingKey(product.code, product.size)] ??
+        product.wholesalePrice
+    )}
+  </p>
+)}
               </div>
 
               {!isAdmin && (
