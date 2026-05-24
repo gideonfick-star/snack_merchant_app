@@ -1928,3 +1928,15 @@ body {
     margin-top: 6px;
   }
 }
+@media (max-width: 768px) {
+  body.admin-mode .products-grid,
+  .admin-mode .products-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.admin-mode .product-card,
+  .admin-mode .product-card {
+    max-width: 360px;
+    margin: 0 auto;
+  }
+}
