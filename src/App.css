@@ -2788,3 +2788,41 @@ body.admin-mode .admin-variant-row select {
   font-size: 18px !important;
   line-height: 1.5 !important;
 }
+
+/* ================= VARIANT BUTTON ALIGNMENT FIX ================= */
+
+.variant-list::before,
+.variant-row {
+  grid-template-columns: 1fr 1fr 62px !important;
+  column-gap: 10px !important;
+}
+
+.variant-row::after {
+  justify-self: start !important;
+  width: 54px !important;
+  margin-left: 0 !important;
+}
+
+/* Mobile landscape fix */
+@media (max-width: 950px) and (orientation: landscape) {
+  .products {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    padding: 10px 10px 90px !important;
+  }
+
+  .products .card {
+    overflow: hidden !important;
+  }
+
+  .variant-list::before,
+  .variant-row {
+    grid-template-columns: 56px 1fr 58px !important;
+    column-gap: 8px !important;
+  }
+
+  .variant-row::after {
+    width: 52px !important;
+    justify-self: start !important;
+  }
+}
