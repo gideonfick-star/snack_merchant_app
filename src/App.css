@@ -2785,6 +2785,6 @@ body.admin-mode .admin-variant-row select {
 .email-textarea {
   min-height: 95px !important;
   resize: none !important;
-  font-size: 16px !important;
-  line-height: 1.4 !important;
+  font-size: 18px !important;
+  line-height: 1.5 !important;
 }
