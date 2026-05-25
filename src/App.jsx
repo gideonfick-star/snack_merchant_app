@@ -3578,7 +3578,7 @@ const payWithPayFast = async () => {
           />
           <input
             type="email"
-             placeholder="Your email address (optional)"
+             placeholder="Your email address (optional — recommended for payment confirmation)"
              value={customer.email}
               onChange={(e) =>
                setCustomer({ ...customer, email: e.target.value })
