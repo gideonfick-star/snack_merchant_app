@@ -505,8 +505,7 @@ app.post("/create-payment", async (req, res) => {
   m_payment_id: orderNumber,
 
   amount: Number(amount).toFixed(2),
-item_description: itemDescription || "Snack Merchant order items",
-  item_name: itemName || "Snack Merchant Order",
+  item_name: itemName || itemDescription || "Snack Merchant Order",
 };
 
 // ================= SIGNATURE =================

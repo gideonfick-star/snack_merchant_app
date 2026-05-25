@@ -2827,14 +2827,11 @@ const payWithPayFast = async () => {
           amount: total,
           customerName: customer.name,
           customerEmail: customer.email || "customer@example.com",
-          itemName: "The Snack Merchant Order",
-          itemDescription: orderDescription,
           orderNumber: savedOrder.order_number,
-          itemName: `Snack Merchant Order ${savedOrder.order_number}`,
-          itemDescription: cart
-  .map((item) => `${item.code} ${item.name} ${item.size} x${item.qty}`)
-  .join(", ")
-  .slice(0, 255),
+          itemName: cart
+             .map((item) => `${item.code} ${item.name} ${item.size} x${item.qty}`)
+             .join(", ")
+              .slice(0, 100),
         }),
       }
     );
