@@ -1666,10 +1666,33 @@ useEffect(() => {
   }
 
   if (window.location.pathname === "/payment-cancelled") {
-    alert("Payment was not completed. No payment was received. Please place your order again or choose EFT.");
-    window.history.replaceState({}, "", "/");
+  const pendingOrderId = localStorage.getItem("pendingPayfastOrderId");
+
+  if (pendingOrderId) {
+    fetch(`${API_BASE_URL}/orders/${pendingOrderId}/status`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        paymentStatus: "Cancelled",
+        orderStatus: "Cancelled",
+      }),
+    })
+      .then(() => {
+        localStorage.removeItem("pendingPayfastOrderId");
+        loadOrders();
+      })
+      .catch((error) => {
+        console.error("Failed to mark PayFast order as cancelled:", error);
+      });
   }
-}, []);
+
+  alert("Payment was not completed. No payment was received. Please place your order again or choose EFT.");
+  window.history.replaceState({}, "", "/");
+}
+  }
+, []);
 const supplierWholesalePrices = {
   "CNL01-100g": 22.5,
   "CNL01-1kg": 185,
@@ -2786,6 +2809,7 @@ const submitEftOrder = async () => {
 const payWithPayFast = async () => {
   try {
     const savedOrder = await saveOrderOnly();
+    localStorage.setItem("pendingPayfastOrderId", savedOrder.id);
 
     const orderDescription = cart
       .map((item) => `${item.code} ${item.name} ${item.size} x${item.qty}`)
