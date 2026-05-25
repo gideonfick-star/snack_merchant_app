@@ -3519,14 +3519,11 @@ const payWithPayFast = async () => {
             </div>
 
             <button
-             className="whatsapp"
-             onClick={() => setShowOrderConfirm(true)}
+  className="checkout-btn"
+  onClick={() => setShowOrderConfirm(true)}
 >
-            <p className="checkout-reminder">
-  Please complete your name, phone number, order type and payment method below before reviewing your order.
-</p>
-             Review Order Before Sending
-          </button>
+  Checkout
+</button>
           </>
         )}
       </section>
@@ -3674,7 +3671,7 @@ const payWithPayFast = async () => {
       className="order-confirm-content"
       onClick={(e) => e.stopPropagation()}
     >
-      <h2>Confirm Your Order</h2>
+      <h2>Review My Order</h2>
 
       <div className="confirm-customer-details">
         <p><strong>Name:</strong> {customer.name}</p>
@@ -3740,7 +3737,7 @@ const payWithPayFast = async () => {
           className="cancel-confirm-btn"
           onClick={() => setShowOrderConfirm(false)}
         >
-          Edit Order
+          Back to Checkout
         </button>
         <button
   className="cancel-order-btn"
@@ -3757,7 +3754,7 @@ const payWithPayFast = async () => {
       submitEftOrder();
     }}
   >
-    Place Order & View EFT Details
+    Submit Order
   </button>
 )}
 

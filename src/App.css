@@ -2926,3 +2926,21 @@ body.admin-mode .admin-variant-row select {
     justify-self: start !important;
   }
 }
+.checkout-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 14px;
+  border: none;
+  background: #f0b90b;
+  color: #000;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.checkout-btn:hover {
+  background: #ffd54a;
+  transform: scale(1.01);
+}
