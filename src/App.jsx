@@ -6,11 +6,11 @@ import autoTable from "jspdf-autotable";
 
 
 const WHATSAPP_NUMBER = "27687597884";
-const EFT_BANK = "FNB";
-const EFT_ACCOUNT_NAME = "HS FICK T/A THE SNACK MERCHANT";
-const EFT_ACCOUNT_NUMBER = "63210867826";
-const EFT_BRANCH_CODE = "251145";
-const EFT_SWIFT = "FIRNZAJJ";
+const EFT_BANK = "Capitec";
+const EFT_ACCOUNT_NAME = "The Snack Merchant";
+const EFT_ACCOUNT_NUMBER = "2546259586";
+const EFT_BRANCH_CODE = "470010";
+const EFT_SWIFT = "N/A";
 const EFT_REFERENCE = "Customer Name + Cell";
 const DELIVERY_TIERS = [
   { maxKg: 5, fee: 69 },
@@ -2423,16 +2423,17 @@ const buildCustomerConfirmationMessage = (order) => {
   const orderStatus = normalizeOrderStatus(order.order_status);
   const isDelivery = order.order_type === "Delivery";
   const isCollection = order.order_type === "Collection";
+  const paymentMethodLabel = order.payment_method || "-";
 
   const orderSummary = `Order Number: ${order.order_number}
 Order Total: R${order.total_amount}
 Order Type: ${order.order_type}
-Payment Method: ${order.payment_method || "-"}`;
+Payment Method: ${paymentMethodLabel}`;
 
   const deliveryDetails = isDelivery
     ? `
 
-Delivery Method: PUDO Delivery
+Delivery Method: ${DELIVERY_METHOD}
 Delivery Fee: R${order.delivery_fee || 0}
 Delivery Address: ${order.delivery_address || "Not provided"}`
     : "";
@@ -2442,51 +2443,62 @@ Delivery Address: ${order.delivery_address || "Not provided"}`
 `;
 
   if (orderStatus === "New Order") {
-    message += `Thank you for your order with The Snack Merchant 🙌
+    if (paymentMethodLabel === "EFT / Proof of Payment") {
+      message += `Thank you for your order with The Snack Merchant 🙌
 
-We have received your order and will start processing it.
+We have received your order and it is now awaiting EFT payment.
 
-${orderSummary}`;
+${orderSummary}
 
-    if (order.payment_method === "EFT / Proof of Payment") {
-      message += `
-
-Please use the EFT banking details below:
+Please complete payment using the banking details below:
 
 Bank: ${EFT_BANK}
 Account Name: ${EFT_ACCOUNT_NAME}
 Account Number: ${EFT_ACCOUNT_NUMBER}
 Branch Code: ${EFT_BRANCH_CODE}
+Reference: ${order.customer_name} ${order.customer_phone}
 
-Reference:
-${order.customer_name} ${order.customer_phone}
+Once paid, please send proof of payment on WhatsApp so we can confirm and prepare your order.`;
+    } else {
+      message += `Thank you for your order with The Snack Merchant 🙌
 
-Please send proof of payment on WhatsApp once payment has been made.`;
+We have received your order and will process it shortly.
+
+${orderSummary}`;
     }
 
     if (isCollection) {
       message += `
 
-Next step: We will confirm once your order is ready for collection.`;
+Next step: We will let you know once your order is ready for collection.`;
     }
 
     if (isDelivery) {
       message += `${deliveryDetails}
 
-Next step: Once payment is confirmed, your order will be prepared for PUDO delivery.`;
+Next step: Once payment is confirmed, your order will be prepared for delivery.`;
     }
   }
 
   if (orderStatus === "Awaiting Payment") {
-    message += `Your order is confirmed and is currently awaiting payment.
+    message += `Your order is currently awaiting payment.
 
 ${orderSummary}`;
 
-    if (order.payment_method === "EFT / Proof of Payment") {
+    if (paymentMethodLabel === "EFT / Proof of Payment") {
       message += `
 
-Current status: Awaiting EFT payment / proof of payment.
-Next step: Please send proof of payment once your EFT has been completed.`;
+Please complete EFT payment and send proof of payment on WhatsApp.
+
+Bank: ${EFT_BANK}
+Account Name: ${EFT_ACCOUNT_NAME}
+Account Number: ${EFT_ACCOUNT_NUMBER}
+Branch Code: ${EFT_BRANCH_CODE}
+Reference: ${order.customer_name} ${order.customer_phone}`;
+    } else if (paymentMethodLabel === "Pay Online") {
+      message += `
+
+Your PayFast payment has not been confirmed yet. If payment was not completed, please place a new order or choose EFT.`;
     }
 
     if (isDelivery) {
@@ -2495,23 +2507,22 @@ Next step: Please send proof of payment once your EFT has been completed.`;
   }
 
   if (orderStatus === "Paid") {
-    message += `Payment received. Thank you.
+    message += `Payment received ✅
 
-${orderSummary}
+Thank you. Your payment has been confirmed and your order is now being prepared.
 
-Current status: Paid.
-Next step: Your order will now be prepared.`;
+${orderSummary}`;
 
     if (isCollection) {
       message += `
 
-We will let you know once your order is ready for collection.`;
+Next step: We will let you know as soon as your order is ready for collection.`;
     }
 
     if (isDelivery) {
       message += `${deliveryDetails}
 
-We will prepare your order for PUDO delivery and send the waybill/tracking details via WhatsApp once dispatched.`;
+Next step: We will prepare your order for delivery and send the PUDO / tracking details once dispatched.`;
     }
   }
 
@@ -2521,27 +2532,24 @@ We will prepare your order for PUDO delivery and send the waybill/tracking detai
     if (isCollection) {
       message += `
 
-Current status: Ready for collection.
-Your order is ready for collection at the agreed collection point.
+Good news — your order is ready for collection ✅
 
-Next step: Once collected, we will close the order.`;
+Please collect your order at the agreed collection point. Once collected, we will close the order.`;
     }
 
     if (isDelivery) {
       message += `${deliveryDetails}
 
-Current status: Dispatched via PUDO.
-Your order has been dispatched via PUDO.
+Good news — your order has been dispatched ✅
 
-Next step: Your waybill/tracking number will be sent via WhatsApp.`;
+Your order is on its way via PUDO / delivery. Your waybill or tracking details will be shared with you where applicable.`;
     }
   }
 
   if (orderStatus === "Closed") {
     message += `${orderSummary}
 
-Current status: Closed.
-Your order has been completed.
+Your order has been completed ✅
 
 Thank you for supporting The Snack Merchant 🌰`;
     return message;
@@ -2550,11 +2558,9 @@ Thank you for supporting The Snack Merchant 🌰`;
   if (orderStatus === "Cancelled") {
     message += `${orderSummary}
 
-Current status: Cancelled.
 Your order has been cancelled.
 
-Thank you,
-The Snack Merchant`;
+No further action is required. If you would still like to order, please place a new order through The Snack Merchant app.`;
     return message;
   }
 
@@ -2991,7 +2997,7 @@ const payWithPayFast = async () => {
         <h2>Premium Snacks Delivered</h2>
         <p>
           Browse our full catalog, choose your preferred size and quantity, then
-          send your order directly via WhatsApp.
+          place your order securely through EFT or PayFast.
         </p>
       </section>
 
