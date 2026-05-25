@@ -1660,6 +1660,7 @@ useEffect(() => {
 
 useEffect(() => {
   if (window.location.pathname === "/payment-success") {
+    localStorage.removeItem("pendingPayfastOrderId");
     setOrderSuccessType("payfast");
     setShowOrderSuccess(true);
     window.history.replaceState({}, "", "/");
@@ -2774,6 +2775,23 @@ const validateOrderDetails = () => {
   return true;
 };
 
+
+const resetCheckoutForm = () => {
+  setCart([]);
+  setCustomer({
+    name: "",
+    phone: "",
+    email: "",
+    orderType: "Collection",
+    address: "",
+    notes: "",
+  });
+  setPaymentMethod("EFT / Proof of Payment");
+  setShowOrderConfirm(false);
+  setShowEftConfirm(false);
+  localStorage.removeItem("pendingPayfastOrderId");
+};
+
 const saveOrderOnly = async () => {
   if (!validateOrderDetails()) {
     throw new Error("Order validation failed");
@@ -2805,7 +2823,9 @@ return data.order;
 const submitEftOrder = async () => {
   try {
     await saveOrderOnly();
-    setShowEftConfirm(true);
+    setOrderSuccessType("eft");
+    setShowOrderConfirm(false);
+    setShowOrderSuccess(true);
   } catch (error) {
     console.error("EFT order error:", error);
     alert("Failed to save order. Please try again.");
@@ -2863,73 +2883,46 @@ const payWithPayFast = async () => {
         {cartToast}
       </div>
     )}
-    {showEftConfirm && (
-  <div className="eft-confirm-overlay">
-    <div className="eft-confirm-card">
-      <h2>Order Received ✅</h2>
-
-      <p>
-        Thank you for your order with The Snack Merchant. Your order has been received and saved successfully.
-      </p>
-
-      <div className="eft-highlight">
-        <strong>Please complete EFT payment using the details below.</strong>
-      </div>
-
-      <div className="eft-details">
-        <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
-        <p><span>Account Name</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
-        <p><span>Account Number</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
-        <p><span>Branch Code</span><strong>{EFT_BRANCH_CODE}</strong></p>
-        <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
-      </div>
-
-      <p className="eft-note">
-        Please send proof of payment on WhatsApp after making payment so we can confirm and prepare your order.
-      </p>
-
-      <button
-        className="eft-confirm-btn"
-        onClick={() => {
-          setShowEftConfirm(false);
-          setOrderSuccessType("eft");
-          setShowOrderSuccess(true);
-          setCart([]);
-        }}
-      >
-        Done / Continue Shopping
-      </button>
-    </div>
-  </div>
-)}
 {showOrderSuccess && (
   <div className="order-success-overlay">
     <div className="order-success-card">
       <h2>
-        {orderSuccessType === "payfast" ? "Payment Received ✅" : "Order Submitted Successfully ✅"}
+        {orderSuccessType === "payfast" ? "Payment Received ✅" : "Order Confirmed ✅"}
       </h2>
 
-      <p>
-        Thank you for your order with The Snack Merchant.
-      </p>
+      {orderSuccessType === "payfast" ? (
+        <>
+          <p>Thank you for your payment with The Snack Merchant.</p>
+          <p>Your payment was received and your order is being prepared.</p>
+        </>
+      ) : (
+        <>
+          <p>Thank you for your order with The Snack Merchant.</p>
+          <p>Please complete EFT payment using the banking details below.</p>
 
-      <p>
-        {orderSuccessType === "payfast"
-          ? "Your payment has been submitted through PayFast and your order has been received. We will prepare your order shortly."
-          : "Your order has been saved successfully. Please complete EFT payment and send proof of payment on WhatsApp."}
-      </p>
+          <div className="eft-details">
+            <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
+            <p><span>Account Name</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
+            <p><span>Account Number</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
+            <p><span>Branch Code</span><strong>{EFT_BRANCH_CODE}</strong></p>
+            <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
+          </div>
 
-      <p className="order-success-note">
-        {orderSuccessType === "payfast"
-          ? "You may now close this message or continue shopping."
-          : "Use your name and cellphone number as the payment reference."}
-      </p>
+          <p className="order-success-note">
+            Use your name and cellphone number as the payment reference.
+          </p>
+
+          <p className="order-success-note">
+            Please send proof of payment on WhatsApp after payment.
+          </p>
+        </>
+      )}
 
       <button
         className="order-success-btn"
         onClick={() => {
           setShowOrderSuccess(false);
-          setCart([]);
+          resetCheckoutForm();
         }}
       >
         Done / Continue Shopping
