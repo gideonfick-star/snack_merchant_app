@@ -2742,3 +2742,43 @@ body.admin-mode .admin-variant-row select {
     font-size: 15px;
   }
 }
+.status-select.order-new-order {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border-color: #60a5fa !important;
+}
+
+.status-select.order-awaiting-payment {
+  background: #9a3412 !important;
+  color: #ffffff !important;
+  border-color: #fb923c !important;
+}
+
+.status-select.order-paid {
+  background: #14532d !important;
+  color: #ffffff !important;
+  border-color: #4ade80 !important;
+}
+
+.status-select.order-collected-dispatched {
+  background: #6b21a8 !important;
+  color: #ffffff !important;
+  border-color: #c084fc !important;
+}
+
+
+.status-select.order-closed {
+  background: #52525b !important;
+  color: #ffffff !important;
+  border-color: #a1a1aa !important;
+}
+
+.status-select.order-cancelled {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #fca5a5 !important;
+}
+
+.status-select {
+  font-weight: 800 !important;
+}

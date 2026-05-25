@@ -2373,21 +2373,49 @@ const deliveryFee =
   customer.orderType === "Delivery"
     ? DELIVERY_TIERS.find((tier) => cartWeightKg <= tier.maxKg)?.fee || 0
     : 0;
+
+const normalizeOrderStatus = (status) => {
+  if (!status || status === "New") return "New Order";
+  if (status === "Preparing") return "Paid";
+  if (status === "Ready") return "Collected / Dispatched";
+  if (status === "Collected") return "Closed";
+  if (status === "Delivered") return "Closed";
+  return status;
+};
+
 const buildCustomerConfirmationMessage = (order) => {
-  return `Hi ${order.customer_name},
+  const orderStatus = normalizeOrderStatus(order.order_status);
+  const isDelivery = order.order_type === "Delivery";
+  const isCollection = order.order_type === "Collection";
 
-Thank you for your order with The Snack Merchant 🙌
+  const orderSummary = `Order Number: ${order.order_number}
+Order Total: R${order.total_amount}
+Order Type: ${order.order_type}
+Payment Method: ${order.payment_method || "-"}`;
 
-We have received your order:
+  const deliveryDetails = isDelivery
+    ? `
 
-Order Number: ${order.order_number}
-Total: R${order.total_amount}
-Payment Method: ${order.payment_method || "-"}
-${order.payment_method === "Payment Link"
-  ? `A secure payment link will be sent to you shortly for the final order amount.
+Delivery Method: PUDO Delivery
+Delivery Fee: R${order.delivery_fee || 0}
+Delivery Address: ${order.delivery_address || "Not provided"}`
+    : "";
 
-Once payment is completed, we will confirm and prepare your order.`
-  : `For EFT payment, please use the details below:
+  let message = `Hi ${order.customer_name},
+
+`;
+
+  if (orderStatus === "New Order") {
+    message += `Thank you for your order with The Snack Merchant 🙌
+
+We have received your order and will start processing it.
+
+${orderSummary}`;
+
+    if (order.payment_method === "EFT / Proof of Payment") {
+      message += `
+
+Please use the EFT banking details below:
 
 Bank: ${EFT_BANK}
 Account Name: ${EFT_ACCOUNT_NAME}
@@ -2397,25 +2425,141 @@ Branch Code: ${EFT_BRANCH_CODE}
 Reference:
 ${order.customer_name} ${order.customer_phone}
 
-Please send proof of payment on WhatsApp once completed.`}
-Thank you for supporting The Snack Merchant 🌰`;
-};
-const buildPaymentLinkMessage = (order) => {
-  return `Hi ${order.customer_name},
+Please send proof of payment on WhatsApp once payment has been made.`;
+    }
 
-Thank you for your order with The Snack Merchant 🙌
+    if (order.payment_method === "Payment Link") {
+      message += `
+
+You selected Payment Link.
+We will send you a secure payment link shortly.`;
+    }
+
+    if (order.payment_method === "Pay on Collection") {
+      message += `
+
+You selected Pay on Collection.
+Payment can be made when you collect your order.`;
+    }
+
+    if (isCollection) {
+      message += `
+
+Next step: We will confirm once your order is ready for collection.`;
+    }
+
+    if (isDelivery) {
+      message += `${deliveryDetails}
+
+Next step: Once payment is confirmed, your order will be prepared for PUDO delivery.`;
+    }
+  }
+
+  if (orderStatus === "Awaiting Payment") {
+    message += `Your order is confirmed and is currently awaiting payment.
+
+${orderSummary}`;
+
+    if (order.payment_method === "EFT / Proof of Payment") {
+      message += `
+
+Current status: Awaiting EFT payment / proof of payment.
+Next step: Please send proof of payment once your EFT has been completed.`;
+    }
+
+    if (order.payment_method === "Payment Link") {
+      message += `
+
+Current status: Awaiting payment link payment.
 
 Please complete payment using the secure payment link below:
-
 [PASTE PAYMENT LINK HERE]
 
-Order Number: ${order.order_number}
-Amount Due: R${order.total_amount}
+Next step: Once payment is received, we will prepare your order.`;
+    }
 
-Once payment is completed, we will confirm and prepare your order.
+    if (order.payment_method === "Pay on Collection") {
+      message += `
+
+Current status: Order confirmed for collection.
+Next step: Payment can be made when collecting your order.`;
+    }
+
+    if (isDelivery) {
+      message += deliveryDetails;
+    }
+  }
+
+  if (orderStatus === "Paid") {
+    message += `Payment received. Thank you.
+
+${orderSummary}
+
+Current status: Paid.
+Next step: Your order will now be prepared.`;
+
+    if (isCollection) {
+      message += `
+
+We will let you know once your order is ready for collection.`;
+    }
+
+    if (isDelivery) {
+      message += `${deliveryDetails}
+
+We will prepare your order for PUDO delivery and send the waybill/tracking details via WhatsApp once dispatched.`;
+    }
+  }
+
+  if (orderStatus === "Collected / Dispatched") {
+    message += `${orderSummary}`;
+
+    if (isCollection) {
+      message += `
+
+Current status: Ready for collection.
+Your order is ready for collection at the agreed collection point.
+
+Next step: Once collected, we will close the order.`;
+    }
+
+    if (isDelivery) {
+      message += `${deliveryDetails}
+
+Current status: Dispatched via PUDO.
+Your order has been dispatched via PUDO.
+
+Next step: Your waybill/tracking number will be sent via WhatsApp.`;
+    }
+  }
+
+  if (orderStatus === "Closed") {
+    message += `${orderSummary}
+
+Current status: Closed.
+Your order has been completed.
 
 Thank you for supporting The Snack Merchant 🌰`;
+    return message;
+  }
+
+  if (orderStatus === "Cancelled") {
+    message += `${orderSummary}
+
+Current status: Cancelled.
+Your order has been cancelled.
+
+Thank you,
+The Snack Merchant`;
+    return message;
+  }
+
+  message += `
+
+The Snack Merchant 🌰`;
+  return message;
 };
+
 const generateInvoicePDF = (order) => {
   const doc = new jsPDF();
 
@@ -2645,14 +2789,64 @@ const total = productTotal + deliveryFee;
     });
 
    if (paymentMethod === "EFT / Proof of Payment") {
- message += `
+message += `
 
-━━━━━━━━━━━━━━━
+________________
 ORDER TOTAL: R${total}
-━━━━━━━━━━━━━━━
+________________
 
-Payment Method: ${paymentMethod}
+PAYMENT INSTRUCTIONS:
+Please send proof of payment via WhatsApp.
+
+Bank: FNB
+Account Name: The Snack Merchant
 Reference: ${customer.name} ${customer.phone}
+
+`;
+
+if (customer.orderType === "Delivery") {
+message += `
+DELIVERY:
+Your order will be couriered via PUDO once payment reflects.
+Your PUDO tracking / waybill will be sent on WhatsApp.
+`;
+}
+
+} else if (paymentMethod === "Payment Link") {
+
+message += `
+
+________________
+ORDER TOTAL: R${total}
+________________
+
+PAYMENT LINK REQUESTED:
+A secure payment link must be sent to the customer via WhatsApp.
+
+`;
+
+if (customer.orderType === "Delivery") {
+message += `
+DELIVERY:
+Your order will be couriered via PUDO once payment is completed.
+Your PUDO tracking / waybill will be sent on WhatsApp.
+`;
+}
+
+} else if (paymentMethod === "Pay on Collection") {
+
+message += `
+
+________________
+ORDER TOTAL: R${total}
+________________
+
+COLLECTION PAYMENT:
+Customer will pay on collection.
+
+COLLECTION:
+Please prepare order for customer pickup.
+
 `;
 }
 
@@ -3052,27 +3246,13 @@ setShowOrderSuccess(true);
       </div>
 
       <div className="admin-order-actions">
-        <select
-          className={`status-select payment-${(order.payment_status || "Unpaid").toLowerCase()}`}
-          value={order.payment_status || "Unpaid"}
-          onChange={async (e) => {
-            const newPaymentStatus = e.target.value;
-
-            await axios.patch(
-              `${API_BASE_URL}/orders/${order.id}/status`,
-              { paymentStatus: newPaymentStatus }
-            );
-
-            loadOrders();
-          }}
-        >
-          <option>Unpaid</option>
-          <option>Paid</option>
-        </select>
 
         <select
-          className={`status-select order-${(order.order_status || "New").toLowerCase()}`}
-          value={order.order_status || "New"}
+          className={`status-select order-${normalizeOrderStatus(order.order_status)
+  .toLowerCase()
+  .replace(/[\/\s]+/g, "-")}`}
+          value={normalizeOrderStatus(order.order_status)}
+          style={{ backgroundColor: "#111", color: "#fff", borderColor: "#d9a928" }}
           onChange={async (e) => {
             const newOrderStatus = e.target.value;
 
@@ -3084,12 +3264,12 @@ setShowOrderSuccess(true);
             loadOrders();
           }}
         >
-          <option>New</option>
-          <option>Preparing</option>
-          <option>Ready</option>
-          <option>Collected</option>
-          <option>Delivered</option>
-          <option>Cancelled</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>New Order</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Awaiting Payment</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Paid</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Collected / Dispatched</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Closed</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Cancelled</option>
         </select>
 
         <button
@@ -3104,10 +3284,10 @@ setShowOrderSuccess(true);
   className="copy-confirmation-btn"
   onClick={() => {
     navigator.clipboard.writeText(buildCustomerConfirmationMessage(order));
-    alert("Customer confirmation message copied.");
+    alert("Customer update copied.");
   }}
 >
-  Copy Confirmation
+  Copy Customer Update
 </button>
 
 <button
@@ -3116,17 +3296,7 @@ setShowOrderSuccess(true);
 >
   Download Invoice
 </button>
-{order.payment_method === "Payment Link" && (
-  <button
-    className="copy-confirmation-btn"
-    onClick={() => {
-      navigator.clipboard.writeText(buildPaymentLinkMessage(order));
-      alert("Payment link message copied.");
-    }}
-  >
-    Copy Payment Link Message
-  </button>
-)}
+  
 </div>
 
       {expandedOrderId === order.id && (
@@ -3518,10 +3688,18 @@ setShowOrderSuccess(true);
   <option value="EFT / Proof of Payment">
     EFT / Proof of Payment
   </option>
+  {customer.orderType === "Collection" && (
   <option value="Pay on Collection">
     Pay on Collection
   </option>
+)}
+
 </select>
+{customer.orderType === "Delivery" && paymentMethod === "Pay on Collection" && (
+  <p className="payment-warning">
+    Pay on Collection is not available for delivery orders.
+  </p>
+)}
           {customer.orderType === "Delivery" && (
             <input
               type="text"
