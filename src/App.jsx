@@ -3520,7 +3520,10 @@ const payWithPayFast = async () => {
 
             <button
   className="checkout-btn"
-  onClick={() => setShowOrderConfirm(true)}
+  onClick={() => {
+    if (!validateOrderDetails()) return;
+    setShowOrderConfirm(true);
+  }}
 >
   Checkout
 </button>
