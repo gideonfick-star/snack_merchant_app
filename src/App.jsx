@@ -1599,8 +1599,8 @@ const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 const [paymentMethod, setPaymentMethod] = useState("EFT / Proof of Payment");
 const [cartToast, setCartToast] = useState("");
 const [showEftConfirm, setShowEftConfirm] = useState(false);
-const [pendingWhatsappUrl, setPendingWhatsappUrl] = useState("");
 const [showOrderSuccess, setShowOrderSuccess] = useState(false);
+const [orderSuccessType, setOrderSuccessType] = useState("order");
 
 const loadProductImages = async () => {
   try {
@@ -1656,6 +1656,19 @@ useEffect(() => {
   loadProductStock();
   loadProductPricing();
   loadOrders();
+}, []);
+
+useEffect(() => {
+  if (window.location.pathname === "/payment-success") {
+    setOrderSuccessType("payfast");
+    setShowOrderSuccess(true);
+    window.history.replaceState({}, "", "/");
+  }
+
+  if (window.location.pathname === "/payment-cancelled") {
+    alert("Payment was cancelled. Your order has been saved. Please try PayFast again or choose EFT.");
+    window.history.replaceState({}, "", "/");
+  }
 }, []);
 const supplierWholesalePrices = {
   "CNL01-100g": 22.5,
@@ -2428,20 +2441,6 @@ ${order.customer_name} ${order.customer_phone}
 Please send proof of payment on WhatsApp once payment has been made.`;
     }
 
-    if (order.payment_method === "Payment Link") {
-      message += `
-
-You selected Payment Link.
-We will send you a secure payment link shortly.`;
-    }
-
-    if (order.payment_method === "Pay on Collection") {
-      message += `
-
-You selected Pay on Collection.
-Payment can be made when you collect your order.`;
-    }
-
     if (isCollection) {
       message += `
 
@@ -2465,24 +2464,6 @@ ${orderSummary}`;
 
 Current status: Awaiting EFT payment / proof of payment.
 Next step: Please send proof of payment once your EFT has been completed.`;
-    }
-
-    if (order.payment_method === "Payment Link") {
-      message += `
-
-Current status: Awaiting payment link payment.
-
-Please complete payment using the secure payment link below:
-[PASTE PAYMENT LINK HERE]
-
-Next step: Once payment is received, we will prepare your order.`;
-    }
-
-    if (order.payment_method === "Pay on Collection") {
-      message += `
-
-Current status: Order confirmed for collection.
-Next step: Payment can be made when collecting your order.`;
     }
 
     if (isDelivery) {
@@ -2643,12 +2624,12 @@ const generateInvoicePDF = (order) => {
 // ================= PAYMENT INSTRUCTIONS =================
 doc.setFontSize(13);
 
-if (order.payment_method === "Payment Link") {
+if (order.payment_method === "Pay Online") {
   doc.text("Payment Instructions", 20, finalY + 20);
 
   doc.setFontSize(11);
   doc.text(
-    "A secure payment link will be sent separately via WhatsApp.",
+    "Payment was submitted online through PayFast. Please verify payment status in PayFast before dispatch.",
     20,
     finalY + 30
   );
@@ -2732,164 +2713,77 @@ const total = productTotal + deliveryFee;
   }
 };
 
-  const sendWhatsAppOrder = async () => {
-    if (cart.length === 0) {
-      alert("Your cart is empty.");
-      return;
-    }
+  const buildOrderPayload = () => ({
+  customerName: customer.name,
+  customerPhone: customer.phone,
+  customerEmail: customer.email,
+  orderType: customer.orderType,
+  paymentMethod: paymentMethod,
+  deliveryAddress: customer.address,
+  customerNotes: customer.notes,
+  items: cart,
+  totalAmount: total,
+  deliveryFee: deliveryFee,
+});
 
-    if (!customer.name.trim() || !customer.phone.trim()) {
-      alert("Please enter your name and phone number before placing the order.");
-      return;
-    }
+const validateOrderDetails = () => {
+  if (cart.length === 0) {
+    alert("Your cart is empty.");
+    return false;
+  }
 
-    if (customer.orderType === "Delivery" && !customer.address.trim()) {
-      alert("Please enter your delivery address.");
-      return;
-    }
+  if (!customer.name.trim() || !customer.phone.trim()) {
+    alert("Please enter your name and phone number before placing the order.");
+    return false;
+  }
 
-    let message =
-      "Hello Gideon, I would like to place an order from The Snack Merchant:\n\n";
+  if (customer.orderType === "Delivery" && !customer.address.trim()) {
+    alert("Please enter your delivery address.");
+    return false;
+  }
 
-    message += "CUSTOMER DETAILS:\n";
-    message += `Name: ${customer.name}\n`;
-    message += `Phone: ${customer.phone}\n`;
-    message += `Email: ${customer.email || "Not provided"}\n`;
-    message += `Order Type: ${customer.orderType}\n`;
-    message += `Payment Method: ${paymentMethod}\n`;
-    if (paymentMethod === "Payment Link") {
-  message += `Payment Link Requested: Yes\n`;
-}
-    if (customer.orderType === "Delivery") {
-  message += `Delivery Fee: R${deliveryFee}\n`;
-}
+  return true;
+};
 
-    if (customer.orderType === "Delivery") {
-      message += `Address: ${customer.address}\n`;
-    }
+const saveOrderOnly = async () => {
+  if (!validateOrderDetails()) {
+    throw new Error("Order validation failed");
+  }
 
-    if (customer.notes.trim()) {
-      message += `Notes: ${customer.notes}\n`;
-    }
-
-    message += "\nORDER:\n";
-
-    cart.forEach((item) => {
-      const stockStatus = item.stockStatus || productStock[item.code] || "In Stock";
-
-      message += `• ${item.code} - ${item.name} (${item.size}) x ${
-        item.qty
-      } = R${item.price * item.qty}`;
-
-      if (stockStatus !== "In Stock") {
-         message += ` [${stockStatus}]`;
-      }
-
-      message += "\n";
-    });
-
-   if (paymentMethod === "EFT / Proof of Payment") {
-message += `
-
-________________
-ORDER TOTAL: R${total}
-________________
-
-PAYMENT INSTRUCTIONS:
-Please send proof of payment via WhatsApp.
-
-Bank: FNB
-Account Name: The Snack Merchant
-Reference: ${customer.name} ${customer.phone}
-
-`;
-
-if (customer.orderType === "Delivery") {
-message += `
-DELIVERY:
-Your order will be couriered via PUDO once payment reflects.
-Your PUDO tracking / waybill will be sent on WhatsApp.
-`;
-}
-
-} else if (paymentMethod === "Payment Link") {
-
-message += `
-
-________________
-ORDER TOTAL: R${total}
-________________
-
-PAYMENT LINK REQUESTED:
-A secure payment link must be sent to the customer via WhatsApp.
-
-`;
-
-if (customer.orderType === "Delivery") {
-message += `
-DELIVERY:
-Your order will be couriered via PUDO once payment is completed.
-Your PUDO tracking / waybill will be sent on WhatsApp.
-`;
-}
-
-} else if (paymentMethod === "Pay on Collection") {
-
-message += `
-
-________________
-ORDER TOTAL: R${total}
-________________
-
-COLLECTION PAYMENT:
-Customer will pay on collection.
-
-COLLECTION:
-Please prepare order for customer pickup.
-
-`;
-}
-
-    const encodedMessage = encodeURIComponent(message);
-
-    try {
-     await fetch("https://snack-merchant-app.onrender.com/orders", {
+  const response = await fetch(`${API_BASE_URL}/orders`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      customerName: customer.name,
-      customerPhone: customer.phone,
-      customerEmail: customer.email,
-      orderType: customer.orderType,
-      paymentMethod: paymentMethod,
-      deliveryAddress: customer.address,
-      customerNotes: customer.notes,
-      items: cart,
-      totalAmount: total,
-      deliveryFee: deliveryFee,
-    }),
+    body: JSON.stringify(buildOrderPayload()),
   });
 
-  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMessage}`;
+  if (!response.ok) {
+    throw new Error("Failed to save order");
+  }
 
-if (paymentMethod === "EFT / Proof of Payment") {
-  setPendingWhatsappUrl(whatsappUrl);
-  setShowEftConfirm(true);
-} else {
-  window.open(whatsappUrl, "_blank");
-setCart([]);
-setShowOrderSuccess(true);
-}
-} catch (error) {
-  console.error(error);
-  alert("Failed to save order.");
-}
-;}
+  await loadOrders();
+  return response;
+};
+
+const submitEftOrder = async () => {
+  try {
+    await saveOrderOnly();
+    setShowEftConfirm(true);
+  } catch (error) {
+    console.error("EFT order error:", error);
+    alert("Failed to save order. Please try again.");
+  }
+};
+
 const payWithPayFast = async () => {
   try {
-    await sendWhatsAppOrder(false);
+    await saveOrderOnly();
+
+    const orderDescription = cart
+      .map((item) => `${item.code} ${item.name} ${item.size} x${item.qty}`)
+      .join(" | ")
+      .slice(0, 240);
 
     const response = await fetch(
       `${API_BASE_URL}/create-payment`,
@@ -2902,6 +2796,8 @@ const payWithPayFast = async () => {
           amount: total,
           customerName: customer.name,
           customerEmail: customer.email || "customer@example.com",
+          itemName: "The Snack Merchant Order",
+          itemDescription: orderDescription,
         }),
       }
     );
@@ -2909,14 +2805,14 @@ const payWithPayFast = async () => {
     const data = await response.json();
 
     if (!data.paymentUrl) {
-      alert("Your order was saved, but the PayFast payment link could not be created. Please contact us on WhatsApp.");
+      alert("Your order was saved, but the PayFast payment link could not be created. Please contact us or choose EFT.");
       return;
     }
 
     window.location.href = data.paymentUrl;
   } catch (error) {
     console.error("PayFast error:", error);
-    alert("Payment could not be started. Please try again or use EFT / Payment Link.");
+    alert("Payment could not be started. Please try again or use EFT.");
   }
 };
  return (
@@ -2930,87 +2826,73 @@ const payWithPayFast = async () => {
     {showEftConfirm && (
   <div className="eft-confirm-overlay">
     <div className="eft-confirm-card">
-      <h2>Thank you for your order 🙌</h2>
+      <h2>Order Received ✅</h2>
 
-{paymentMethod === "Payment Link" ? (
-  <p>
-    Your order is ready to submit. A secure payment link will be sent to you on WhatsApp after your order is received.
-  </p>
-) : (
-  <p>
-    Your order is ready to submit. Please review the EFT details below before sending your order via WhatsApp.
-  </p>
-)}
+      <p>
+        Thank you for your order with The Snack Merchant. Your order has been received and saved successfully.
+      </p>
 
-      {paymentMethod === "EFT / Proof of Payment" && (
-  <>
-    <div className="eft-highlight">
-      <strong>Please complete EFT payment using the details below.</strong>
-    </div>
+      <div className="eft-highlight">
+        <strong>Please complete EFT payment using the details below.</strong>
+      </div>
 
-    <div className="eft-details">
-      <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
-      <p><span>Account Name</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
-      <p><span>Account Number</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
-      <p><span>Branch Code</span><strong>{EFT_BRANCH_CODE}</strong></p>
-      <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
-    </div>
-  </>
-)}
+      <div className="eft-details">
+        <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
+        <p><span>Account Name</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
+        <p><span>Account Number</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
+        <p><span>Branch Code</span><strong>{EFT_BRANCH_CODE}</strong></p>
+        <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
+      </div>
 
-{paymentMethod === "Payment Link" && (
-  <div className="eft-highlight">
-    <strong>
-      A secure payment link will be sent to your WhatsApp number shortly after we receive your order.
-    </strong>
-  </div>
-)}
-
-    <p className="eft-note">
-  {paymentMethod === "Payment Link"
-    ? "Please submit your order on WhatsApp. We will reply with a secure payment link for the final amount."
-    : "Please send your proof of payment on WhatsApp so we can confirm and prepare your order."}
-</p>
+      <p className="eft-note">
+        Please send proof of payment on WhatsApp after making payment so we can confirm and prepare your order.
+      </p>
 
       <button
-  className="eft-confirm-btn"
-  onClick={() => {
-    setShowEftConfirm(false);
-    window.open(pendingWhatsappUrl, "_blank");
-setCart([]);
-setShowOrderSuccess(true);
-  }}
-  
->
-  Submit Order via WhatsApp
-</button>
+        className="eft-confirm-btn"
+        onClick={() => {
+          setShowEftConfirm(false);
+          setOrderSuccessType("eft");
+          setShowOrderSuccess(true);
+          setCart([]);
+        }}
+      >
+        Done / Continue Shopping
+      </button>
     </div>
   </div>
 )}
 {showOrderSuccess && (
   <div className="order-success-overlay">
     <div className="order-success-card">
-      <h2>Order Submitted Successfully ✅</h2>
+      <h2>
+        {orderSuccessType === "payfast" ? "Payment Received ✅" : "Order Submitted Successfully ✅"}
+      </h2>
 
       <p>
         Thank you for your order with The Snack Merchant.
       </p>
 
       <p>
-        Your WhatsApp order message has been prepared successfully.
+        {orderSuccessType === "payfast"
+          ? "Your payment has been submitted through PayFast and your order has been received. We will prepare your order shortly."
+          : "Your order has been saved successfully. Please complete EFT payment and send proof of payment on WhatsApp."}
       </p>
 
       <p className="order-success-note">
-  {paymentMethod === "Payment Link"
-    ? "A secure payment link will be sent to you on WhatsApp shortly after we receive your order."
-    : "For EFT orders, please send proof of payment on WhatsApp after payment is completed."}
-</p>
+        {orderSuccessType === "payfast"
+          ? "You may now close this message or continue shopping."
+          : "Use your name and cellphone number as the payment reference."}
+      </p>
 
       <button
         className="order-success-btn"
-        onClick={() => setShowOrderSuccess(false)}
+        onClick={() => {
+          setShowOrderSuccess(false);
+          setCart([]);
+        }}
       >
-        Close
+        Done / Continue Shopping
       </button>
     </div>
   </div>
@@ -3160,14 +3042,14 @@ setShowOrderSuccess(true);
   <div className="admin-metric-card">
     <span>EFT Orders</span>
     <strong>
-      {orders.filter((order) => order.payment_method !== "Payment Link").length}
+      {orders.filter((order) => order.payment_method === "EFT / Proof of Payment").length}
     </strong>
   </div>
 
   <div className="admin-metric-card">
-    <span>Payment Link Orders</span>
+    <span>PayFast Orders</span>
     <strong>
-      {orders.filter((order) => order.payment_method === "Payment Link").length}
+      {orders.filter((order) => order.payment_method === "Pay Online").length}
     </strong>
   </div>
 </div>
@@ -3681,27 +3563,13 @@ setShowOrderSuccess(true);
   value={paymentMethod}
   onChange={(e) => setPaymentMethod(e.target.value)}
 >
-<option value="Pay Online">
-  Pay Online
-</option>
-<option value="Payment Link">
-  Payment Link
-</option>
   <option value="EFT / Proof of Payment">
     EFT / Proof of Payment
   </option>
-  {customer.orderType === "Collection" && (
-  <option value="Pay on Collection">
-    Pay on Collection
+  <option value="Pay Online">
+    Pay Online with PayFast
   </option>
-)}
-
 </select>
-{customer.orderType === "Delivery" && paymentMethod === "Pay on Collection" && (
-  <p className="payment-warning">
-    Pay on Collection is not available for delivery orders.
-  </p>
-)}
           {customer.orderType === "Delivery" && (
             <input
               type="text"
@@ -3731,7 +3599,7 @@ setShowOrderSuccess(true);
   <p><strong>Branch Code:</strong> {EFT_BRANCH_CODE}</p>
   <p><strong>Reference:</strong> Your name + cellphone number</p>
   <p className="eft-static-note">
-    Please send proof of payment via WhatsApp after payment.
+    For EFT orders, please send proof of payment via WhatsApp after payment.
   </p>
 </div>
 <div className="app-link-box">
@@ -3841,15 +3709,15 @@ setShowOrderSuccess(true);
   Cancel Order
 </button>
 
-        {paymentMethod !== "Pay Online" && (
+        {paymentMethod === "EFT / Proof of Payment" && (
   <button
     className="confirm-send-btn"
     onClick={() => {
       setShowOrderConfirm(false);
-      sendWhatsAppOrder();
+      submitEftOrder();
     }}
   >
-    Confirm & Send
+    Place Order & View EFT Details
   </button>
 )}
 
@@ -3861,7 +3729,7 @@ setShowOrderSuccess(true);
       payWithPayFast();
     }}
   >
-    Pay Online with PayFast
+    Place Order & Pay with PayFast
   </button>
 )}
       </div>
