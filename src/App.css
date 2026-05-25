@@ -2865,3 +2865,64 @@ body.admin-mode .admin-variant-row select {
     margin-left: 0 !important;
   }
 }
+/* ================= FINAL VARIANT ALIGNMENT FIX ================= */
+
+/* Desktop: force Add column left inside card */
+.variant-list::before,
+.variant-row {
+  grid-template-columns: 70px 80px 50px !important;
+  justify-content: start !important;
+  column-gap: 14px !important;
+}
+
+.variant-row::after {
+  justify-self: start !important;
+  width: 48px !important;
+  height: 30px !important;
+  margin-left: 0 !important;
+}
+
+/* Mobile portrait: keep 2-column product layout, but prevent overflow */
+@media (max-width: 768px) and (orientation: portrait) {
+  .variant-list::before,
+  .variant-row {
+    grid-template-columns: 45px 55px 44px !important;
+    column-gap: 6px !important;
+  }
+
+  .variant-row::after {
+    width: 40px !important;
+    height: 26px !important;
+    font-size: 10px !important;
+  }
+}
+
+/* Mobile landscape: cards are too narrow, use 1 product per row */
+@media (max-width: 950px) and (orientation: landscape) {
+  .products {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    padding: 12px 14px 95px !important;
+  }
+
+  .products .card {
+    width: 92% !important;
+    max-width: 420px !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+  }
+
+  .variant-list::before,
+  .variant-row {
+    grid-template-columns: 65px 75px 50px !important;
+    justify-content: start !important;
+    column-gap: 12px !important;
+  }
+
+  .variant-row::after {
+    width: 46px !important;
+    height: 28px !important;
+    font-size: 11px !important;
+    justify-self: start !important;
+  }
+}
