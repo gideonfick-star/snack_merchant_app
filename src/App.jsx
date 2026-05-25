@@ -2889,7 +2889,9 @@ setShowOrderSuccess(true);
 ;}
 const payWithPayFast = async () => {
   try {
-        const response = await fetch(
+    await sendWhatsAppOrder(false);
+
+    const response = await fetch(
       `${API_BASE_URL}/create-payment`,
       {
         method: "POST",
@@ -2907,14 +2909,14 @@ const payWithPayFast = async () => {
     const data = await response.json();
 
     if (!data.paymentUrl) {
-      alert("Could not create payment link.");
+      alert("Your order was saved, but the PayFast payment link could not be created. Please contact us on WhatsApp.");
       return;
     }
 
     window.location.href = data.paymentUrl;
   } catch (error) {
     console.error("PayFast error:", error);
-    alert("Payment could not be started.");
+    alert("Payment could not be started. Please try again or use EFT / Payment Link.");
   }
 };
  return (
