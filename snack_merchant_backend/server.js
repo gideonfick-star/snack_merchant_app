@@ -461,7 +461,7 @@ app.post("/create-payment", async (req, res) => {
 };
 
 // ================= SIGNATURE =================
-const passphrase = "";
+const passphrase = process.env.PAYFAST_PASSPHRASE || "";
 
 let pfOutput = "";
 
