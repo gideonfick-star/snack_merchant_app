@@ -3576,14 +3576,14 @@ const payWithPayFast = async () => {
               setCustomer({ ...customer, phone: e.target.value })
             }
           />
-          <input
-            type="email"
-             placeholder="Email address (optional — recommended for payment confirmation)"
-             value={customer.email}
-              onChange={(e) =>
-               setCustomer({ ...customer, email: e.target.value })
-            }
-          />
+          <textarea
+  className="email-textarea"
+  placeholder="Email address (optional — recommended for payment confirmation)"
+  value={customer.email}
+  onChange={(e) =>
+    setCustomer({ ...customer, email: e.target.value })
+  }
+/>
           <select
             value={customer.orderType}
             onChange={(e) =>
