@@ -1666,7 +1666,7 @@ useEffect(() => {
   }
 
   if (window.location.pathname === "/payment-cancelled") {
-    alert("Payment was cancelled. Your order has been saved. Please try PayFast again or choose EFT.");
+    alert("Payment was not completed. No payment was received. Please place your order again or choose EFT.");
     window.history.replaceState({}, "", "/");
   }
 }, []);
@@ -2762,8 +2762,15 @@ const saveOrderOnly = async () => {
     throw new Error("Failed to save order");
   }
 
-  await loadOrders();
-  return response;
+ const data = await response.json();
+
+if (!data.success || !data.order) {
+  throw new Error("Order could not be saved");
+}
+
+await loadOrders();
+
+return data.order;
 };
 
 const submitEftOrder = async () => {
@@ -2778,7 +2785,7 @@ const submitEftOrder = async () => {
 
 const payWithPayFast = async () => {
   try {
-    await saveOrderOnly();
+    const savedOrder = await saveOrderOnly();
 
     const orderDescription = cart
       .map((item) => `${item.code} ${item.name} ${item.size} x${item.qty}`)
@@ -2798,6 +2805,8 @@ const payWithPayFast = async () => {
           customerEmail: customer.email || "customer@example.com",
           itemName: "The Snack Merchant Order",
           itemDescription: orderDescription,
+          orderNumber: savedOrder.order_number,
+          itemName: `Snack Merchant Order ${savedOrder.order_number}`,
         }),
       }
     );

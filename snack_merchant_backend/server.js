@@ -28,6 +28,7 @@ const pool = new Pool({
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 // ================= UPLOADS FOLDER =================
 
@@ -434,11 +435,59 @@ app.post("/orders", async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+// ================= PAYFAST ITN ROUTE =================
+
+app.post("/payfast-notify", async (req, res) => {
+  try {
+    const itn = req.body;
+
+    console.log("PAYFAST ITN RECEIVED:", itn);
+
+    const orderNumber = itn.m_payment_id;
+    const paymentStatus = itn.payment_status;
+
+    if (!orderNumber) {
+      return res.status(400).send("Missing m_payment_id");
+    }
+
+    let newPaymentStatus = "Awaiting Payment";
+    let newOrderStatus = "Awaiting Payment";
+
+    if (paymentStatus === "COMPLETE") {
+      newPaymentStatus = "Paid";
+      newOrderStatus = "Paid";
+    } else if (
+      paymentStatus === "FAILED" ||
+      paymentStatus === "CANCELLED"
+    ) {
+      newPaymentStatus = paymentStatus === "FAILED" ? "Payment Failed" : "Cancelled";
+      newOrderStatus = paymentStatus === "FAILED" ? "Payment Failed" : "Cancelled";
+    }
+
+    await pool.query(
+      `
+      UPDATE public.orders
+      SET
+        payment_status = $1,
+        order_status = $2,
+        updated_at = CURRENT_TIMESTAMP
+      WHERE order_number = $3
+      `,
+      [newPaymentStatus, newOrderStatus, orderNumber]
+    );
+
+    res.status(200).send("OK");
+  } catch (err) {
+    console.error("PAYFAST ITN ERROR:", err);
+    res.status(500).send("ITN failed");
+  }
+});
+
 // ================= PAYFAST PAYMENT ROUTE =================
 
 app.post("/create-payment", async (req, res) => {
   try {
-    const { amount, customerName, customerEmail } = req.body;
+    const { amount, customerName, customerEmail, orderNumber, itemName } = req.body;
 
     const paymentData = {
   merchant_id: process.env.PAYFAST_MERCHANT_ID,
@@ -453,7 +502,7 @@ app.post("/create-payment", async (req, res) => {
   email_address:
     customerEmail || "gideonfick@gmail.com",
 
-  m_payment_id: `SM-${Date.now()}`,
+  m_payment_id: orderNumber,
 
   amount: Number(amount).toFixed(2),
 
