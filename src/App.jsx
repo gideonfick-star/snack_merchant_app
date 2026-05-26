@@ -2894,31 +2894,23 @@ const payWithPayFast = async () => {
       </h2>
 
       {orderSuccessType === "payfast" ? (
-        <>
-          <p>Thank you for your payment with The Snack Merchant.</p>
-          <p>Your payment was received and your order is being prepared.</p>
-        </>
+       <>
+  <p>Thank you. Your order has been received.</p>
+</>
       ) : (
         <>
-          <p>Thank you for your order with The Snack Merchant.</p>
-          <p>Please complete EFT payment using the banking details below.</p>
+  <div className="eft-details compact-popup">
+    <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
+    <p><span>Account</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
+    <p><span>Account No</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
+    <p><span>Branch</span><strong>{EFT_BRANCH_CODE}</strong></p>
+    <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
+  </div>
 
-          <div className="eft-details">
-            <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
-            <p><span>Account Name</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
-            <p><span>Account Number</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
-            <p><span>Branch Code</span><strong>{EFT_BRANCH_CODE}</strong></p>
-            <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
-          </div>
-
-          <p className="order-success-note">
-            Use your name and cellphone number as the payment reference.
-          </p>
-
-          <p className="order-success-note">
-            Please send proof of payment on WhatsApp after payment.
-          </p>
-        </>
+  <p className="order-success-note compact-popup">
+    Please send proof of payment on WhatsApp.
+  </p>
+</>
       )}
 
       <button

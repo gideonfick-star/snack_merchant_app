@@ -3072,3 +3072,40 @@ body.admin-mode .admin-variant-row select {
     overflow-y: auto !important;
   }
 }
+/* ===== Compact Mobile Payment Popups ===== */
+
+.compact-popup p {
+  margin: 4px 0;
+  line-height: 1.1;
+}
+
+.compact-popup {
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+
+  .order-success-card {
+    width: 88vw !important;
+    max-width: 340px !important;
+    padding: 16px !important;
+    max-height: 82vh !important;
+    overflow-y: auto !important;
+  }
+
+  .order-success-card h2 {
+    font-size: 22px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .order-success-btn {
+    margin-top: 12px !important;
+    min-height: 44px !important;
+  }
+
+  .eft-details p {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+}
