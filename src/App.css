@@ -2944,3 +2944,131 @@ body.admin-mode .admin-variant-row select {
   background: #ffd54a;
   transform: scale(1.01);
 }
+/* ================= FINAL MOBILE ORDER POPUP FIX ================= */
+
+@media (max-width: 768px) {
+  .order-success-modal,
+  .eft-confirm-modal {
+    align-items: flex-start !important;
+    padding-top: 20px !important;
+    padding-bottom: 90px !important;
+    overflow-y: auto !important;
+  }
+
+  .order-success-content,
+  .eft-confirm-content {
+    width: 82vw !important;
+    max-width: 330px !important;
+    max-height: 72vh !important;
+    overflow-y: auto !important;
+    padding: 14px 12px !important;
+    font-size: 13px !important;
+    line-height: 1 !important;
+  }
+
+  .order-success-content h2,
+  .eft-confirm-content h2 {
+    font-size: 18px !important;
+    line-height: 1 !important;
+    margin: 0 0 8px !important;
+  }
+
+  .order-success-content p,
+  .eft-confirm-content p {
+    font-size: 13px !important;
+    line-height: 1.05 !important;
+    margin: 5px 0 !important;
+  }
+
+  .bank-details,
+  .eft-bank-details,
+  .bank-row {
+    font-size: 12px !important;
+    line-height: 1 !important;
+  }
+
+  .bank-row {
+    padding: 6px 0 !important;
+  }
+
+  .order-success-content button,
+  .eft-confirm-content button {
+    width: 100% !important;
+    min-height: 40px !important;
+    margin-top: 8px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 950px) and (orientation: landscape) {
+  .order-success-content,
+  .eft-confirm-content {
+    max-height: 68vh !important;
+    max-width: 440px !important;
+    overflow-y: auto !important;
+  }
+}
+/* ================= FINAL MOBILE ORDER POPUP FIX ================= */
+
+@media (max-width: 768px) {
+  .order-success-modal,
+  .eft-confirm-modal {
+    align-items: flex-start !important;
+    padding-top: 20px !important;
+    padding-bottom: 90px !important;
+    overflow-y: auto !important;
+  }
+
+  .order-success-content,
+  .eft-confirm-content {
+    width: 82vw !important;
+    max-width: 330px !important;
+    max-height: 72vh !important;
+    overflow-y: auto !important;
+    padding: 14px 12px !important;
+    font-size: 13px !important;
+    line-height: 1 !important;
+  }
+
+  .order-success-content h2,
+  .eft-confirm-content h2 {
+    font-size: 18px !important;
+    line-height: 1 !important;
+    margin: 0 0 8px !important;
+  }
+
+  .order-success-content p,
+  .eft-confirm-content p {
+    font-size: 13px !important;
+    line-height: 1.05 !important;
+    margin: 5px 0 !important;
+  }
+
+  .bank-details,
+  .eft-bank-details,
+  .bank-row {
+    font-size: 12px !important;
+    line-height: 1 !important;
+  }
+
+  .bank-row {
+    padding: 6px 0 !important;
+  }
+
+  .order-success-content button,
+  .eft-confirm-content button {
+    width: 100% !important;
+    min-height: 40px !important;
+    margin-top: 8px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 950px) and (orientation: landscape) {
+  .order-success-content,
+  .eft-confirm-content {
+    max-height: 68vh !important;
+    max-width: 440px !important;
+    overflow-y: auto !important;
+  }
+}
