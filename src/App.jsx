@@ -2543,7 +2543,10 @@ Please collect your order at the agreed collection point. Once collected, we wil
 
 Good news — your order has been dispatched ✅
 
-Your order is on its way via PUDO / delivery. Your waybill or tracking details will be shared with you where applicable.`;
+Your order is on its way via PUDO / delivery.
+
+Your waybill / tracking details are:
+PUDO PIN:`;
     }
   }
 
@@ -3062,27 +3065,53 @@ const payWithPayFast = async () => {
 <div className="admin-metrics-grid">
   <div className="admin-metric-card">
     <span>Total Orders</span>
-    <strong>{orders.length}</strong>
+    <strong>
+      {
+        orders.filter(
+          (order) => normalizeOrderStatus(order.order_status) !== "Cancelled"
+        ).length
+      }
+    </strong>
   </div>
 
   <div className="admin-metric-card">
     <span>Total Sales</span>
     <strong>
-      R{orders.reduce((sum, order) => sum + Number(order.total_amount || 0), 0)}
+      R{
+        orders
+          .filter((order) =>
+            ["Paid", "Collected / Dispatched", "Closed"].includes(
+              normalizeOrderStatus(order.order_status)
+            )
+          )
+          .reduce((sum, order) => sum + Number(order.total_amount || 0), 0)
+      }
     </strong>
   </div>
 
   <div className="admin-metric-card">
     <span>EFT Orders</span>
     <strong>
-      {orders.filter((order) => order.payment_method === "EFT / Proof of Payment").length}
+      {
+        orders.filter(
+          (order) =>
+            order.payment_method === "EFT / Proof of Payment" &&
+            normalizeOrderStatus(order.order_status) !== "Cancelled"
+        ).length
+      }
     </strong>
   </div>
 
   <div className="admin-metric-card">
     <span>PayFast Orders</span>
     <strong>
-      {orders.filter((order) => order.payment_method === "Pay Online").length}
+      {
+        orders.filter(
+          (order) =>
+            order.payment_method === "Pay Online" &&
+            normalizeOrderStatus(order.order_status) !== "Cancelled"
+        ).length
+      }
     </strong>
   </div>
 </div>
@@ -3090,13 +3119,15 @@ const payWithPayFast = async () => {
   <h3>Top Selling Products</h3>
 
   {Object.entries(
-    orders.reduce((acc, order) => {
-      (order.items || []).forEach((item) => {
-        const key = `${item.name} (${item.size})`;
-        acc[key] = (acc[key] || 0) + Number(item.qty || 0);
-      });
-      return acc;
-    }, {})
+    orders
+      .filter((order) => normalizeOrderStatus(order.order_status) !== "Cancelled")
+      .reduce((acc, order) => {
+        (order.items || []).forEach((item) => {
+          const key = `${item.name} (${item.size})`;
+          acc[key] = (acc[key] || 0) + Number(item.qty || 0);
+        });
+        return acc;
+      }, {})
   )
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5)
