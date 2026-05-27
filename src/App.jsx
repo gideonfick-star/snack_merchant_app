@@ -2261,12 +2261,18 @@ const supplierWholesalePrices = {
 
 // === PRODUCT OPTIONS BLOCK ===
 // Replace your current productOptions useMemo block with this:
- const roundToNearestFive = (value) => {
-  return Math.round(value / 5) * 5;
+ const roundUpToNearestFive = (value) => {
+  return Math.ceil(value / 5) * 5;
 };
 
 const calculateSellingPrice = (wholesalePrice) => {
-  return roundToNearestFive(Number(wholesalePrice || 0) * 1.35);
+  const wholesale = Number(wholesalePrice || 0);
+
+  // Ensures MINIMUM 35% margin
+  // Formula: selling = wholesale / 0.65
+  const rawSellingPrice = wholesale / 0.65;
+
+  return roundUpToNearestFive(rawSellingPrice);
 };
 
 const getPricingKey = (code, size) => {
@@ -2280,7 +2286,7 @@ const productOptions = useMemo(() => {
       const wholesalePrice =
         productPricing[pricingKey] ??
         supplierWholesalePrices[pricingKey] ??
-        Number((variant.price / 1.35).toFixed(2));
+        Number(variant.price || 0);
 
       const stockStatus =
         productStock[pricingKey] ??
