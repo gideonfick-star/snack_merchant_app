@@ -3540,15 +3540,7 @@ const payWithPayFast = async () => {
               <strong>R{total}</strong>
             </div>
 
-            <button
-  className="checkout-btn"
-  onClick={() => {
-    if (!validateOrderDetails()) return;
-    setShowOrderConfirm(true);
-  }}
->
-  Checkout
-</button>
+           
           </>
         )}
       </section>
@@ -3707,9 +3699,21 @@ const payWithPayFast = async () => {
             }
           />
         </div>
+
+ <button
+  className="checkout-btn"
+  onClick={() => {
+    if (!validateOrderDetails()) return;
+    setShowOrderConfirm(true);
+  }}
+>
+  Checkout
+</button>
+
       </section>
 
-{customer.orderType === "Delivery" && (
+{customer.orderType === "Delivery" &&
+  paymentMethod === "EFT / Proof of Payment" && (
   <div className="eft-static-box">
   <h3>EFT Banking Details</h3>
   <p><strong>Bank:</strong> {EFT_BANK}</p>
