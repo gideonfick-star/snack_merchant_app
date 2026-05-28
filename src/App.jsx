@@ -2752,18 +2752,32 @@ const total = productTotal + deliveryFee;
   }
 };
 
-  const buildOrderPayload = () => ({
-  customerName: customer.name,
-  customerPhone: customer.phone,
-  customerEmail: customer.email,
-  orderType: customer.orderType,
-  paymentMethod: paymentMethod,
-  deliveryAddress: customer.address,
-  customerNotes: customer.notes,
-  items: cart,
-  totalAmount: total,
-  deliveryFee: deliveryFee,
-});
+  const buildOrderPayload = () => {
+  const orderStatus =
+    customer.orderType === "Collection"
+      ? "Pending Stock Confirmation"
+      : "Awaiting Payment";
+
+  const paymentStatus =
+    customer.orderType === "Collection"
+      ? "Pending Stock Confirmation"
+      : "Awaiting Payment";
+
+  return {
+    customerName: customer.name,
+    customerPhone: customer.phone,
+    customerEmail: customer.email,
+    orderType: customer.orderType,
+    paymentMethod: paymentMethod,
+    deliveryAddress: customer.address,
+    customerNotes: customer.notes,
+    items: cart,
+    totalAmount: total,
+    deliveryFee: deliveryFee,
+    orderStatus,
+    paymentStatus,
+  };
+};
 
 const validateOrderDetails = () => {
   if (cart.length === 0) {
