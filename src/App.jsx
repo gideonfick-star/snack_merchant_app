@@ -2912,28 +2912,42 @@ const payWithPayFast = async () => {
   <div className="order-success-overlay">
     <div className="order-success-card">
       <h2>
-        {orderSuccessType === "payfast" ? "Payment Received ✅" : "Order Confirmed ✅"}
+        {orderSuccessType === "payfast"
+  ? "Payment Received ✅"
+  : orderSuccessType === "collection"
+  ? "Collection Request Submitted ✅"
+  : "Order Confirmed ✅"}
       </h2>
 
       {orderSuccessType === "payfast" ? (
-       <>
-  <p>Thank you. Your order has been received.</p>
-</>
-      ) : (
-        <>
-  <div className="eft-details compact-popup">
-    <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
-    <p><span>Account</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
-    <p><span>Account No</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
-    <p><span>Branch</span><strong>{EFT_BRANCH_CODE}</strong></p>
-    <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
-  </div>
+  <>
+    <p>Thank you. Your payment has been received.</p>
+  </>
+) : orderSuccessType === "collection" ? (
+  <>
+    <p>
+      Thank you. Your collection request has been received.
+    </p>
 
-  <p className="order-success-note compact-popup">
-    Please send proof of payment on WhatsApp.
-  </p>
-</>
-      )}
+    <p className="order-success-note compact-popup">
+      We will confirm local stock availability before requesting payment.
+    </p>
+  </>
+) : (
+  <>
+    <div className="eft-details compact-popup">
+      <p><span>Bank</span><strong>{EFT_BANK}</strong></p>
+      <p><span>Account</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
+      <p><span>Account No</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
+      <p><span>Branch</span><strong>{EFT_BRANCH_CODE}</strong></p>
+      <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
+    </div>
+
+    <p className="order-success-note compact-popup">
+      Please send proof of payment on WhatsApp.
+    </p>
+  </>
+)}
 
       <button
         className="order-success-btn"
@@ -3648,6 +3662,9 @@ const payWithPayFast = async () => {
     setCustomer({ ...customer, email: e.target.value })
   }
 />
+<p className="checkout-helper-label">
+  Select Delivery Method
+</p>
           <select
             value={customer.orderType}
             onChange={(e) => {
@@ -3677,8 +3694,15 @@ const payWithPayFast = async () => {
   PUDO Locker Delivery
 </option>
           </select>
-          <select
+<p className="checkout-helper-label">
+  Select Payment Method
+</p>
+
+<select
   value={paymentMethod}
+
+          
+  
   onChange={(e) => setPaymentMethod(e.target.value)}
 >
   {customer.orderType === "Collection" ? (
