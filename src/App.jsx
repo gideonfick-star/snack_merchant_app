@@ -3757,13 +3757,27 @@ const payWithPayFast = async () => {
       className="order-confirm-content"
       onClick={(e) => e.stopPropagation()}
     >
-      <h2>Review My Order</h2>
+      <h2>
+  {customer.orderType === "Collection"
+    ? "Review Collection Request"
+    : "Review My Order"}
+</h2>
 
       <div className="confirm-customer-details">
         <p><strong>Name:</strong> {customer.name}</p>
         <p><strong>Phone:</strong> {customer.phone}</p>
-        <p><strong>Order Type:</strong> {customer.orderType}</p>
-        <p><strong>Payment Method:</strong> {paymentMethod}</p>
+        <p>
+  <strong>Order Type:</strong>{" "}
+  {customer.orderType === "Collection"
+    ? "Centurion Collection Request"
+    : "PUDO Locker Delivery"}
+</p>
+        <p>
+  <strong>Payment Status:</strong>{" "}
+  {customer.orderType === "Collection"
+    ? "Payment after stock confirmation"
+    : paymentMethod}
+</p>
 
         {customer.orderType === "Delivery" && (
           <p><strong>Address:</strong> {customer.address}</p>
