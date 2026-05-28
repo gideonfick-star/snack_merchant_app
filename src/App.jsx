@@ -2846,7 +2846,9 @@ return data.order;
 const submitEftOrder = async () => {
   try {
     await saveOrderOnly();
-    setOrderSuccessType("eft");
+    setOrderSuccessType(
+  customer.orderType === "Collection" ? "collection" : "eft"
+);
     setShowOrderConfirm(false);
     setShowOrderSuccess(true);
   } catch (error) {
@@ -3874,7 +3876,8 @@ const payWithPayFast = async () => {
   </button>
 )}
 
-{paymentMethod === "Pay Online" && (
+{customer.orderType === "Delivery" &&
+  paymentMethod === "Pay Online" && (
   <button
     className="confirm-payfast-btn"
     onClick={() => {
