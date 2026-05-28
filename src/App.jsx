@@ -3585,6 +3585,34 @@ const payWithPayFast = async () => {
 
 <section id="checkout" className="checkout">
         <h2>Checkout Details</h2>
+        <div className="checkout-notice">
+  <strong>ORDER PROCESS NOTICE</strong>
+
+  <p>
+    Orders are reviewed for stock availability before payment is finalized.
+  </p>
+
+  <ul>
+    <li>
+      Centurion Collection requests are subject to local stock availability.
+    </li>
+
+    <li>
+      If local stock is unavailable, orders may be converted to PUDO Locker
+      Delivery.
+    </li>
+
+    <li>
+      Delivery fees and payment instructions will be confirmed before payment
+      is requested.
+    </li>
+
+    <li>
+      Customers will receive confirmation and payment guidance after order
+      review.
+    </li>
+  </ul>
+</div>
 
         <div className="checkout-grid">
           <input
@@ -3614,23 +3642,51 @@ const payWithPayFast = async () => {
 />
           <select
             value={customer.orderType}
-            onChange={(e) =>
-              setCustomer({ ...customer, orderType: e.target.value })
-            }
+            onChange={(e) => {
+  const selectedOrderType = e.target.value;
+
+  setCustomer({
+    ...customer,
+    orderType: selectedOrderType,
+    address:
+      selectedOrderType === "Delivery"
+        ? customer.address
+        : "",
+  });
+
+  if (selectedOrderType === "Collection") {
+    setPaymentMethod("Pay After Confirmation");
+  } else {
+    setPaymentMethod("EFT / Proof of Payment");
+  }
+}}
           >
-            <option value="Collection">Collection</option>
-            <option value="Delivery">Delivery</option>
+            <option value="Collection">
+  Centurion Collection Request
+</option>
+
+<option value="Delivery">
+  PUDO Locker Delivery
+</option>
           </select>
           <select
   value={paymentMethod}
   onChange={(e) => setPaymentMethod(e.target.value)}
 >
-  <option value="EFT / Proof of Payment">
-    EFT / Proof of Payment
+  {customer.orderType === "Collection" ? (
+  <option value="Pay After Confirmation">
+    Pay After Stock Confirmation
   </option>
-  <option value="Pay Online">
-    Pay Online with PayFast
-  </option>
+) : (
+  <>
+    <option value="EFT / Proof of Payment">
+      EFT / Proof of Payment
+    </option>
+    <option value="Pay Online">
+      Pay Online with PayFast
+    </option>
+  </>
+)}
 </select>
           {customer.orderType === "Delivery" && (
             <input
@@ -3653,7 +3709,8 @@ const payWithPayFast = async () => {
         </div>
       </section>
 
-<div className="eft-static-box">
+{customer.orderType === "Delivery" && (
+  <div className="eft-static-box">
   <h3>EFT Banking Details</h3>
   <p><strong>Bank:</strong> {EFT_BANK}</p>
   <p><strong>Account Name:</strong> {EFT_ACCOUNT_NAME}</p>
@@ -3663,7 +3720,7 @@ const payWithPayFast = async () => {
   <p className="eft-static-note">
     For EFT orders, please send proof of payment via WhatsApp after payment.
   </p>
-</div>
+</div>)}
 <div className="app-link-box">
   
   <img
@@ -3779,7 +3836,9 @@ const payWithPayFast = async () => {
       submitEftOrder();
     }}
   >
-    Submit Order
+    {customer.orderType === "Collection"
+  ? "Submit Collection Request"
+  : "Proceed With Order"}
   </button>
 )}
 
