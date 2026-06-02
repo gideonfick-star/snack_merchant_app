@@ -3337,7 +3337,30 @@ const payWithPayFast = async () => {
   .toLowerCase()
   .replace(/[\/\s]+/g, "-")}`}
           value={normalizeOrderStatus(order.order_status)}
-          style={{ backgroundColor: "#111", color: "#fff", borderColor: "#d9a928" }}
+          style={{
+  backgroundColor:
+    normalizeOrderStatus(order.order_status) === "Pending Stock Confirmation"
+      ? "#b45309"
+      : normalizeOrderStatus(order.order_status) === "Collection Approved"
+      ? "#1d4ed8"
+      : normalizeOrderStatus(order.order_status) === "Converted to PUDO Delivery"
+      ? "#7e22ce"
+      : normalizeOrderStatus(order.order_status) === "Awaiting Payment"
+      ? "#ca8a04"
+      : normalizeOrderStatus(order.order_status) === "Paid"
+      ? "#15803d"
+      : normalizeOrderStatus(order.order_status) === "Ready for Collection"
+      ? "#0f766e"
+      : normalizeOrderStatus(order.order_status) === "Dispatched"
+      ? "#1e3a8a"
+      : normalizeOrderStatus(order.order_status) === "Closed"
+      ? "#166534"
+      : normalizeOrderStatus(order.order_status) === "Cancelled"
+      ? "#991b1b"
+      : "#111",
+  color: "#fff",
+  borderColor: "#d9a928",
+}}
           onChange={async (e) => {
             const newOrderStatus = e.target.value;
 
@@ -3349,16 +3372,45 @@ const payWithPayFast = async () => {
             loadOrders();
           }}
         >
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>New Order</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Pending Stock Confirmation</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Collection Approved</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Converted to PUDO Delivery</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Awaiting Payment</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Paid</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Ready for Collection</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Dispatched</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Closed</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Cancelled</option>
+         <option style={{ backgroundColor: "#111", color: "#fff" }}>
+  New Order
+</option>
+
+<option style={{ backgroundColor: "#b45309", color: "#fff" }}>
+  Pending Stock Confirmation
+</option>
+
+<option style={{ backgroundColor: "#1d4ed8", color: "#fff" }}>
+  Collection Approved
+</option>
+
+<option style={{ backgroundColor: "#7e22ce", color: "#fff" }}>
+  Converted to PUDO Delivery
+</option>
+
+<option style={{ backgroundColor: "#ca8a04", color: "#fff" }}>
+  Awaiting Payment
+</option>
+
+<option style={{ backgroundColor: "#15803d", color: "#fff" }}>
+  Paid
+</option>
+
+<option style={{ backgroundColor: "#0f766e", color: "#fff" }}>
+  Ready for Collection
+</option>
+
+<option style={{ backgroundColor: "#1e3a8a", color: "#fff" }}>
+  Dispatched
+</option>
+
+<option style={{ backgroundColor: "#166534", color: "#fff" }}>
+  Closed
+</option>
+
+<option style={{ backgroundColor: "#991b1b", color: "#fff" }}>
+  Cancelled
+</option>
          </select>
 
         <button
