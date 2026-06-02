@@ -2439,21 +2439,34 @@ const buildCustomerConfirmationMessage = (order) => {
   const paymentMethodLabel = order.payment_method || "-";
 
   const orderTotal = Number(order.total_amount || 0);
-  const deliveryFee = Number(order.delivery_fee || 0);
-  const revisedTotal = orderTotal;
+  const savedDeliveryFee = Number(order.delivery_fee || 0);
+
+  // If a Collection order is converted to PUDO but no delivery fee has been saved yet,
+  // show the minimum PUDO fee so the customer understands the revised payable amount.
+  const convertedPudoFee =
+    savedDeliveryFee > 0 ? savedDeliveryFee : DELIVERY_TIERS[0]?.fee || 69;
+
+  const convertedPudoTotal =
+    orderStatus === "Converted to PUDO Delivery" && isCollection
+      ? orderTotal + convertedPudoFee
+      : orderTotal;
+
+  const orderTypeLabel = isCollection
+    ? "Centurion Collection Request"
+    : "PUDO Locker Delivery";
+
+  const formatMoney = (value) => Number(value || 0).toFixed(2);
 
   const orderSummary = `Order Number: ${order.order_number}
-Order Total: R${orderTotal.toFixed(2)}
-Order Type: ${
-    isCollection ? "Centurion Collection Request" : "PUDO Locker Delivery"
-  }
+Order Total: R${formatMoney(orderTotal)}
+Order Type: ${orderTypeLabel}
 Payment Method: ${paymentMethodLabel}`;
 
   const deliveryDetails = isDelivery
     ? `
 
 Delivery Method: ${DELIVERY_METHOD}
-Delivery Fee: R${deliveryFee.toFixed(2)}
+Delivery Fee: R${formatMoney(savedDeliveryFee)}
 Delivery Address: ${order.delivery_address || "Not provided"}`
     : "";
 
@@ -2463,23 +2476,23 @@ Account Number: ${EFT_ACCOUNT_NUMBER}
 Branch Code: ${EFT_BRANCH_CODE}
 Reference: ${order.customer_name} ${order.customer_phone}`;
 
-  let message = `Dear ${order.customer_name},
+  let message = `Hi ${order.customer_name},
 
 `;
 
   if (orderStatus === "New Order") {
     if (isCollection) {
-      message += `Thank you for your order with The Snack Merchant.
+      message += `Thank you for your Collection Request with The Snack Merchant 🙌
 
-We have received your Centurion Collection Request and are currently checking local stock availability.
+We have received your request and are checking local Centurion stock availability.
 
 ${orderSummary}
 
-No payment is required at this stage. Once stock availability has been confirmed, we will contact you with the next steps regarding payment and collection arrangements.
+No payment is required yet.
 
-We appreciate your patience and thank you for choosing The Snack Merchant.`;
+Next step: We will confirm local stock availability and then send payment instructions if approved.`;
     } else if (paymentMethodLabel === "EFT / Proof of Payment") {
-      message += `Thank you for your order with The Snack Merchant.
+      message += `Thank you for your order with The Snack Merchant 🙌
 
 We have received your order and it is now awaiting EFT payment.
 
@@ -2492,7 +2505,7 @@ ${eftDetails}
 
 Once paid, please send proof of payment on WhatsApp so we can confirm and prepare your order.`;
     } else {
-      message += `Thank you for your order with The Snack Merchant.
+      message += `Thank you for your order with The Snack Merchant 🙌
 
 We have received your order and will process it shortly.
 
@@ -2502,128 +2515,104 @@ ${deliveryDetails}`;
   }
 
   if (orderStatus === "Pending Stock Confirmation") {
-    message += `Thank you for your order with The Snack Merchant.
+    message += `Thank you for your Collection Request with The Snack Merchant 🙌
 
-We have received your order and are currently verifying stock availability.
+We are currently checking local Centurion stock availability.
 
 ${orderSummary}
 
-No payment is required at this stage. Once stock availability has been confirmed, we will contact you with the next steps regarding collection or delivery and payment arrangements.
+No payment is required yet.
 
-We appreciate your patience and thank you for choosing The Snack Merchant.`;
+Next step: We will confirm whether collection stock is available. If approved, we will send payment instructions.`;
   }
 
   if (orderStatus === "Collection Approved") {
-    message += `Thank you for your order with The Snack Merchant.
+    message += `Good news — your collection request has been approved ✅
 
-We are pleased to confirm that the items requested are available and have been reserved for collection.
+Your items are available locally for Centurion collection.
 
 ${orderSummary}
 
 Total Amount Payable:
-R${orderTotal.toFixed(2)}
+R${formatMoney(orderTotal)}
 
-Your order is now awaiting payment before collection can be arranged.
+Please complete payment before collection.
 
 EFT payment details:
 ${eftDetails}
 
-Once payment has been received and verified, we will provide collection details and confirmation.
+Once paid, please send proof of payment on WhatsApp so we can confirm your collection details.
 
-If you prefer to pay online, please reply on WhatsApp and we will send a secure PayFast payment link.
-
-Thank you for your business. We look forward to serving you.`;
+If you prefer to pay online, please reply and we will send a secure PayFast payment link.`;
   }
 
   if (orderStatus === "Converted to PUDO Delivery") {
-    message += `Thank you for your order with The Snack Merchant.
+    message += `Your collection request has been reviewed.
 
-Unfortunately, one or more items requested for collection are not currently available at our Centurion collection point. To fulfil your order as quickly as possible, we need to convert the order to a PUDO Locker Delivery order.
+Unfortunately, local Centurion stock is not currently available for one or more of the requested items. To fulfil your order, it now needs to be converted to a PUDO Locker Delivery order.
 
-A PUDO delivery fee has been added to your order.
+As a result, additional PUDO delivery charges will apply.
 
 ${orderSummary}
 
-Delivery Fee:
-R${deliveryFee.toFixed(2)}
+Additional PUDO Delivery Fee:
+R${formatMoney(convertedPudoFee)}
 
-Revised Order Total Including Delivery:
-R${revisedTotal.toFixed(2)}
+Revised Total Payable Including PUDO Delivery:
+R${formatMoney(convertedPudoTotal)}
 
-To proceed, please confirm via WhatsApp on 068 759 7884 and provide your preferred PUDO locker location.
+Next step:
+Please confirm via WhatsApp on 068 759 7884 whether you would like us to proceed with the PUDO Locker Delivery order.
 
-If you do not wish to proceed with PUDO Locker Delivery, please let us know and we will cancel the order.
+Please also send your preferred PUDO locker / delivery address so we can finalise the delivery arrangement.
 
-Should we not receive confirmation within 3 business days, the order will be cancelled and any reserved stock released.
+If you do not wish to proceed, please let us know and we will cancel the order.
 
-We apologise for any inconvenience and appreciate your understanding.`;
+If we do not receive confirmation within 3 business days, the order will be cancelled and any reserved stock will be released.`;
   }
 
   if (orderStatus === "Awaiting Payment") {
     if (paymentMethodLabel === "EFT / Proof of Payment") {
-      message += `Thank you for your order with The Snack Merchant.
-
-Your order has been confirmed and is currently awaiting EFT payment.
+      message += `Your order is currently awaiting EFT payment.
 
 ${orderSummary}
 ${deliveryDetails}
 
 Total Amount Payable:
-R${orderTotal.toFixed(2)}
+R${formatMoney(orderTotal)}
 
 Please complete payment using the banking details below:
 
 ${eftDetails}
 
-Once paid, please send proof of payment on WhatsApp so we can verify payment and proceed with fulfilment of your order.
-
-Thank you for choosing The Snack Merchant.`;
+Once paid, please send proof of payment on WhatsApp so we can confirm and prepare your order.`;
     } else if (paymentMethodLabel === "Pay Online") {
-      message += `Thank you for your order with The Snack Merchant.
-
-Your order has been confirmed and is currently awaiting online payment.
+      message += `Your order is currently awaiting online payment.
 
 ${orderSummary}
 ${deliveryDetails}
 
 Total Amount Payable:
-R${orderTotal.toFixed(2)}
+R${formatMoney(orderTotal)}
 
-Please use the secure PayFast payment link provided to complete payment. Once payment has been received, we will proceed with fulfilment of your order.
-
-Thank you for choosing The Snack Merchant.`;
+Please use the secure PayFast payment link we send you to complete payment.`;
     } else {
-      message += `Thank you for your order with The Snack Merchant.
-
-Your order has been confirmed and is currently awaiting payment.
+      message += `Your order is currently awaiting payment confirmation.
 
 ${orderSummary}
 ${deliveryDetails}
 
 Total Amount Payable:
-R${orderTotal.toFixed(2)}
+R${formatMoney(orderTotal)}
 
-We will send payment instructions shortly.
-
-Thank you for choosing The Snack Merchant.`;
+We will send payment instructions shortly.`;
     }
   }
 
   if (orderStatus === "Paid") {
-    message += `Thank you for your order with The Snack Merchant.
+    message += `Payment received ✅
 
-We are pleased to confirm that payment has been received and verified successfully.
-
-${orderSummary}
-${deliveryDetails}
-
-Your order is now being prepared for collection or dispatch. We will notify you once it is ready.
-
-Thank you for your business and support.`;
-  }
-
-  if (orderStatus === "Collected / Dispatched") {
-    message += `Thank you for your order with The Snack Merchant.
+Thank you. Your payment has been confirmed and your order is now being prepared.
 
 ${orderSummary}
 ${deliveryDetails}`;
@@ -2631,62 +2620,70 @@ ${deliveryDetails}`;
     if (isCollection) {
       message += `
 
-We are pleased to confirm that your order is ready for collection / has been collected successfully.
-
-We sincerely appreciate your support and trust in The Snack Merchant and look forward to serving you again in the future.`;
+Next step: We will let you know as soon as your order is ready for collection.`;
     }
 
     if (isDelivery) {
       message += `
 
-We are pleased to confirm that your order has been dispatched.
+Next step: We will prepare your order for PUDO delivery and send the waybill / PIN details once dispatched.`;
+    }
+  }
 
-Your PUDO / delivery tracking details are:
+  if (orderStatus === "Collected / Dispatched") {
+    if (isCollection) {
+      message += `${orderSummary}
+
+Good news — your order is ready for collection ✅
+
+Please collect your order at the agreed collection point. Once collected, we will close the order.
+
+Thank you for supporting The Snack Merchant.`;
+    }
+
+    if (isDelivery) {
+      message += `${orderSummary}
+${deliveryDetails}
+
+Good news — your order has been dispatched via PUDO Locker Delivery ✅
+
+Your PUDO waybill / tracking details are:
+Waybill Number:
 PUDO PIN:
 
-We sincerely appreciate your support and trust in The Snack Merchant and look forward to serving you again in the future.`;
+Please keep the PIN safe and collect your parcel once you receive confirmation from PUDO.
+
+Thank you for supporting The Snack Merchant.`;
     }
   }
 
   if (orderStatus === "Closed") {
-    message += `Thank you for your order with The Snack Merchant.
+    message += `${orderSummary}
 
-${orderSummary}
+Your order has been completed ✅
 
-Your order has now been completed and closed successfully.
-
-We sincerely appreciate your support and hope you enjoyed your purchase. We look forward to serving you again soon.`;
+Thank you for supporting The Snack Merchant 🌰`;
     message += `
 
-Kind regards,
-
-The Snack Merchant`;
+The Snack Merchant 🌰`;
     return message;
   }
 
   if (orderStatus === "Cancelled") {
-    message += `Thank you for your order with The Snack Merchant.
+    message += `${orderSummary}
 
-${orderSummary}
+Your order has been cancelled.
 
-Unfortunately, your order has been cancelled.
-
-If you would like assistance placing a new order or have any questions regarding the cancellation, please contact us via WhatsApp on 068 759 7884.
-
-Thank you for considering The Snack Merchant and we hope to assist you again in the future.`;
+No further action is required. If you would still like to order, please place a new order through The Snack Merchant app or contact us via WhatsApp on 068 759 7884.`;
     message += `
 
-Kind regards,
-
-The Snack Merchant`;
+The Snack Merchant 🌰`;
     return message;
   }
 
   message += `
 
-Kind regards,
-
-The Snack Merchant`;
+The Snack Merchant 🌰`;
 
   return message;
 };
