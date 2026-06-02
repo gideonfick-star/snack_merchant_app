@@ -2649,9 +2649,10 @@ ${deliveryDetails}
 
 Good news — your order has been dispatched via PUDO Locker Delivery ✅
 
-Your PUDO waybill / tracking details are:
-Waybill Number:
-PUDO PIN:
+Your PUDO tracking details will be sent to you separately via WhatsApp once your parcel has been processed by PUDO.
+
+Waybill Number: To be provided
+PUDO PIN: To be provided
 
 Please keep the PIN safe. You will need it to collect your parcel from your selected PUDO locker or kiosk.
 
