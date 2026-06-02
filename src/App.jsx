@@ -2423,6 +2423,12 @@ const normalizeOrderStatus = (status) => {
   if (status === "Ready") return "Collected / Dispatched";
   if (status === "Collected") return "Closed";
   if (status === "Delivered") return "Closed";
+  if (status === "Pending Stock Confirmation")
+    return "Pending Stock Confirmation";
+  if (status === "Collection Approved") return "Collection Approved";
+  if (status === "Converted to PUDO Delivery")
+    return "Converted to PUDO Delivery";
+  if (status === "Awaiting Payment") return "Awaiting Payment";
   return status;
 };
 
@@ -2492,7 +2498,18 @@ Next step: Once payment is confirmed, your order will be prepared for delivery.`
 
 ${orderSummary}`;
 
-    if (paymentMethodLabel === "EFT / Proof of Payment") {
+    if (isCollection) {
+  message += `Thank you for your Collection Request with The Snack Merchant 🙌
+
+We have received your request and are checking local Centurion stock availability.
+
+${orderSummary}
+
+No payment is required yet.
+
+Next step: We will confirm stock availability and then send payment instructions if approved.`;
+
+} else if (paymentMethodLabel === "EFT / Proof of Payment") {
       message += `
 
 Please complete EFT payment and send proof of payment on WhatsApp.
@@ -3699,10 +3716,7 @@ const payWithPayFast = async () => {
 </p>
 
 <select
-  value={paymentMethod}
-
-          
-  
+  value={paymentMethod}       
   onChange={(e) => setPaymentMethod(e.target.value)}
 >
   {customer.orderType === "Collection" ? (
