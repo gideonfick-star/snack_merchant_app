@@ -3298,12 +3298,15 @@ const payWithPayFast = async () => {
           }}
         >
           <option style={{ backgroundColor: "#111", color: "#fff" }}>New Order</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Pending Stock Confirmation</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Collection Approved</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Converted to PUDO Delivery</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Awaiting Payment</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Paid</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Collected / Dispatched</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Closed</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Cancelled</option>
-        </select>
+         </select>
 
         <button
           className="view-items-btn"
