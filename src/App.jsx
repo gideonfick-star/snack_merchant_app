@@ -2420,7 +2420,8 @@ const deliveryFee =
 const normalizeOrderStatus = (status) => {
   if (!status || status === "New") return "New Order";
   if (status === "Preparing") return "Paid";
-  if (status === "Ready") return "Collected / Dispatched";
+  if (status === "Ready") return "Ready for Collection";
+  if (status === "Dispatched") return "Dispatched";
   if (status === "Collected") return "Closed";
   if (status === "Delivered") return "Closed";
   if (status === "Pending Stock Confirmation")
@@ -2630,19 +2631,20 @@ Next step: We will prepare your order for PUDO delivery and send the waybill / P
     }
   }
 
-  if (orderStatus === "Collected / Dispatched") {
-    if (isCollection) {
-      message += `${orderSummary}
+  if (orderStatus === "Ready for Collection") {
+  message += `${orderSummary}
 
 Good news — your order is ready for collection ✅
 
-Please collect your order at the agreed collection point. Once collected, we will close the order.
+Please collect your order at the agreed collection point.
+
+Once collected, we will close the order.
 
 Thank you for supporting The Snack Merchant.`;
-    }
+}
 
-    if (isDelivery) {
-      message += `${orderSummary}
+if (orderStatus === "Dispatched") {
+  message += `${orderSummary}
 ${deliveryDetails}
 
 Good news — your order has been dispatched via PUDO Locker Delivery ✅
@@ -2651,11 +2653,10 @@ Your PUDO waybill / tracking details are:
 Waybill Number:
 PUDO PIN:
 
-Please keep the PIN safe and collect your parcel once you receive confirmation from PUDO.
+Please keep the PIN safe. You will need it to collect your parcel from your selected PUDO locker or kiosk.
 
 Thank you for supporting The Snack Merchant.`;
-    }
-  }
+}
 
   if (orderStatus === "Closed") {
     message += `${orderSummary}
@@ -3354,7 +3355,8 @@ const payWithPayFast = async () => {
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Converted to PUDO Delivery</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Awaiting Payment</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Paid</option>
-          <option style={{ backgroundColor: "#111", color: "#fff" }}>Collected / Dispatched</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Ready for Collection</option>
+          <option style={{ backgroundColor: "#111", color: "#fff" }}>Dispatched</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Closed</option>
           <option style={{ backgroundColor: "#111", color: "#fff" }}>Cancelled</option>
          </select>
