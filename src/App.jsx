@@ -2440,7 +2440,9 @@ const buildCustomerConfirmationMessage = (order) => {
 
   const orderSummary = `Order Number: ${order.order_number}
 Order Total: R${order.total_amount}
-Order Type: ${order.order_type}
+Order Type: ${
+    isCollection ? "Centurion Collection Request" : "PUDO Locker Delivery"
+  }
 Payment Method: ${paymentMethodLabel}`;
 
   const deliveryDetails = isDelivery
@@ -2451,55 +2453,19 @@ Delivery Fee: R${order.delivery_fee || 0}
 Delivery Address: ${order.delivery_address || "Not provided"}`
     : "";
 
+  const eftDetails = `Bank: ${EFT_BANK}
+Account Name: ${EFT_ACCOUNT_NAME}
+Account Number: ${EFT_ACCOUNT_NUMBER}
+Branch Code: ${EFT_BRANCH_CODE}
+Reference: ${order.customer_name} ${order.customer_phone}`;
+
   let message = `Hi ${order.customer_name},
 
 `;
 
   if (orderStatus === "New Order") {
-    if (paymentMethodLabel === "EFT / Proof of Payment") {
-      message += `Thank you for your order with The Snack Merchant 🙌
-
-We have received your order and it is now awaiting EFT payment.
-
-${orderSummary}
-
-Please complete payment using the banking details below:
-
-Bank: ${EFT_BANK}
-Account Name: ${EFT_ACCOUNT_NAME}
-Account Number: ${EFT_ACCOUNT_NUMBER}
-Branch Code: ${EFT_BRANCH_CODE}
-Reference: ${order.customer_name} ${order.customer_phone}
-
-Once paid, please send proof of payment on WhatsApp so we can confirm and prepare your order.`;
-    } else {
-      message += `Thank you for your order with The Snack Merchant 🙌
-
-We have received your order and will process it shortly.
-
-${orderSummary}`;
-    }
-
     if (isCollection) {
-      message += `
-
-Next step: We will let you know once your order is ready for collection.`;
-    }
-
-    if (isDelivery) {
-      message += `${deliveryDetails}
-
-Next step: Once payment is confirmed, your order will be prepared for delivery.`;
-    }
-  }
-
-  if (orderStatus === "Awaiting Payment") {
-    message += `Your order is currently awaiting payment.
-
-${orderSummary}`;
-
-    if (isCollection) {
-  message += `Thank you for your Collection Request with The Snack Merchant 🙌
+      message += `Thank you for your Collection Request with The Snack Merchant 🙌
 
 We have received your request and are checking local Centurion stock availability.
 
@@ -2507,26 +2473,97 @@ ${orderSummary}
 
 No payment is required yet.
 
-Next step: We will confirm stock availability and then send payment instructions if approved.`;
+Next step: We will confirm local stock availability and then send payment instructions if approved.`;
+    } else if (paymentMethodLabel === "EFT / Proof of Payment") {
+      message += `Thank you for your order with The Snack Merchant 🙌
 
-} else if (paymentMethodLabel === "EFT / Proof of Payment") {
-      message += `
+We have received your order and it is now awaiting EFT payment.
 
-Please complete EFT payment and send proof of payment on WhatsApp.
+${orderSummary}
+${deliveryDetails}
 
-Bank: ${EFT_BANK}
-Account Name: ${EFT_ACCOUNT_NAME}
-Account Number: ${EFT_ACCOUNT_NUMBER}
-Branch Code: ${EFT_BRANCH_CODE}
-Reference: ${order.customer_name} ${order.customer_phone}`;
-    } else if (paymentMethodLabel === "Pay Online") {
-      message += `
+Please complete payment using the banking details below:
 
-Your PayFast payment has not been confirmed yet. If payment was not completed, please place a new order or choose EFT.`;
+${eftDetails}
+
+Once paid, please send proof of payment on WhatsApp so we can confirm and prepare your order.`;
+    } else {
+      message += `Thank you for your order with The Snack Merchant 🙌
+
+We have received your order and will process it shortly.
+
+${orderSummary}
+${deliveryDetails}`;
     }
+  }
 
-    if (isDelivery) {
-      message += deliveryDetails;
+  if (orderStatus === "Pending Stock Confirmation") {
+    message += `Thank you for your Collection Request with The Snack Merchant 🙌
+
+We are currently checking local Centurion stock availability.
+
+${orderSummary}
+
+No payment is required yet.
+
+Next step: We will confirm whether collection stock is available. If approved, we will send payment instructions.`;
+  }
+
+  if (orderStatus === "Collection Approved") {
+    message += `Good news — your collection request has been approved ✅
+
+Your items are available locally for Centurion collection.
+
+${orderSummary}
+
+Please complete payment before collection.
+
+EFT payment details:
+${eftDetails}
+
+Once paid, please send proof of payment on WhatsApp so we can confirm your collection details.
+
+If you prefer to pay online, please reply and we will send a PayFast payment link.`;
+  }
+
+  if (orderStatus === "Converted to PUDO Delivery") {
+    message += `Your collection request has been reviewed.
+
+Local Centurion stock is not currently available, so your order needs to be fulfilled via PUDO Locker Delivery.
+
+${orderSummary}
+${deliveryDetails}
+
+Next step:
+Please confirm your preferred PUDO locker / delivery address so we can finalize the delivery fee and payment instructions.`;
+  }
+
+  if (orderStatus === "Awaiting Payment") {
+    if (paymentMethodLabel === "EFT / Proof of Payment") {
+      message += `Your order is currently awaiting EFT payment.
+
+${orderSummary}
+${deliveryDetails}
+
+Please complete payment using the banking details below:
+
+${eftDetails}
+
+Once paid, please send proof of payment on WhatsApp so we can confirm and prepare your order.`;
+    } else if (paymentMethodLabel === "Pay Online") {
+      message += `Your order is currently awaiting online payment.
+
+${orderSummary}
+${deliveryDetails}
+
+Please use the PayFast payment link we send you to complete payment.`;
+    } else {
+      message += `Your order is currently awaiting payment confirmation.
+
+${orderSummary}
+${deliveryDetails}
+
+We will send payment instructions shortly.`;
     }
   }
 
@@ -2535,7 +2572,8 @@ Your PayFast payment has not been confirmed yet. If payment was not completed, p
 
 Thank you. Your payment has been confirmed and your order is now being prepared.
 
-${orderSummary}`;
+${orderSummary}
+${deliveryDetails}`;
 
     if (isCollection) {
       message += `
@@ -2544,14 +2582,15 @@ Next step: We will let you know as soon as your order is ready for collection.`;
     }
 
     if (isDelivery) {
-      message += `${deliveryDetails}
+      message += `
 
 Next step: We will prepare your order for delivery and send the PUDO / tracking details once dispatched.`;
     }
   }
 
   if (orderStatus === "Collected / Dispatched") {
-    message += `${orderSummary}`;
+    message += `${orderSummary}
+${deliveryDetails}`;
 
     if (isCollection) {
       message += `
@@ -2562,7 +2601,7 @@ Please collect your order at the agreed collection point. Once collected, we wil
     }
 
     if (isDelivery) {
-      message += `${deliveryDetails}
+      message += `
 
 Good news — your order has been dispatched ✅
 
@@ -2594,6 +2633,7 @@ No further action is required. If you would still like to order, please place a 
   message += `
 
 The Snack Merchant 🌰`;
+
   return message;
 };
 
