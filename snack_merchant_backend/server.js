@@ -483,6 +483,95 @@ app.post("/payfast-notify", async (req, res) => {
   }
 });
 
+// ================= ORDER PAYMENT LINK ROUTE =================
+
+app.post("/orders/:id/create-payment-link", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const orderResult = await pool.query(
+      `
+      SELECT *
+      FROM public.orders
+      WHERE id = $1
+      `,
+      [id]
+    );
+
+    if (orderResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Order not found",
+      });
+    }
+
+    const order = orderResult.rows[0];
+
+    const paymentData = {
+      merchant_id: process.env.PAYFAST_MERCHANT_ID,
+      merchant_key: process.env.PAYFAST_MERCHANT_KEY,
+
+      return_url: `${process.env.APP_URL}/payment-success`,
+      cancel_url: `${process.env.APP_URL}/payment-cancelled`,
+      notify_url: `${process.env.BACKEND_URL}/payfast-notify`,
+
+      name_first: order.customer_name || "Customer",
+      email_address: order.customer_email || "customer@example.com",
+
+      m_payment_id: order.order_number,
+      amount: Number(order.total_amount).toFixed(2),
+      item_name: `The Snack Merchant Order ${order.order_number}`,
+    };
+
+    const passphrase = process.env.PAYFAST_PASSPHRASE || "";
+
+    let pfOutput = "";
+
+    for (let key in paymentData) {
+      if (paymentData[key] !== "") {
+        pfOutput += `${key}=${encodeURIComponent(paymentData[key]).replace(
+          /%20/g,
+          "+"
+        )}&`;
+      }
+    }
+
+    pfOutput = pfOutput.slice(0, -1);
+
+    if (passphrase !== "") {
+      pfOutput += `&passphrase=${encodeURIComponent(passphrase.trim()).replace(
+        /%20/g,
+        "+"
+      )}`;
+    }
+
+    const signature = crypto
+      .createHash("md5")
+      .update(pfOutput)
+      .digest("hex");
+
+    paymentData.signature = signature;
+
+    const queryString = new URLSearchParams(paymentData).toString();
+    const paymentUrl = `${process.env.PAYFAST_URL}?${queryString}`;
+
+    res.json({
+      success: true,
+      orderId: order.id,
+      orderNumber: order.order_number,
+      totalAmount: Number(order.total_amount),
+      paymentUrl,
+    });
+  } catch (error) {
+    console.error("ORDER PAYMENT LINK ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
+
 // ================= PAYFAST PAYMENT ROUTE =================
 
 app.post("/create-payment", async (req, res) => {

@@ -1694,6 +1694,47 @@ useEffect(() => {
 }
   }
 , []);
+
+const generatePayFastLinkForOrder = async (order) => {
+  try {
+    const response = await fetch(
+      `${API_BASE_URL}/orders/${order.id}/create-payment-link`,
+      {
+        method: "POST",
+      }
+    );
+
+    const data = await response.json();
+
+    if (!data.success || !data.paymentUrl) {
+      alert("Could not generate PayFast payment link.");
+      return;
+    }
+
+    const message = `Hi ${order.customer_name}
+
+Your order has been approved and is awaiting payment.
+
+Order Number: ${data.orderNumber}
+
+Total Amount Payable: R${Number(data.totalAmount).toFixed(2)}
+
+Please complete secure online payment using the link below:
+
+${data.paymentUrl}
+
+Once payment is received we will prepare your order.
+
+The Snack Merchant 🌰`;
+
+    await navigator.clipboard.writeText(message);
+
+    alert("PayFast payment message copied.");
+  } catch (error) {
+    console.error("Generate PayFast link error:", error);
+    alert("Failed to generate PayFast payment link.");
+  }
+};
 const supplierWholesalePrices = {
   "CNL01-100g": 22.5,
   "CNL01-1kg": 185,
@@ -3437,6 +3478,13 @@ const payWithPayFast = async () => {
   onClick={() => generateInvoicePDF(order)}
 >
   Download Invoice
+</button>
+
+<button
+  className="copy-confirmation-btn"
+  onClick={() => generatePayFastLinkForOrder(order)}
+>
+  Generate PayFast Link
 </button>
   
 </div>
