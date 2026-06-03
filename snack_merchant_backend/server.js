@@ -464,17 +464,23 @@ app.post("/payfast-notify", async (req, res) => {
       newOrderStatus = paymentStatus === "FAILED" ? "Payment Failed" : "Cancelled";
     }
 
-    await pool.query(
-      `
-      UPDATE public.orders
-      SET
-        payment_status = $1,
-        order_status = $2,
-        updated_at = CURRENT_TIMESTAMP
-      WHERE order_number = $3
-      `,
-      [newPaymentStatus, newOrderStatus, orderNumber]
-    );
+   await pool.query(
+  `
+  UPDATE public.orders
+  SET
+    payment_status = CASE
+      WHEN payment_status = 'Paid' THEN payment_status
+      ELSE $1
+    END,
+    order_status = CASE
+      WHEN payment_status = 'Paid' THEN order_status
+      ELSE $2
+    END,
+    updated_at = CURRENT_TIMESTAMP
+  WHERE order_number = $3
+  `,
+  [newPaymentStatus, newOrderStatus, orderNumber]
+);
 
     res.status(200).send("OK");
   } catch (err) {

@@ -3732,12 +3732,16 @@ const payWithPayFast = async () => {
 )}
 
 
-<button
-  className="copy-confirmation-btn"
-  onClick={() => generatePayFastLinkForOrder(order)}
->
-  Generate PayFast Link
-</button>
+{!["Paid", "Closed", "Cancelled"].includes(
+  normalizeOrderStatus(order.order_status)
+) && (
+  <button
+    className="copy-confirmation-btn"
+    onClick={() => generatePayFastLinkForOrder(order)}
+  >
+    Generate PayFast Link
+  </button>
+)}
   
 </div>
 
