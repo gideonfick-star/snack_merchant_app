@@ -1593,6 +1593,7 @@ const [productStock, setProductStock] = useState({});
 const [productPricing, setProductPricing] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
 const [adminView, setAdminView] = useState("products");
+const [orderDashboardFilter, setOrderDashboardFilter] = useState("all");
 const [orders, setOrders] = useState([]);
 const [expandedOrderId, setExpandedOrderId] = useState(null);
 const [showOrderConfirm, setShowOrderConfirm] = useState(false);
@@ -1642,7 +1643,37 @@ const loadProductPricing = async () => {
     console.error("Failed to load pricing:", err);
   }
 };
+const getDashboardOrders = () => {
+  return orders.filter((order) => {
+    const status = normalizeOrderStatus(order.order_status);
 
+    if (orderDashboardFilter === "all") {
+      return status !== "Cancelled";
+    }
+
+    if (orderDashboardFilter === "pending") {
+      return ["New Order", "Pending Stock Confirmation", "Awaiting Payment"].includes(status);
+    }
+
+    if (orderDashboardFilter === "paid") {
+      return status === "Paid";
+    }
+
+    if (orderDashboardFilter === "collection") {
+      return order.order_type === "Collection" && status !== "Cancelled";
+    }
+
+    if (orderDashboardFilter === "pudo") {
+      return order.order_type === "Delivery" && status !== "Cancelled";
+    }
+
+    if (orderDashboardFilter === "cancelled") {
+      return status === "Cancelled";
+    }
+
+    return status !== "Cancelled";
+  });
+};
 const loadOrders = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/orders`);
@@ -3400,47 +3431,60 @@ const payWithPayFast = async () => {
         </div>
       </header>
 
-      <section className="intro">
-        <h2>Premium Snacks Delivered</h2>
-        <p>
-          Browse our full catalog, choose your preferred size and quantity, then
-          place your order securely through EFT or PayFast.
-        </p>
-      </section>
+      {adminView !== "orders" && (
+  <>
+    <section className="intro">
+      <h2>Premium Snacks Delivered</h2>
+      <p>
+        Browse our full catalog, choose your preferred size and quantity, then
+        place your order securely through EFT or PayFast.
+      </p>
+    </section>
 
-      <section id="search" className="search-box">
-        <input
-          type="text"
-          placeholder="Search by product, CNL code, size or category..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </section>
+    <section id="search" className="search-box">
+      <input
+        type="text"
+        placeholder="Search by product, CNL code, size or category..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+    </section>
+  </>
+)}
 
-      <section className="filters">
-        {categories.map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
-            className={activeCategory === cat ? "active" : ""}
-          >
-            {cat}
-          </button>
-        ))}
-      </section>
-        <section className="stock-filters">
-  {["All Stock", "In Stock", "Low Stock", "Available on Order", "Seasonal"].map(
-    (status) => (
-      <button
-        key={status}
-        onClick={() => setActiveStock(status)}
-        className={activeStock === status ? "active" : ""}
-      >
-        {status}
-      </button>
-    )
-  )}
-</section>
+      {adminView !== "orders" && (
+  <>
+    <section className="filters">
+      {categories.map((cat) => (
+        <button
+          key={cat}
+          onClick={() => setActiveCategory(cat)}
+          className={activeCategory === cat ? "active" : ""}
+        >
+          {cat}
+        </button>
+      ))}
+    </section>
+
+    <section className="stock-filters">
+      {[
+        "All Stock",
+        "In Stock",
+        "Low Stock",
+        "Available on Order",
+        "Seasonal",
+      ].map((status) => (
+        <button
+          key={status}
+          onClick={() => setActiveStock(status)}
+          className={activeStock === status ? "active" : ""}
+        >
+          {status}
+        </button>
+      ))}
+    </section>
+  </>
+)}
       {isAdmin && (
   <div className="admin-nav-tabs">
     <button
@@ -3474,8 +3518,11 @@ const payWithPayFast = async () => {
   </button>
 </div>
 <div className="admin-metrics-grid">
-  <div className="admin-metric-card">
-    <span>Total Orders</span>
+  <div
+  className={`admin-metric-card ${orderDashboardFilter === "all" ? "active" : ""}`}
+  onClick={() => setOrderDashboardFilter("all")}
+>
+    <span>👆 Total Orders</span>
     <strong>
       {
         orders.filter(
@@ -3500,8 +3547,11 @@ const payWithPayFast = async () => {
     </strong>
   </div>
 
-  <div className="admin-metric-card">
-  <span>Pending Payment / Stock Confirmation</span>
+  <div
+  className={`admin-metric-card ${orderDashboardFilter === "pending" ? "active" : ""}`}
+  onClick={() => setOrderDashboardFilter("pending")}
+>
+ <span>👆 Pending Payment / Stock Confirmation</span>
   <strong>
     {
       orders.filter(
@@ -3515,8 +3565,11 @@ const payWithPayFast = async () => {
   </strong>
 </div>
 
-<div className="admin-metric-card">
-  <span>Paid Orders</span>
+<div
+  className={`admin-metric-card ${orderDashboardFilter === "paid" ? "active" : ""}`}
+  onClick={() => setOrderDashboardFilter("paid")}
+>
+  <span>👆 Paid Orders</span>
   <strong>
     {
       orders.filter(
@@ -3527,6 +3580,82 @@ const payWithPayFast = async () => {
     }
   </strong>
 </div>
+
+<div
+  className={`admin-metric-card ${orderDashboardFilter === "collection" ? "active" : ""}`}
+  onClick={() => setOrderDashboardFilter("collection")}
+>
+  <span>👆 Collection Orders</span>
+  <strong>
+    {
+      orders.filter(
+        (order) =>
+          order.order_type === "Collection" &&
+          normalizeOrderStatus(order.order_status) !== "Cancelled"
+      ).length
+    }
+  </strong>
+</div>
+
+<div
+  className={`admin-metric-card ${orderDashboardFilter === "pudo" ? "active" : ""}`}
+  onClick={() => setOrderDashboardFilter("pudo")}
+>
+  <span>👆 PUDO Orders</span>
+  <strong>
+    {
+      orders.filter(
+        (order) =>
+          order.order_type === "Delivery" &&
+          normalizeOrderStatus(order.order_status) !== "Cancelled"
+      ).length
+    }
+  </strong>
+</div>
+
+<div
+  className={`admin-metric-card ${orderDashboardFilter === "cancelled" ? "active" : ""}`}
+  onClick={() => setOrderDashboardFilter("cancelled")}
+>
+  <span>👆 Cancelled Orders</span>
+  <strong>
+    {
+      orders.filter(
+        (order) =>
+          normalizeOrderStatus(order.order_status) === "Cancelled"
+      ).length
+    }
+  </strong>
+</div>
+
+<div className="admin-metric-card">
+  <span>Average Order Value</span>
+  <strong>
+    R{
+      orders.filter(
+        (order) =>
+          normalizeOrderStatus(order.order_status) !== "Cancelled"
+      ).length > 0
+        ? Math.round(
+            orders
+              .filter(
+                (order) =>
+                  normalizeOrderStatus(order.order_status) !== "Cancelled"
+              )
+              .reduce(
+                (sum, order) => sum + Number(order.total_amount || 0),
+                0
+              ) /
+              orders.filter(
+                (order) =>
+                  normalizeOrderStatus(order.order_status) !== "Cancelled"
+              ).length
+          )
+        : 0
+    }
+  </strong>
+</div>
+
 </div>
 <div className="top-products-card">
   <h3>Top Selling Products</h3>
@@ -3577,11 +3706,39 @@ const payWithPayFast = async () => {
     </p>
   )}
 </div>
-    {orders.length === 0 ? (
+<div className="dashboard-filter-summary">
+  <span>
+    Viewing:{" "}
+    {orderDashboardFilter === "all"
+      ? "All Active Orders"
+      : orderDashboardFilter === "pending"
+      ? "Pending Payment / Stock Confirmation"
+      : orderDashboardFilter === "paid"
+      ? "Paid Orders"
+      : orderDashboardFilter === "collection"
+      ? "Collection Orders"
+      : orderDashboardFilter === "pudo"
+      ? "PUDO Orders"
+      : orderDashboardFilter === "cancelled"
+      ? "Cancelled Orders"
+      : "All Active Orders"}{" "}
+    ({getDashboardOrders().length})
+  </span>
+
+  {orderDashboardFilter !== "all" && (
+    <button
+      className="clear-dashboard-filter-btn"
+      onClick={() => setOrderDashboardFilter("all")}
+    >
+      Show All Orders
+    </button>
+  )}
+</div>
+    {getDashboardOrders().length === 0 ? (
       <p className="no-orders">No orders yet</p>
     ) : (
       <div className="admin-order-cards">
-  {orders.map((order) => (
+  {getDashboardOrders().map((order) => (
     <div key={order.id} className="admin-order-card">
       <div className="admin-order-card-header">
         <div>
