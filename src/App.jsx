@@ -2734,8 +2734,29 @@ The Snack Merchant 🌰`;
 const generateInvoicePDF = (order) => {
   const doc = new jsPDF();
 
+  const orderStatus = normalizeOrderStatus(order.order_status);
+  const paymentStatus = order.payment_status || "-";
+  const isPaid = paymentStatus === "Paid" || orderStatus === "Paid";
+  const isFinal =
+    ["Paid", "Ready for Collection", "Dispatched", "Closed"].includes(orderStatus);
+
+  const invoiceTitle = isPaid || isFinal ? "PAID INVOICE" : "PRO FORMA INVOICE";
+
+  const productsTotal = (order.items || []).reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
+    0
+  );
+
+  const deliveryFee = Number(order.delivery_fee || 0);
+  const hasDeliveryFee = deliveryFee > 0;
+  const finalTotal = Number(order.total_amount || productsTotal + deliveryFee);
+
   // ================= HEADER =================
-  doc.addImage("/invoice-logo.png", "PNG", 18, 10, 28, 28);
+  try {
+    doc.addImage("/invoice-logo.png", "PNG", 18, 10, 28, 28);
+  } catch (error) {
+    console.warn("Invoice logo could not be loaded:", error);
+  }
 
   doc.setFontSize(22);
   doc.setTextColor(212, 175, 55);
@@ -2747,101 +2768,146 @@ const generateInvoicePDF = (order) => {
 
   doc.setFontSize(10);
   doc.setTextColor(80, 80, 80);
-  doc.text("https://snack-merchant-app.vercel.app/", 52, 38);
+  doc.text("WhatsApp Orders: 068 759 7884", 52, 38);
+  doc.text("https://snack-merchant-app.vercel.app/", 52, 45);
 
   // ================= INVOICE INFO =================
   doc.setFontSize(16);
-  doc.text("INVOICE", 150, 20);
+  doc.setTextColor(isPaid || isFinal ? 20 : 160, isPaid || isFinal ? 120 : 90, 20);
+  doc.text(invoiceTitle, 145, 20);
 
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Invoice #: ${order.order_number}`, 145, 30);
+  doc.text(`Date: ${new Date(order.created_at).toLocaleString()}`, 145, 38);
+
+  // ================= STATUS BOX =================
+  doc.setDrawColor(212, 175, 55);
+  doc.setLineWidth(0.4);
+  doc.rect(145, 45, 45, 25);
+
+  doc.setFontSize(9);
+  doc.text("Order Status", 148, 52);
   doc.setFontSize(11);
-  doc.text(`Invoice #: ${order.order_number}`, 150, 30);
-  doc.text(
-    `Date: ${new Date(order.created_at).toLocaleString()}`,
-    150,
-    38
-  );
+  doc.text(orderStatus || "-", 148, 59);
+
+  doc.setFontSize(9);
+  doc.text("Payment Status", 148, 65);
+  doc.setFontSize(11);
+  doc.text(paymentStatus, 148, 72);
 
   // ================= CUSTOMER DETAILS =================
   doc.setFontSize(13);
-  doc.text("Customer Details", 20, 55);
+  doc.setTextColor(212, 175, 55);
+  doc.text("Customer Details", 20, 60);
 
-  doc.setFontSize(11);
-  doc.text(`Name: ${order.customer_name}`, 20, 65);
-  doc.text(`Phone: ${order.customer_phone}`, 20, 73);
-  doc.text(
-    `Email: ${order.customer_email || "Not provided"}`,
-    20,
-    81
-  );
-  doc.text(`Order Type: ${order.order_type}`, 20, 89);
-  doc.text(
-    `Payment Method: ${order.payment_method || "-"}`,
-    20,
-    97
-  );
-  if (order.order_type === "Delivery") {
-  doc.text(
-    `Delivery Fee: R${order.delivery_fee || 0}`,
-    20,
-    105
-  );
-}
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Name: ${order.customer_name || "-"}`, 20, 70);
+  doc.text(`Phone: ${order.customer_phone || "-"}`, 20, 78);
+  doc.text(`Email: ${order.customer_email || "Not provided"}`, 20, 86);
+  doc.text(`Order Type: ${order.order_type || "-"}`, 20, 94);
+  doc.text(`Payment Method: ${order.payment_method || "-"}`, 20, 102);
+
+  if (hasDeliveryFee) {
+    doc.text(`Delivery / PUDO Fee: R${deliveryFee.toFixed(2)}`, 20, 110);
+  }
 
   // ================= ITEMS TABLE =================
   autoTable(doc, {
-    startY: order.order_type === "Delivery" ? 118 : 110,
+    startY: hasDeliveryFee ? 122 : 114,
     head: [["Product", "Size", "Qty", "Unit Price", "Line Total"]],
     body: [
-  ...order.items.map((item) => [
-    item.name,
-    item.size,
-    item.qty,
-    `R${item.price}`,
-    `R${item.price * item.qty}`,
-  ]),
-  ...(order.order_type === "Delivery"
-    ? [["PUDO Delivery", "-", 1, `R${order.delivery_fee || 0}`, `R${order.delivery_fee || 0}`]]
-    : []),
-],
+      ...(order.items || []).map((item) => {
+        const unitPrice = Number(item.price || 0);
+        const qty = Number(item.qty || 0);
+
+        return [
+          item.name || "-",
+          item.size || "-",
+          qty,
+          `R${unitPrice.toFixed(2)}`,
+          `R${(unitPrice * qty).toFixed(2)}`,
+        ];
+      }),
+      ...(hasDeliveryFee
+        ? [["PUDO Delivery", "-", 1, `R${deliveryFee.toFixed(2)}`, `R${deliveryFee.toFixed(2)}`]]
+        : []),
+    ],
+    styles: {
+      fontSize: 9,
+      cellPadding: 2,
+    },
+    headStyles: {
+      fillColor: [212, 175, 55],
+      textColor: [0, 0, 0],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: {
+      fillColor: [250, 248, 235],
+    },
   });
 
-  // ================= TOTAL =================
-  const finalY = doc.lastAutoTable.finalY + 15;
+  // ================= TOTALS =================
+  const finalY = doc.lastAutoTable.finalY + 12;
+
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Products Total: R${productsTotal.toFixed(2)}`, 130, finalY);
+
+  if (hasDeliveryFee) {
+    doc.text(`Delivery / PUDO Fee: R${deliveryFee.toFixed(2)}`, 130, finalY + 8);
+  }
 
   doc.setFontSize(14);
-  doc.text(`Total: R${order.total_amount}`, 150, finalY);
+  doc.setTextColor(212, 175, 55);
+  doc.text(`Final Total: R${finalTotal.toFixed(2)}`, 130, hasDeliveryFee ? finalY + 18 : finalY + 10);
 
-// ================= PAYMENT INSTRUCTIONS =================
-doc.setFontSize(13);
+  // ================= PAYMENT / CONFIRMATION SECTION =================
+  const paymentY = hasDeliveryFee ? finalY + 35 : finalY + 28;
 
-if (order.payment_method === "Pay Online") {
-  doc.text("Payment Instructions", 20, finalY + 20);
+  doc.setFontSize(13);
+  doc.setTextColor(212, 175, 55);
 
-  doc.setFontSize(11);
-  doc.text(
-    "Payment was submitted online through PayFast. Please verify payment status in PayFast before dispatch.",
-    20,
-    finalY + 30
-  );
-} else {
-  doc.text("EFT Banking Details", 20, finalY + 20);
+  if (isPaid || isFinal) {
+    doc.text("Payment Confirmation", 20, paymentY);
 
-  doc.setFontSize(11);
-  doc.text(`Bank: ${EFT_BANK}`, 20, finalY + 30);
-  doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, finalY + 38);
-  doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, finalY + 46);
-  doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, finalY + 54);
-}
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Payment has been received for this order.", 20, paymentY + 10);
+    doc.text("Thank you for your purchase from The Snack Merchant.", 20, paymentY + 18);
+  } else {
+    doc.text("Payment Instructions", 20, paymentY);
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+
+    doc.text("This is a pro forma invoice. Payment is required before collection or dispatch.", 20, paymentY + 10);
+
+    doc.text("EFT Banking Details:", 20, paymentY + 22);
+    doc.text(`Bank: ${EFT_BANK}`, 20, paymentY + 30);
+    doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, paymentY + 38);
+    doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, paymentY + 46);
+    doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, paymentY + 54);
+    doc.text(`Reference: ${order.customer_name || ""} ${order.customer_phone || ""}`, 20, paymentY + 62);
+
+    doc.text("For PayFast online payment, please use the secure payment link sent separately.", 20, paymentY + 74);
+  }
+
   // ================= FOOTER =================
-  doc.setFontSize(10);
-  doc.text(
-    "The Snack Merchant • Quality You Can Taste",
-    20,
-    finalY + 75
-  );
+  const pageHeight = doc.internal.pageSize.height;
+
+  doc.setDrawColor(212, 175, 55);
+  doc.line(20, pageHeight - 25, 190, pageHeight - 25);
+
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.text("The Snack Merchant • Quality You Can Taste", 20, pageHeight - 17);
+  doc.text("WhatsApp Orders: 068 759 7884", 20, pageHeight - 11);
+  doc.text("Prices and stock availability are subject to confirmation.", 110, pageHeight - 11);
 
   const blobUrl = doc.output("bloburl");
-window.open(blobUrl, "_blank");
+  window.open(blobUrl, "_blank");
 };
   const decreaseQty = (id) => {
     setCart(
