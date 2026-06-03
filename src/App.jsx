@@ -2919,7 +2919,10 @@ const total = productTotal + deliveryFee;
     customerPhone: customer.phone,
     customerEmail: customer.email,
     orderType: customer.orderType,
-    paymentMethod: paymentMethod,
+    paymentMethod:
+    customer.orderType === "Collection"
+    ? "Pending after stock confirmation"
+    : paymentMethod,
     deliveryAddress: customer.address,
     customerNotes: customer.notes,
     items: cart,
