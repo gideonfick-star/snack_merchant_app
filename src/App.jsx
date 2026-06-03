@@ -2807,7 +2807,7 @@ const generateInvoicePDF = (order) => {
   doc.text(`Phone: ${order.customer_phone || "-"}`, 20, 78);
   doc.text(`Email: ${order.customer_email || "Not provided"}`, 20, 86);
   doc.text(`Order Type: ${order.order_type || "-"}`, 20, 94);
-  doc.text(`Payment Method: ${order.payment_method || "-"}`, 20, 102);
+  doc.text(`Payment Status: ${paymentStatus}`, 20, 102);
 
   if (hasDeliveryFee) {
     doc.text(`Delivery / PUDO Fee: R${deliveryFee.toFixed(2)}`, 20, 110);
