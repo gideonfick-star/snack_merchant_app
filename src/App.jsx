@@ -3889,9 +3889,15 @@ const payWithPayFast = async () => {
 )}
 
 
-{!["Paid", "Closed", "Cancelled"].includes(
-  normalizeOrderStatus(order.order_status)
-) && (
+{![
+  "Paid",
+  "Ready for Collection",
+  "Dispatched",
+  "Collected / Dispatched",
+  "Closed",
+  "Cancelled",
+  "Payment Failed",
+].includes(normalizeOrderStatus(order.order_status)) && (
   <button
     className="copy-confirmation-btn"
     onClick={() => generatePayFastLinkForOrder(order)}
