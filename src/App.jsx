@@ -3478,9 +3478,17 @@ const payWithPayFast = async () => {
             const newOrderStatus = e.target.value;
 
             await axios.patch(
-              `${API_BASE_URL}/orders/${order.id}/status`,
-              { orderStatus: newOrderStatus }
-            );
+  `${API_BASE_URL}/orders/${order.id}/status`,
+  {
+    orderStatus: newOrderStatus,
+    paymentStatus:
+      newOrderStatus === "Paid"
+        ? "Paid"
+        : newOrderStatus === "Cancelled"
+        ? "Cancelled"
+        : order.payment_status,
+  }
+);
 
             loadOrders();
           }}
