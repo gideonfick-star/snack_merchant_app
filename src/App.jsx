@@ -2502,7 +2502,7 @@ const buildCustomerConfirmationMessage = (order) => {
   const orderSummary = `Order Number: ${order.order_number}
 Order Total: R${formatMoney(orderTotal)}
 Order Type: ${orderTypeLabel}
-Payment Method: ${paymentMethodLabel}`;
+`;
 
   const deliveryDetails = isDelivery
     ? `
@@ -2568,8 +2568,8 @@ No payment is required yet.
 Next step: We will confirm whether collection stock is available. If approved, we will send payment instructions.`;
   }
 
-  if (orderStatus === "Collection Approved") {
-    message += `Good news — your collection request has been approved ✅
+ if (orderStatus === "Collection Approved") {
+  message += `Good news – your collection request has been approved ✅
 
 Your items are available locally for Centurion collection.
 
@@ -2578,15 +2578,20 @@ ${orderSummary}
 Total Amount Payable:
 R${formatMoney(orderTotal)}
 
-Please complete payment before collection.
+Please choose your preferred payment option:
 
-EFT payment details:
+OPTION 1 – EFT PAYMENT
+
 ${eftDetails}
 
 Once paid, please send proof of payment on WhatsApp so we can confirm your collection details.
 
-If you prefer to pay online, please reply and we will send a secure PayFast payment link.`;
-  }
+OPTION 2 – SECURE ONLINE PAYMENT
+
+If you prefer to pay online, reply PAYFAST and we will send you a secure PayFast payment link.
+
+Payment must be completed before collection.`;
+}
 
   if (orderStatus === "Converted to PUDO Delivery") {
     message += `Your collection request has been reviewed.
@@ -2608,14 +2613,22 @@ Please confirm via WhatsApp on 068 759 7884 whether you would like us to proceed
 
 Please also send your preferred PUDO locker / delivery address so we can finalise the delivery arrangement.
 
+Once we receive your confirmation and delivery details, we will update your order and send payment instructions.
+
+You will be able to choose either:
+
+• EFT payment
+• Secure PayFast online payment
+
+Payment is required before dispatch.
+
 If you do not wish to proceed, please let us know and we will cancel the order.
 
 If we do not receive confirmation within 3 business days, the order will be cancelled and any reserved stock will be released.`;
   }
 
-  if (orderStatus === "Awaiting Payment") {
-    if (paymentMethodLabel === "EFT / Proof of Payment") {
-      message += `Your order is currently awaiting EFT payment.
+if (orderStatus === "Awaiting Payment") {
+  message += `Your order is approved and awaiting payment.
 
 ${orderSummary}
 ${deliveryDetails}
@@ -2623,33 +2636,20 @@ ${deliveryDetails}
 Total Amount Payable:
 R${formatMoney(orderTotal)}
 
-Please complete payment using the banking details below:
+Please choose your preferred payment option:
+
+OPTION 1 – EFT PAYMENT
 
 ${eftDetails}
 
-Once paid, please send proof of payment on WhatsApp so we can confirm and prepare your order.`;
-    } else if (paymentMethodLabel === "Pay Online") {
-      message += `Your order is currently awaiting online payment.
+Once paid, please send proof of payment on WhatsApp so we can confirm and prepare your order.
 
-${orderSummary}
-${deliveryDetails}
+OPTION 2 – SECURE ONLINE PAYMENT
 
-Total Amount Payable:
-R${formatMoney(orderTotal)}
+If you prefer to pay online, reply PAYFAST and we will send you a secure PayFast payment link.
 
-Please use the secure PayFast payment link we send you to complete payment.`;
-    } else {
-      message += `Your order is currently awaiting payment confirmation.
-
-${orderSummary}
-${deliveryDetails}
-
-Total Amount Payable:
-R${formatMoney(orderTotal)}
-
-We will send payment instructions shortly.`;
-    }
-  }
+Payment must be completed before ${isDelivery ? "dispatch" : "collection"}.`;
+}  
 
   if (orderStatus === "Paid") {
     message += `Payment received ✅
@@ -2782,21 +2782,18 @@ const generateInvoicePDF = (order) => {
   doc.text(`Date: ${new Date(order.created_at).toLocaleString()}`, 145, 38);
 
   // ================= STATUS BOX =================
-  doc.setDrawColor(212, 175, 55);
-  doc.setLineWidth(0.4);
-  doc.rect(145, 45, 45, 25);
+ doc.setDrawColor(212, 175, 55);
+doc.setLineWidth(0.4);
+doc.rect(105, 55, 85, 35);
 
-  doc.setFontSize(9);
-  doc.text("Order Status", 148, 52);
-  doc.setFontSize(11);
-  doc.text(orderStatus || "-", 148, 59);
+doc.setFontSize(9);
+doc.text("Order Status", 109, 63);
 
-  doc.setFontSize(9);
-  doc.text("Payment Status", 148, 65);
-  doc.setFontSize(11);
-  doc.text(paymentStatus, 148, 72);
+doc.setFontSize(11);
+const wrappedOrderStatus = doc.splitTextToSize(orderStatus || "-", 76);
+doc.text(wrappedOrderStatus, 109, 72);
 
-  // ================= CUSTOMER DETAILS =================
+    // ================= CUSTOMER DETAILS =================
   doc.setFontSize(13);
   doc.setTextColor(212, 175, 55);
   doc.text("Customer Details", 20, 60);
@@ -2807,7 +2804,7 @@ const generateInvoicePDF = (order) => {
   doc.text(`Phone: ${order.customer_phone || "-"}`, 20, 78);
   doc.text(`Email: ${order.customer_email || "Not provided"}`, 20, 86);
   doc.text(`Order Type: ${order.order_type || "-"}`, 20, 94);
-  doc.text(`Payment Status: ${paymentStatus}`, 20, 102);
+  
 
   if (hasDeliveryFee) {
     doc.text(`Delivery / PUDO Fee: R${deliveryFee.toFixed(2)}`, 20, 110);
@@ -2864,36 +2861,49 @@ const generateInvoicePDF = (order) => {
   doc.text(`Final Total: R${finalTotal.toFixed(2)}`, 130, hasDeliveryFee ? finalY + 18 : finalY + 10);
 
   // ================= PAYMENT / CONFIRMATION SECTION =================
-  const paymentY = hasDeliveryFee ? finalY + 35 : finalY + 28;
+ 
+const paymentY = hasDeliveryFee ? finalY + 35 : finalY + 28;
 
-  doc.setFontSize(13);
-  doc.setTextColor(212, 175, 55);
+const paymentNotRequiredYet = [
+  "New Order",
+  "Pending Stock Confirmation",
+].includes(orderStatus);
 
-  if (isPaid || isFinal) {
-    doc.text("Payment Confirmation", 20, paymentY);
+doc.setFontSize(13);
+doc.setTextColor(212, 175, 55);
 
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
-    doc.text("Payment has been received for this order.", 20, paymentY + 10);
-    doc.text("Thank you for your purchase from The Snack Merchant.", 20, paymentY + 18);
-  } else {
-    doc.text("Payment Instructions", 20, paymentY);
+if (isPaid || isFinal) {
+  doc.text("Payment Confirmation", 20, paymentY);
 
-    doc.setFontSize(10);
-    doc.setTextColor(0, 0, 0);
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Payment has been received for this order.", 20, paymentY + 10);
+  doc.text("Thank you for your purchase from The Snack Merchant.", 20, paymentY + 18);
+} else if (paymentNotRequiredYet) {
+  doc.text("Payment Status", 20, paymentY);
 
-    doc.text("This is a pro forma invoice. Payment is required before collection or dispatch.", 20, paymentY + 10);
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text("This is a pro forma invoice for order review only.", 20, paymentY + 10);
+  doc.text("Payment is not required yet.", 20, paymentY + 18);
+  doc.text("We will confirm stock availability before requesting payment.", 20, paymentY + 26);
+} else {
+  doc.text("Payment Instructions", 20, paymentY);
 
-    doc.text("EFT Banking Details:", 20, paymentY + 22);
-    doc.text(`Bank: ${EFT_BANK}`, 20, paymentY + 30);
-    doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, paymentY + 38);
-    doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, paymentY + 46);
-    doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, paymentY + 54);
-    doc.text(`Reference: ${order.customer_name || ""} ${order.customer_phone || ""}`, 20, paymentY + 62);
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
 
-    doc.text("For PayFast online payment, please use the secure payment link sent separately.", 20, paymentY + 74);
-  }
+  doc.text("This is a pro forma invoice. Payment is required before collection or dispatch.", 20, paymentY + 10);
 
+  doc.text("EFT Banking Details:", 20, paymentY + 22);
+  doc.text(`Bank: ${EFT_BANK}`, 20, paymentY + 30);
+  doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, paymentY + 38);
+  doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, paymentY + 46);
+  doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, paymentY + 54);
+  doc.text(`Reference: ${order.customer_name || ""} ${order.customer_phone || ""}`, 20, paymentY + 62);
+
+  doc.text("For PayFast online payment, please use the secure payment link sent separately.", 20, paymentY + 74);
+}
   // ================= FOOTER =================
   const pageHeight = doc.internal.pageSize.height;
 
@@ -2909,6 +2919,159 @@ const generateInvoicePDF = (order) => {
   const blobUrl = doc.output("bloburl");
   window.open(blobUrl, "_blank");
 };
+
+const generateReceiptPDF = (order) => {
+  const doc = new jsPDF();
+
+  const orderStatus = normalizeOrderStatus(order.order_status);
+  const productsTotal = (order.items || []).reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
+    0
+  );
+
+  const deliveryFee = Number(order.delivery_fee || 0);
+  const hasDeliveryFee = deliveryFee > 0;
+  const finalTotal = Number(order.total_amount || productsTotal + deliveryFee);
+
+  // ================= HEADER =================
+  try {
+    doc.addImage("/invoice-logo.png", "PNG", 18, 10, 28, 28);
+  } catch (error) {
+    console.warn("Receipt logo could not be loaded:", error);
+  }
+
+  doc.setFontSize(22);
+  doc.setTextColor(212, 175, 55);
+  doc.text("THE SNACK MERCHANT", 52, 22);
+
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Artisan Nuts • Dried Fruit • Snacks", 52, 30);
+
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text("WhatsApp Orders: 068 759 7884", 52, 38);
+  doc.text("https://snack-merchant-app.vercel.app/", 52, 45);
+
+  // ================= RECEIPT INFO =================
+  doc.setFontSize(14);
+  doc.setTextColor(20, 120, 20);
+  doc.text("PAYMENT RECEIPT", 145, 20);
+
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Receipt #: ${order.order_number}`, 135, 30);
+  doc.text(`Date: ${new Date().toLocaleString()}`, 135, 38);
+
+  // ================= STATUS BOX =================
+  doc.setDrawColor(212, 175, 55);
+  doc.setLineWidth(0.4);
+  doc.rect(105, 55, 85, 35);
+
+  doc.setFontSize(9);
+  doc.text("Receipt Status", 109, 63);
+
+  doc.setFontSize(11);
+  doc.text("PAID", 109, 72);
+
+  doc.setFontSize(9);
+  doc.text("Order Status", 109, 80);
+
+  doc.setFontSize(11);
+  const wrappedOrderStatus = doc.splitTextToSize(orderStatus || "-", 76);
+  doc.text(wrappedOrderStatus, 109, 87);
+
+  // ================= CUSTOMER DETAILS =================
+  doc.setFontSize(13);
+  doc.setTextColor(212, 175, 55);
+  doc.text("Customer Details", 20, 60);
+
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Name: ${order.customer_name || "-"}`, 20, 70);
+  doc.text(`Phone: ${order.customer_phone || "-"}`, 20, 78);
+  doc.text(`Email: ${order.customer_email || "Not provided"}`, 20, 86);
+  doc.text(`Order Type: ${order.order_type || "-"}`, 20, 94);
+
+  // ================= ITEMS TABLE =================
+  autoTable(doc, {
+    startY: 112,
+    head: [["Product", "Size", "Qty", "Unit Price", "Line Total"]],
+    body: [
+      ...(order.items || []).map((item) => {
+        const unitPrice = Number(item.price || 0);
+        const qty = Number(item.qty || 0);
+
+        return [
+          item.name || "-",
+          item.size || "-",
+          qty,
+          `R${unitPrice.toFixed(2)}`,
+          `R${(unitPrice * qty).toFixed(2)}`,
+        ];
+      }),
+      ...(hasDeliveryFee
+        ? [["PUDO Delivery", "-", 1, `R${deliveryFee.toFixed(2)}`, `R${deliveryFee.toFixed(2)}`]]
+        : []),
+    ],
+    styles: {
+      fontSize: 9,
+      cellPadding: 2,
+    },
+    headStyles: {
+      fillColor: [212, 175, 55],
+      textColor: [0, 0, 0],
+      fontStyle: "bold",
+    },
+    alternateRowStyles: {
+      fillColor: [250, 248, 235],
+    },
+  });
+
+  // ================= TOTAL PAID =================
+  const finalY = doc.lastAutoTable.finalY + 12;
+
+  doc.setFontSize(11);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Products Total: R${productsTotal.toFixed(2)}`, 130, finalY);
+
+  if (hasDeliveryFee) {
+    doc.text(`Delivery / PUDO Fee: R${deliveryFee.toFixed(2)}`, 130, finalY + 8);
+  }
+
+  doc.setFontSize(15);
+  doc.setTextColor(20, 120, 20);
+  doc.text(`Total Paid: R${finalTotal.toFixed(2)}`, 130, hasDeliveryFee ? finalY + 18 : finalY + 10);
+
+  // ================= RECEIPT CONFIRMATION =================
+  const receiptY = hasDeliveryFee ? finalY + 35 : finalY + 28;
+
+  doc.setFontSize(13);
+  doc.setTextColor(212, 175, 55);
+  doc.text("Payment Confirmation", 20, receiptY);
+
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text("Payment has been received for this order.", 20, receiptY + 10);
+  doc.text("This receipt confirms payment received by The Snack Merchant.", 20, receiptY + 18);
+  doc.text("Thank you for your purchase.", 20, receiptY + 26);
+
+  // ================= FOOTER =================
+  const pageHeight = doc.internal.pageSize.height;
+
+  doc.setDrawColor(212, 175, 55);
+  doc.line(20, pageHeight - 25, 190, pageHeight - 25);
+
+  doc.setFontSize(9);
+  doc.setTextColor(80, 80, 80);
+  doc.text("The Snack Merchant • Quality You Can Taste", 20, pageHeight - 17);
+  doc.text("WhatsApp Orders: 068 759 7884", 20, pageHeight - 11);
+  doc.text("Receipt generated after payment confirmation.", 110, pageHeight - 11);
+
+  const blobUrl = doc.output("bloburl");
+  window.open(blobUrl, "_blank");
+};
+
   const decreaseQty = (id) => {
     setCart(
       cart
@@ -3558,6 +3721,16 @@ const payWithPayFast = async () => {
 >
   Download Invoice
 </button>
+
+{normalizeOrderStatus(order.order_status) === "Paid" && (
+  <button
+    className="copy-confirmation-btn"
+    onClick={() => generateReceiptPDF(order)}
+  >
+    Download Receipt
+  </button>
+)}
+
 
 <button
   className="copy-confirmation-btn"
