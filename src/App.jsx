@@ -3272,30 +3272,32 @@ const payWithPayFast = async () => {
   </div>
 
   <div className="admin-metric-card">
-    <span>EFT Orders</span>
-    <strong>
-      {
-        orders.filter(
-          (order) =>
-            order.payment_method === "EFT / Proof of Payment" &&
-            normalizeOrderStatus(order.order_status) !== "Cancelled"
-        ).length
-      }
-    </strong>
-  </div>
+  <span>Pending Payment / Stock Confirmation</span>
+  <strong>
+    {
+      orders.filter(
+        (order) =>
+          ["New Order", "Pending Stock Confirmation", "Awaiting Payment"].includes(
+            normalizeOrderStatus(order.order_status)
+          ) &&
+          normalizeOrderStatus(order.order_status) !== "Cancelled"
+      ).length
+    }
+  </strong>
+</div>
 
-  <div className="admin-metric-card">
-    <span>PayFast Orders</span>
-    <strong>
-      {
-        orders.filter(
-          (order) =>
-            order.payment_method === "Pay Online" &&
-            normalizeOrderStatus(order.order_status) !== "Cancelled"
-        ).length
-      }
-    </strong>
-  </div>
+<div className="admin-metric-card">
+  <span>Paid Orders</span>
+  <strong>
+    {
+      orders.filter(
+        (order) =>
+          normalizeOrderStatus(order.order_status) === "Paid" &&
+          normalizeOrderStatus(order.order_status) !== "Cancelled"
+      ).length
+    }
+  </strong>
+</div>
 </div>
 <div className="top-products-card">
   <h3>Top Selling Products</h3>
