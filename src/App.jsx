@@ -1601,6 +1601,7 @@ const [paymentMethod, setPaymentMethod] = useState("EFT / Proof of Payment");
 const [cartToast, setCartToast] = useState("");
 const [showEftConfirm, setShowEftConfirm] = useState(false);
 const [showOrderSuccess, setShowOrderSuccess] = useState(false);
+const [orderSuccessNumber, setOrderSuccessNumber] = useState("");
 const [orderSuccessType, setOrderSuccessType] = useState("order");
 
 const loadProductImages = async () => {
@@ -2544,10 +2545,10 @@ Delivery Address: ${order.delivery_address || "Not provided"}`
     : "";
 
   const eftDetails = `Bank: ${EFT_BANK}
-Account Name: ${EFT_ACCOUNT_NAME}
-Account Number: ${EFT_ACCOUNT_NUMBER}
-Branch Code: ${EFT_BRANCH_CODE}
-Reference: ${order.customer_name} ${order.customer_phone}`;
+  Account Name: ${EFT_ACCOUNT_NAME}
+  Account Number: ${EFT_ACCOUNT_NUMBER}
+  Branch Code: ${EFT_BRANCH_CODE}
+  Reference / Payment Reference: ${order.order_number}`;
 
   let message = `Hi ${order.customer_name},
 
@@ -2931,7 +2932,11 @@ if (isPaid || isFinal) {
   doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, paymentY + 38);
   doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, paymentY + 46);
   doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, paymentY + 54);
-  doc.text(`Reference: ${order.customer_name || ""} ${order.customer_phone || ""}`, 20, paymentY + 62);
+  doc.text(
+  `Reference: ${order.order_number || ""}`,
+  20,
+  paymentY + 62
+);
 
   doc.text("For PayFast online payment, please use the secure payment link sent separately.", 20, paymentY + 74);
 }
@@ -3259,8 +3264,11 @@ return data.order;
 
 const submitEftOrder = async () => {
   try {
-    await saveOrderOnly();
-    setOrderSuccessType(
+    const savedOrder = await saveOrderOnly();
+
+setOrderSuccessNumber(savedOrder.order_number);
+
+setOrderSuccessType(
   customer.orderType === "Collection" ? "collection" : "eft"
 );
     setShowOrderConfirm(false);
@@ -3354,7 +3362,10 @@ const payWithPayFast = async () => {
       <p><span>Account</span><strong>{EFT_ACCOUNT_NAME}</strong></p>
       <p><span>Account No</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
       <p><span>Branch</span><strong>{EFT_BRANCH_CODE}</strong></p>
-      <p><span>Reference</span><strong>{customer.name} {customer.phone}</strong></p>
+      <p>
+  <span>Reference</span>
+  <strong>{orderSuccessNumber}</strong>
+</p>
     </div>
 
     <p className="order-success-note compact-popup">
@@ -4390,7 +4401,12 @@ const payWithPayFast = async () => {
   <p><strong>Account Name:</strong> {EFT_ACCOUNT_NAME}</p>
   <p><strong>Account Number:</strong> {EFT_ACCOUNT_NUMBER}</p>
   <p><strong>Branch Code:</strong> {EFT_BRANCH_CODE}</p>
-  <p><strong>Reference:</strong> Your name + cellphone number</p>
+  <div className="eft-reference-box">
+  <span className="eft-reference-label">Reference:</span>
+  <span className="eft-reference-text">
+    Use your Order Number as the payment reference. Your Order Number will be provided after checkout.
+  </span>
+</div>
   <p className="eft-static-note">
     For EFT orders, please send proof of payment via WhatsApp after payment.
   </p>

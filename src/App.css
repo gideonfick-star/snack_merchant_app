@@ -3144,3 +3144,29 @@ body.admin-mode .admin-variant-row select {
   transform: translateY(-2px);
   box-shadow: 0 0 12px rgba(212, 175, 55, 0.45);
 }
+
+.eft-reference-box {
+  margin: 14px 0;
+  padding: 12px 0;
+  border-top: 1px solid rgba(212, 175, 55, 0.4);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.4);
+  text-align: center;
+}
+
+.eft-reference-label {
+  display: block;
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.eft-reference-text {
+  display: block;
+  color: #f0f0f0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  max-width: 420px;
+  margin: 0 auto;
+  font-weight: 400;
+}
