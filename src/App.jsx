@@ -2918,31 +2918,33 @@ if (isPaid || isFinal) {
 
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
-  doc.text("This is a pro forma invoice for order review only.", 20, paymentY + 10);
+
+  doc.text(
+    "This is a pro forma invoice for order review only.",
+    20,
+    paymentY + 10
+  );
+
   doc.text("Payment is not required yet.", 20, paymentY + 18);
 
   if (isCollectionOrder) {
     doc.text(
       "We will confirm local Centurion stock availability before requesting payment.",
       20,
-      paymentY + 26
+      paymentY + 28
     );
   } else {
-  doc.text("Payment is required before dispatch.", 20, paymentY + 26);
-  doc.text(
-    "Please use your Order Number as the payment reference.",
-    20,
-    paymentY + 34
-  );
-}
+    doc.text("Payment is required before dispatch.", 20, paymentY + 28);
 
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
-  doc.text("This is a pro forma invoice for order review only.", 20, paymentY + 10);
-  doc.text("Payment is not required yet.", 20, paymentY + 18);
-  doc.text("We will confirm stock availability before requesting payment.", 20, paymentY + 26);
+    doc.text(
+      "Please use your Order Number as the payment reference.",
+      20,
+      paymentY + 38
+    );
+  }
 } else {
-  doc.text("Payment Instructions", 20, paymentY);
+
+    doc.text("Payment Instructions", 20, paymentY);
 
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
