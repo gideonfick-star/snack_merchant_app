@@ -3170,3 +3170,38 @@ body.admin-mode .admin-variant-row select {
   margin: 0 auto;
   font-weight: 400;
 }
+.checkout-process-notice {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(0, 0, 0, 0.85));
+  border: 2px solid #d4af37;
+  border-radius: 18px;
+  padding: 18px 22px;
+  margin: 18px 0 24px;
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.35);
+  text-align: left;
+}
+
+.checkout-process-notice h3 {
+  color: #d4af37;
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.checkout-process-notice p {
+  color: #ffffff;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.checkout-process-notice ul {
+  margin: 0;
+  padding-left: 22px;
+}
+
+.checkout-process-notice li {
+  color: #ffffff;
+  margin-bottom: 8px;
+  line-height: 1.4;
+  font-size: 0.95rem;
+}

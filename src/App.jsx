@@ -4275,32 +4275,18 @@ const payWithPayFast = async () => {
 
 <section id="checkout" className="checkout">
         <h2>Checkout Details</h2>
-        <div className="checkout-notice">
-  <strong>ORDER PROCESS NOTICE</strong>
+        <div className="checkout-process-notice">
+  <h3>⚠️ Important Order Process Notice</h3>
 
   <p>
-    Orders are reviewed for stock availability before payment is finalized.
+    Please read before placing your order.
   </p>
 
   <ul>
-    <li>
-      Centurion Collection requests are subject to local stock availability.
-    </li>
-
-    <li>
-      If local stock is unavailable, orders may be converted to PUDO Locker
-      Delivery.
-    </li>
-
-    <li>
-      Delivery fees and payment instructions will be confirmed before payment
-      is requested.
-    </li>
-
-    <li>
-      Customers will receive confirmation and payment guidance after order
-      review.
-    </li>
+    <li>Centurion Collection requests are subject to local stock availability.</li>
+    <li>If local stock is unavailable, orders may be converted to PUDO Locker Delivery.</li>
+    <li>PUDO Delivery orders require payment before dispatch.</li>
+    <li>Your Order Number must be used as your payment reference.</li>
   </ul>
 </div>
 
