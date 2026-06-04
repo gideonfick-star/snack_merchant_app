@@ -2912,7 +2912,29 @@ if (isPaid || isFinal) {
   doc.text("Payment has been received for this order.", 20, paymentY + 10);
   doc.text("Thank you for your purchase from The Snack Merchant.", 20, paymentY + 18);
 } else if (paymentNotRequiredYet) {
+  const isCollectionOrder = order.order_type === "Collection";
+
   doc.text("Payment Status", 20, paymentY);
+
+  doc.setFontSize(10);
+  doc.setTextColor(0, 0, 0);
+  doc.text("This is a pro forma invoice for order review only.", 20, paymentY + 10);
+  doc.text("Payment is not required yet.", 20, paymentY + 18);
+
+  if (isCollectionOrder) {
+    doc.text(
+      "We will confirm local Centurion stock availability before requesting payment.",
+      20,
+      paymentY + 26
+    );
+  } else {
+  doc.text("Payment is required before dispatch.", 20, paymentY + 26);
+  doc.text(
+    "Please use your Order Number as the payment reference.",
+    20,
+    paymentY + 34
+  );
+}
 
   doc.setFontSize(10);
   doc.setTextColor(0, 0, 0);
