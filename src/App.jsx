@@ -25,19 +25,94 @@ const API_BASE_URL =
     ? "http://localhost:5000"
     : "https://snack-merchant-app.onrender.com";
 
-const categories = [
+const CUSTOMER_CATEGORIES = [
   "All",
-  "Nuts & Premium Nuts",
-  "Peanuts & Everyday Snacks",
-  "Caramelised, Honey & Yoghurt Treats",
-  "Dried Fruit & Fruit Snacks",
-  "Diced Fruit Range",
-  "Seeds & Health Pantry",
-  "Chocolate & Candy Treats",
-  "Honey, Speciality & Savoury Snacks",
-  "Health Mixes & Breakfast Range",
-  ];
+  "Peanuts",
+  "Cashews",
+  "Almonds",
+  "Macadamias",
+  "Pistachios",
+  "Pecans",
+  "Walnuts",
+  "Hazelnuts",
+  "Brazil Nuts",
+  "Mixed Nuts",
+  "Dried Fruit",
+  "Diced Fruit",
+  "Seeds",
+  "Honey",
+  "Health Pantry",
+  "Savoury Snacks",
+];
+function getCustomerCategory(product) {
+  const name = `${product.name || ""} ${product.product_name || ""}`.toLowerCase();
 
+  if (name.includes("peanut")) return "Peanuts";
+  if (name.includes("cashew")) return "Cashews";
+  if (name.includes("almond")) return "Almonds";
+  if (name.includes("macadamia")) return "Macadamias";
+  if (name.includes("pistachio")) return "Pistachios";
+  if (name.includes("pecan")) return "Pecans";
+  if (name.includes("walnut")) return "Walnuts";
+  if (name.includes("hazelnut")) return "Hazelnuts";
+  if (name.includes("brazil")) return "Brazil Nuts";
+
+  if (
+    name.includes("mixed nut") ||
+    name.includes("nut mix") ||
+    name.includes("nutty remix") ||
+    name.includes("trail mix")
+  ) return "Mixed Nuts";
+
+  if (
+    name.includes("diced") ||
+    name.includes("fruit cubes") ||
+    name.includes("sugar cubes")
+  ) return "Diced Fruit";
+
+  if (
+    name.includes("mango") ||
+    name.includes("apple") ||
+    name.includes("apricot") ||
+    name.includes("banana") ||
+    name.includes("coconut") ||
+    name.includes("cranberr") ||
+    name.includes("date") ||
+    name.includes("fig") ||
+    name.includes("goji") ||
+    name.includes("guava") ||
+    name.includes("mango") ||
+    name.includes("papaya") ||
+    name.includes("peach") ||
+    name.includes("pineapple") ||
+    name.includes("prune") ||
+    name.includes("raisin") ||
+    name.includes("sultana") ||
+    name.includes("fruit")
+  ) return "Dried Fruit";
+
+  if (name.includes("seed")) return "Seeds";
+  if (name.includes("honey")) return "Honey";
+
+  if (
+    name.includes("oats") ||
+    name.includes("porridge") ||
+    name.includes("talbina") ||
+    name.includes("health") ||
+    name.includes("breakfast")
+  ) return "Health Pantry";
+
+  if (
+    name.includes("sev") ||
+    name.includes("murku") ||
+    name.includes("chevro") ||
+    name.includes("ghantia") ||
+    name.includes("fried peas") ||
+    name.includes("sweet sticks")
+  ) return "Savoury Snacks";
+
+  return "Mixed Nuts";
+}
 const catalog = [
   {
     code: "CNL01",
@@ -2383,8 +2458,10 @@ const productOptions = useMemo(() => {
 
   const filteredProducts = useMemo(() => {
   return productOptions.filter((item) => {
-    const matchesCategory =
-      activeCategory === "All" || item.category === activeCategory;
+   const customerCategory = getCustomerCategory(item);
+
+const matchesCategory =
+  activeCategory === "All" || customerCategory === activeCategory;
 
     const stockStatus = item.stockStatus || productStock[item.code] || "In Stock";
 
@@ -2392,7 +2469,7 @@ const productOptions = useMemo(() => {
       activeStock === "All Stock" || stockStatus === activeStock;
 
     const searchText =
-      `${item.code} ${item.name} ${item.size} ${item.category}`.toLowerCase();
+      `${item.code} ${item.name} ${item.size} ${item.category} ${getCustomerCategory(item)}`.toLowerCase();
 
     const matchesSearch = searchText.includes(search.toLowerCase());
 
@@ -3490,7 +3567,7 @@ const payWithPayFast = async () => {
       {adminView !== "orders" && (
   <>
     <section className="filters">
-      {categories.map((cat) => (
+     {CUSTOMER_CATEGORIES.map((cat) => (
         <button
           key={cat}
           onClick={() => setActiveCategory(cat)}
