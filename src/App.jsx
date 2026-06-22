@@ -1649,11 +1649,13 @@ const catalog = [
 ];
 
 export default function App() {
+  const [showShop, setShowShop] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeStock, setActiveStock] = useState("All Stock");
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedCategoryPage, setSelectedCategoryPage] = useState(null);
 
   const [customer, setCustomer] = useState({
   name: "",
@@ -3423,8 +3425,1508 @@ const payWithPayFast = async () => {
     alert("Payment could not be started. Please try again or use EFT.");
   }
 };
+
+if (!showShop) {
+const productHighlights = [
+  {
+    title: "Premium Nuts",
+    image: "/website/Mixed Nuts.png"
+  },
+  {
+    title: "Dried Fruit",
+    image: "/website/Dried fruit mix.png"
+  },
+  {
+    title: "Seeds & Health Pantry",
+    image: "/website/Seeds and Healthy Pantry.jpg.png"
+  },
+  {
+    title: "Chocolate & Yoghurt Treats",
+    image: "/website/Milky Bar Almonds.png"
+  },
+  {
+    title: "Honey",
+    image: "/website/Crazy Bee Honey GlassBottle.png"
+  },
+  {
+    title: "Gift Packs & Events",
+    image: "/website/Gift Packs.jpg.png"
+  }
+];
+if (selectedCategoryPage) {
+  const categoryContent = {
+"premium-nuts": {
+  eyebrow: "Origins • Nutrition • Fun Facts",
+  title: "Premium Nuts",
+  heroImage: "/website/Premium Nuts/PremiumNutsBanner.jpg",
+  description:
+    "From ancient pistachio orchards to South African macadamia farms, premium nuts have travelled across continents and cultures for thousands of years. Explore where they grow, what makes them unique, and the fascinating stories behind some of the world's most loved nuts.",
+  learnMoreTitle: "Learn More About Premium Nuts",
+    worldIntro:
+  "Premium nuts are grown in very specific climates, from warm orchards in South Africa to historic growing regions across the world.",
+    items: [
+    {
+      title: "Almonds",
+      image: "/website/Premium Nuts/Almonds 1.jpg",
+      description:
+        "Almonds are actually seeds, not true nuts, and belong to the same family as peaches and apricots."
+    },
+    {
+      title: "Cashews",
+      image: "/website/Premium Nuts/Cashew 1.jpg",
+      description:
+        "Cashews grow beneath the colourful cashew apple and are harvested by hand in many regions."
+    },
+    {
+      title: "Macadamias",
+      image: "/website/Premium Nuts/Mac 1.jpg",
+      description:
+        "Macadamia trees can take up to 10 years before producing commercial harvests and may produce for over 100 years."
+    },
+    {
+      title: "Pistachios",
+      image: "/website/Premium Nuts/Pista 1.jpg",
+      description:
+        "Pistachios have been enjoyed for more than 9,000 years and were once considered a royal delicacy."
+    },
+    {
+      title: "Pecans",
+      image: "/website/Premium Nuts/Pecan 1.jpg",
+      description:
+        "Pecans are native to North America and are naturally rich in healthy fats and antioxidants."
+    },
+    {
+      title: "Mixed Nuts",
+      image: "/website/Premium Nuts/Mix 2.jpg",
+      description:
+        "Mixed nuts combine a variety of textures, flavours and nutrients into one convenient snack."
+    }
+  ],
+  didYouKnow: [
+    {
+      stat: "9,000 Years",
+      title: "Ancient Snack",
+      text: "Pistachios are among the oldest cultivated nuts known to mankind."
+    },
+    {
+      stat: "100 Years",
+      title: "Long-Living Orchards",
+      text: "A healthy macadamia orchard can remain productive for generations."
+    },
+    {
+      stat: "Not True Nuts",
+      title: "Almond Surprise",
+      text: "Almonds are seeds from a fruit rather than true botanical nuts."
+    }
+  ],
+  growingRegions: [
+  {
+    nut: "Almonds",
+    regions: ["USA", "Spain", "Australia"]
+  },
+  {
+    nut: "Cashews",
+    regions: ["Vietnam", "India", "Africa"]
+  },
+  {
+    nut: "Macadamias",
+    regions: ["South Africa", "Australia"]
+  },
+  {
+    nut: "Pistachios",
+    regions: ["USA", "Iran", "Turkey"]
+  },
+  {
+    nut: "Pecans",
+    regions: ["USA", "Mexico"]
+  }
+],
+  nutritionFacts: [
+  {
+    title: "Protein",
+    value: "Muscle Support",
+    description:
+      "Protein helps support muscle maintenance and contributes to feelings of fullness."
+  },
+  {
+    title: "Healthy Fats",
+    value: "Natural Energy",
+    description:
+      "Nuts contain beneficial fats that provide long-lasting energy throughout the day."
+  },
+  {
+    title: "Fibre",
+    value: "Digestive Health",
+    description:
+      "Fibre supports healthy digestion and helps maintain balanced eating habits."
+  },
+  {
+    title: "Vitamin E",
+    value: "Antioxidant Power",
+    description:
+      "Many nuts naturally contain Vitamin E, an important antioxidant nutrient."
+  }
+],
+   learnMore: [
+  {
+  title: "How Macadamias Are Harvested",
+  description: "See how macadamias are grown, harvested and processed before becoming a premium snack.",
+  url: "https://www.youtube.com/watch?v=EN2V5uHuqi4"
+},
+  {
+  title: "The Story of Pistachios",
+  description: "Learn why pistachios are one of the oldest and most fascinating nuts in the world.",
+  url: "https://www.youtube.com/watch?v=CqPzt8d922E"
+},
+  {
+  title: "How Cashews Grow",
+  description: "Discover why cashews are one of the most unusual nuts to grow and harvest.",
+  url: "https://www.youtube.com/watch?v=ns-lKaXx-BU"
+},
+  {
+  title: "Almond Farming Explained",
+  description: "Explore how almonds are cultivated and why they are so popular worldwide.",
+  url: "https://www.youtube.com/watch?v=ql9NIPilcPI"
+},
+]
+},
+
+"dried-fruit": {
+  eyebrow: "Origins • Drying Methods • Fruit Facts",
+  title: "Dried Fruit",
+  description:
+    "From sun-dried raisins to tropical mango strips, dried fruit has helped people preserve flavour, nutrition and seasonal harvests for thousands of years. Discover how fruit is dried, where it originates and why it remains one of the world's most popular natural snacks.",
+learnMoreTitle: "Learn More About Dried Fruit",
+    worldIntro:
+  "Different fruits thrive in different climates around the world, from tropical mango farms in South Africa and India to historic date-growing regions across the Middle East.",
+  items: [
+  {
+    title: "Dried Mango",
+    image: "/website/Dried Fruit/Dried Fruit 5.jpg",
+    description:
+      "Mango is often dried to preserve its tropical flavour while creating a chewy texture and concentrated natural sweetness."
+  },
+  {
+    title: "Diced Fruit Range",
+    image: "/website/Dried Fruit/Diced Fruit 1.jpg",
+    description:
+      "Colourful fruit cubes are popular in baking, snack mixes and lunchboxes because they add sweetness and texture."
+  },
+  {
+    title: "Raisins",
+    image: "/website/Dried Fruit/Raisins.jpg",
+    description:
+      "Raisins are dried grapes and have been enjoyed for thousands of years as a naturally sweet, energy-rich snack."
+  },
+  {
+    title: "Dates",
+    image: "/website/Dried Fruit/Dates.jpg",
+    description:
+      "Dates have long been valued as a naturally sweet energy source across the Middle East and North Africa."
+  },
+  {
+    title: "Apricots & Peaches",
+    image: "/website/Dried Fruit/Dried Fruit 7.jpg",
+    description:
+      "Dried apricots and peaches are popular for their sweet flavour, vibrant colour and naturally chewy texture."
+  }
+
+],
+
+  didYouKnow: [
+    {
+      stat: "Ancient Method",
+      title: "Natural Preservation",
+      text: "Drying fruit is one of the oldest food preservation techniques used by humans."
+    },
+    {
+      stat: "5x Smaller",
+      title: "Concentrated Flavour",
+      text: "Fruit shrinks significantly during drying as water is removed and flavour becomes concentrated."
+    },
+    {
+      stat: "Travel Food",
+      title: "Portable Energy",
+      text: "Dried fruit became popular because it stores well and provides convenient natural energy."
+    }
+  ],
+
+  growingRegions: [
+    {
+      nut: "Mango",
+      regions: ["South Africa", "India", "Thailand"]
+    },
+    {
+      nut: "Grapes",
+      regions: ["South Africa", "USA", "Turkey"]
+    },
+    {
+      nut: "Dates",
+      regions: ["Saudi Arabia", "Egypt", "UAE"]
+    },
+    {
+      nut: "Cranberries",
+      regions: ["USA", "Canada"]
+    }
+  ],
+
+  nutritionFacts: [
+    {
+      title: "Fruit Sugars",
+      value: "Natural Energy",
+      description:
+        "Dried fruit contains concentrated natural fruit sugars that provide quick energy."
+    },
+    {
+      title: "Fibre",
+      value: "Digestive Health",
+      description:
+        "Many dried fruits are naturally rich in fibre which supports healthy digestion."
+    },
+    {
+      title: "Potassium",
+      value: "Minerals",
+      description:
+        "Several dried fruits provide potassium which helps support normal body functions."
+    },
+    {
+      title: "Plant Compounds",
+      value: "Antioxidants",
+      description:
+        "Colourful fruits naturally contain antioxidant compounds."
+    }
+  ],
+
+  learnMore: [
+  {
+    title: "How Raisins Are Made",
+    description:
+      "Discover how grapes are transformed into one of the world's most popular dried fruits.",
+    url: "https://www.youtube.com/watch?v=smnz5qVzTrA"
+  },
+  {
+    title: "The History of Dates",
+    description:
+      "Explore the farming and history behind one of humanity's oldest cultivated fruits.",
+    url: "https://www.youtube.com/watch?v=YmbU5XYGhQ4"
+  },
+  {
+    title: "How Mango Is Dried",
+    description:
+      "See how tropical mangoes are processed into chewy dried fruit snacks.",
+    url: "https://www.youtube.com/watch?v=OEE3bUNmQ7A"
+  },
+  {
+  title: "The Science of Food Drying",
+  description:
+    "Discover how removing moisture helps preserve fruit and concentrate flavour.",
+  url: "https://www.youtube.com/watch?v=WcKJi-UZlac"
+}
+]
+},
+
+    "seeds-health": {
+  eyebrow: "Ancient Superfoods • Natural Nutrition • Pantry Staples",
+  title: "Seeds & Health Pantry",
+  heroImage: "/website/Seeds/Healthy.jpg",
+  description:
+    "Seeds and pantry staples have nourished people for thousands of years. From chia and linseed to sesame, sunflower and oats, these small ingredients carry big stories, global origins and everyday nutritional value.",
+  worldIntro:
+    "Seeds and health pantry foods are grown across many regions of the world, from chia fields in Latin America to sesame, sunflower and grain-producing regions across Africa, Europe and Asia.",
+  learnMoreTitle: "Learn More About Seeds & Health Pantry",
+
+  items: [
+    {
+      title: "Chia Seeds",
+      image: "/website/Seeds/Chia.jpg",
+      description:
+        "Tiny seeds packed with fibre, omega-3 fatty acids and plant-based nutrition."
+    },
+    {
+      title: "Linseed",
+      image: "/website/Seeds/Linseed.jpg",
+      description:
+        "A traditional seed valued for fibre, plant-based omega-3 and everyday wellness."
+    },
+    {
+      title: "Pumpkin Seeds",
+      image: "/website/Seeds/pumpkin.jpg",
+      description:
+        "Crunchy green seeds naturally rich in minerals, protein and healthy fats."
+    },
+    {
+      title: "Sesame Seeds",
+      image: "/website/Seeds/Sesame.jpg",
+      description:
+        "One of the world's oldest cultivated crops, used in baking, cooking and traditional foods."
+    },
+    {
+      title: "Sunflower Seeds",
+      image: "/website/Seeds/Sunflower.jpg",
+      description:
+        "Popular seeds valued for their crunch, healthy fats and Vitamin E."
+    },
+    
+ {
+  title: "Trail Mixes",
+  image: "/website/Seeds/Trail Mix.jpg",
+  description:
+    "Convenient snack blends combining seeds, fruit and nuts for energy, texture and variety."
+},
+  ],
+
+  didYouKnow: [
+    {
+      stat: "Aztec Fuel",
+      title: "Chia History",
+      text: "Chia seeds were valued by ancient civilizations as an energy-rich food."
+    },
+    {
+      stat: "Oldest Crops",
+      title: "Sesame Heritage",
+      text: "Sesame is one of the oldest oilseed crops cultivated by humans."
+    },
+    {
+  stat: "10,000 Years",
+  title: "Barley Heritage",
+  text: "Barley was one of the world's first cultivated crops and has been grown for more than 10,000 years."
+}
+  ],
+
+  growingRegions: [
+    {
+      nut: "Chia",
+      regions: ["Mexico", "Argentina", "Bolivia"]
+    },
+    {
+      nut: "Linseed",
+      regions: ["Canada", "Russia", "China"]
+    },
+    {
+      nut: "Pumpkin",
+      regions: ["China", "Ukraine", "USA"]
+    },
+    {
+      nut: "Sunflower",
+      regions: ["Ukraine", "Russia", "Argentina"]
+    },
+    {
+      nut: "Sesame",
+      regions: ["India", "Sudan", "Ethiopia"]
+    }
+  ],
+
+  nutritionFacts: [
+    {
+      title: "Plant Protein",
+      value: "Everyday Fuel",
+      description:
+        "Many seeds provide plant-based protein that supports balanced everyday eating."
+    },
+    {
+      title: "Omega-3",
+      value: "Healthy Fats",
+      description:
+        "Chia and linseed are well known for naturally occurring plant-based omega-3 fats."
+    },
+    {
+      title: "Fibre",
+      value: "Digestive Health",
+      description:
+        "Seeds and oats can contribute dietary fibre for digestive wellness."
+    },
+    {
+      title: "Minerals",
+      value: "Natural Nutrients",
+      description:
+        "Pumpkin, sesame and sunflower seeds contain minerals such as magnesium and zinc."
+    }
+  ],
+
+learnMore: [
+  {
+    title: "How Chia Seeds Grow",
+    description:
+      "Travel to the fields where chia is cultivated and discover how this ancient Aztec superfood became a modern health staple.",
+    url: "https://www.youtube.com/watch?v=lVBgSzzsYtE"
+  },
+  {
+    title: "The Story of Sesame",
+    description:
+      "Explore the fascinating history of sesame, one of the world's oldest cultivated crops, and its journey across civilizations.",
+    url: "https://www.youtube.com/watch?v=q-zQNKe3Lak"
+  },
+ {
+  title: "Barley: The Ancient Grain",
+  description:
+    "Learn how barley became one of the world's earliest cultivated grains and why it remains an important pantry staple today.",
+  url: "https://www.youtube.com/watch?v=33AsVbHtLm8"
+},
+  {
+    title: "Why Seeds Are Nutrient Dense",
+    description:
+      "Learn why tiny seeds naturally contain concentrated fibre, minerals, healthy fats and plant-based nutrition.",
+    url: "https://www.youtube.com/watch?v=xLQFhfSpaGc"
+  }
+]
+},
+    "chocolate-yoghurt": {
+  eyebrow: "Chocolate • Yoghurt Treats • Candy Favourites",
+  title: "Chocolate, Candy & Yoghurt Treats",
+  heroImage: "/website/Chocolate & Yoghurt/Yogurt.jpg",
+  description:
+    "From chocolate-coated nuts and yoghurt treats to colourful candy favourites...",
+ items: [
+  {
+    title: "Chocolate Almonds",
+    image: "/website/Chocolate & Yoghurt/Choc Almonds.jpg",
+    description:
+      "Premium almonds coated in smooth chocolate for a rich and satisfying treat."
+  },
+  {
+    title: "Chocolate Peanuts",
+    image: "/website/Chocolate & Yoghurt/Choc Peanuts.jpg",
+    description:
+      "Crunchy peanuts covered in chocolate and enjoyed as a timeless snack favourite."
+  },
+  {
+    title: "Chocolate Cashews",
+    image: "/website/Chocolate & Yoghurt/Choc Cashew.jpg",
+    description:
+      "Creamy cashews paired with chocolate to create a luxurious sweet-and-nutty combination."
+  },
+  {
+    title: "Milky Bar Almonds",
+    image: "/website/Chocolate & Yoghurt/Milky Bar Almonds.jpg",
+    description:
+      "A creamy white chocolate coating surrounding premium almonds."
+  },
+  {
+    title: "Yoghurt Treats",
+    image: "/website/Chocolate & Yoghurt/Yogurt.jpg",
+    description:
+      "Smooth yoghurt-coated snacks combining sweetness with a creamy finish."
+  },
+  {
+    title: "Candy & Chocolate Mixes",
+    image: "/website/Chocolate & Yoghurt/Spec Eggs.jpg",
+    description:
+      "Colourful candy-coated treats perfect for sharing, gifting and celebrations."
+  }
+],
+didYouKnow: [
+  {
+    stat: "4,000 Years",
+    title: "Chocolate Origins",
+    text: "Chocolate traces its roots to ancient Central American civilizations that first cultivated cacao."
+  },
+  {
+    stat: "Worldwide Favourite",
+    title: "Candy Culture",
+    text: "Every country has unique confectionery traditions and sweet treats enjoyed for generations."
+  },
+  {
+    stat: "Sweet & Crunchy",
+    title: "Coated Nuts",
+    text: "Combining nuts with chocolate creates one of the world's most popular snack combinations."
+  }
+],
+growingRegions: [
+  {
+    nut: "Cacao",
+    regions: ["Ghana", "Ivory Coast", "Ecuador"]
+  },
+  {
+    nut: "Almonds",
+    regions: ["USA", "Spain", "Australia"]
+  },
+  {
+    nut: "Peanuts",
+    regions: ["China", "India", "USA"]
+  },
+  {
+    nut: "Sugar",
+    regions: ["Brazil", "India", "Thailand"]
+  },
+  {
+    nut: "Vanilla",
+    regions: ["Madagascar", "Indonesia", "Mexico"]
+  }
+],
+nutritionFacts: [
+  {
+    title: "Energy",
+    value: "Quick Fuel",
+    description:
+      "Chocolate and confectionery products provide convenient energy for active lifestyles."
+  },
+  {
+    title: "Cacao",
+    value: "Natural Compounds",
+    description:
+      "Cacao naturally contains plant compounds that contribute to its unique flavour profile."
+  },
+  {
+    title: "Nuts",
+    value: "Crunch & Texture",
+    description:
+      "Almonds, peanuts and cashews add texture, flavour and nutritional value."
+  },
+  {
+    title: "Treat Balance",
+    value: "Enjoy In Moderation",
+    description:
+      "Treat foods are best enjoyed as part of a balanced and varied diet."
+  }
+],
+learnMoreTitle: "Learn More About Chocolate & Candy Treats",
+
+learnMore: [
+  {
+    title: "The Story of Chocolate",
+    description:
+      "Explore how cacao became one of the world's most loved ingredients.",
+    url: "https://www.youtube.com/watch?v=ibjUpk9Iagk"
+  },
+  {
+    title: "How Chocolate Is Made",
+    description:
+      "See how cacao beans are processed into smooth chocolate.",
+    url: "https://www.youtube.com/watch?v=P_JuQCiKWUc"
+  },
+  {
+    title: "How Hard Candy Is Made",
+    description:
+      "See how traditional hard candy is stretched, shaped and turned into colourful sweets.",
+    url: "https://www.youtube.com/watch?v=6MoBvV12C58"
+  },
+{
+  title: "Lemon Yogurt Coated Almonds",
+  description:
+    "See how yogurt coatings are combined with almonds to create a creamy, tangy confectionery snack.",
+  url: "https://www.youtube.com/watch?v=-DkUPNh3pOM"
+}
+],
+},
+
+  "honey": {
+  eyebrow: "Bees • Honey • Natural Sweetness",
+  title: "Honey & Honey Roasted Treats",
+  heroImage: "/website/Honey/Hon 2.jpg",
+  description:
+    "For thousands of years honey has been treasured as one of nature's most remarkable foods. Discover the story of bees, honey production and the delicious snacks inspired by this golden ingredient.",
+  worldIntro:
+    "Honey is produced on every continent except Antarctica, with unique flavours and traditions shaped by local flowers, climates and bee species.",
+  learnMoreTitle: "Learn More About Honey",
+
+  items: [
+    {
+      title: "Pure Honey",
+      image: "/website/Honey/Hon 1.jpg",
+      description:
+        "Natural honey collected by bees and enjoyed for its sweetness, colour and versatility."
+    },
+    {
+      title: "Raw Honey",
+      image: "/website/Honey/Hon 2.jpg",
+      description:
+        "Minimally processed honey that keeps more of its natural character and flavour."
+    },
+    {
+      title: "Honey Jars",
+      image: "/website/Honey/Hon 3.jpg",
+      description:
+        "Honey can vary in colour, aroma and taste depending on the flowers visited by bees."
+    },
+    {
+      title: "Honey Roasted Peanuts",
+      image: "/website/Honey/Honey Roasted Peanuts.jpg",
+      description:
+        "Crunchy peanuts coated with honey for a sweet-and-savoury snack experience."
+    },
+    {
+      title: "Honey Roasted Bananas",
+      image: "/website/Honey/Honey Roasted Bananas.jpg",
+      description:
+        "Sweet banana slices enhanced with the rich flavour of honey."
+    },
+    {
+      title: "Honey Sesame Cashews",
+      image: "/website/Honey/Honey Sesame Roasted Cashew.jpg",
+      description:
+        "Premium cashews combined with honey and sesame for a unique gourmet treat."
+    }
+  ],
+  didYouKnow: [
+  {
+    stat: "Never Spoils",
+    title: "Ancient Honey",
+    text: "Honey has been found preserved in ancient Egyptian tombs thousands of years old."
+  },
+  {
+  stat: "55,000 Miles",
+  title: "One Jar Of Honey",
+  text: "A bee colony may collectively fly the equivalent of more than twice around the Earth to produce a single jar of honey."
+},
+  {
+    stat: "Flower Powered",
+    title: "Unique Flavour",
+    text: "Honey changes colour, aroma and taste depending on the flowers visited by the bees."
+  }
+],
+
+growingRegions: [
+  {
+    nut: "Fynbos Honey",
+    regions: ["South Africa"]
+  },
+  {
+    nut: "Manuka Honey",
+    regions: ["New Zealand"]
+  },
+  {
+    nut: "Acacia Honey",
+    regions: ["Hungary", "Romania"]
+  },
+  {
+  nut: "Sidr Honey",
+  regions: ["Yemen", "Saudi Arabia"]
+},
+  {
+    nut: "Orange Blossom",
+    regions: ["Spain", "Mexico"]
+  }
+],
+
+nutritionFacts: [
+  {
+    title: "Natural Sugars",
+    value: "Quick Energy",
+    description:
+      "Honey contains natural sugars that provide fast, convenient energy."
+  },
+  {
+    title: "Floral Variety",
+    value: "Unique Taste",
+    description:
+      "The flowers bees visit influence honey colour, aroma and flavour."
+  },
+  {
+    title: "Bee Enzymes",
+    value: "Natural Process",
+    description:
+      "Bees add enzymes that help transform nectar into honey."
+  },
+  {
+    title: "Trace Nutrients",
+    value: "Small Amounts",
+    description:
+      "Honey can contain tiny amounts of minerals, plant compounds and pollen."
+  }
+],
+
+learnMore: [
+  {
+    title: "Why Honey Never Spoils",
+    description:
+      "Discover the science behind honey's long shelf life and why ancient honey can remain preserved for thousands of years.",
+    url: "https://www.youtube.com/watch?v=IGbzX44j5Wc"
+  },
+  {
+    title: "Yemeni Sidr Honey",
+    description:
+      "Explore why Yemeni Sidr honey is one of the most respected and sought-after honeys in the world.",
+    url: "https://www.youtube.com/watch?v=tcbn1cOOCQg"
+  },
+  {
+    title: "The Bee Waggle Dance",
+    description:
+      "Learn how honey bees communicate food locations through one of nature's most fascinating dances.",
+    url: "https://www.youtube.com/watch?v=12Q8FfyLLso"
+  },
+  {
+  title: "How To Test Pure Honey",
+  description:
+    "Discover popular honey purity tests and learn which methods can help identify adulterated honey at home.",
+  url: "https://www.youtube.com/watch?v=aey2vyV3vWc"
+}
+]
+},
+   "gift-packs": {
+  eyebrow: "Celebrations • Corporate Gifts • Special Occasions",
+  title: "Gift Packs & Events",
+  heroImage: "/website/Gifts Events/Corp Gift 1.jpg",
+  description:
+    "From corporate appreciation gifts to festive hampers and special event packs, discover thoughtful snack gifting ideas for every occasion.",
+  worldIntro:
+    "Gift giving has been part of human culture for thousands of years, from harvest celebrations and festivals to modern corporate appreciation and personal milestones.",
+  learnMoreTitle: "Learn More About Gift Giving",
+
+  items: [
+    {
+      title: "Corporate Gifts",
+      image: "/website/Gifts Events/Corp Gift.jpg",
+      description:
+        "Professional gift packs designed for clients, employees and business appreciation."
+    },
+    {
+      title: "Appreciation Boxes",
+      image: "/website/Gifts Events/Appreciation.jpg",
+      description:
+        "Thoughtful gifts created to celebrate achievements, milestones and gratitude."
+    },
+    {
+      title: "Father's Day Gifts",
+      image: "/website/Gifts Events/Fathersday 2.jpg",
+      description:
+        "Curated snack gifts created for dads, fathers and family celebrations."
+    },
+    {
+      title: "Festive Gift Packs",
+      image: "/website/Gifts Events/XMas.jpg",
+      description:
+        "Seasonal gift collections perfect for festive occasions and year-end celebrations."
+    },
+    {
+      title: "Special Event Gifts",
+      image: "/website/Gifts Events/Special Event.jpg",
+      description:
+        "Custom gifting solutions for weddings, functions, launches and celebrations."
+    },
+    {
+      title: "Premium Snack Hampers",
+      image: "/website/Gifts Events/Gift 6.jpg",
+      description:
+        "Luxury combinations of nuts, dried fruit and treats presented in elegant packaging."
+    }
+  ],
+
+  didYouKnow: [
+    {
+      stat: "Ancient Tradition",
+      title: "Food As Gifts",
+      text: "Food gifts have been part of celebrations for thousands of years, especially during harvests, weddings and festivals."
+    },
+    {
+      stat: "Luxury History",
+      title: "Nuts & Dried Fruit",
+      text: "Before modern transport, nuts, dried fruit and spices were often considered premium gifts because they travelled well and lasted longer."
+    },
+    {
+      stat: "Memorable",
+      title: "Corporate Gifting",
+      text: "Thoughtful food gifts are often remembered because they can be shared, enjoyed and associated with appreciation."
+    }
+  ],
+
+  growingRegions: [
+    {
+      nut: "Omiyage Gifts",
+      regions: ["Japan"]
+    },
+    {
+      nut: "Festive Hampers",
+      regions: ["Germany", "South Africa"]
+    },
+    {
+      nut: "Dates & Hospitality",
+      regions: ["UAE", "Saudi Arabia"]
+    },
+    {
+      nut: "Harvest Gifts",
+      regions: ["Turkey", "Greece"]
+    },
+    {
+      nut: "Corporate Gifts",
+      regions: ["USA", "United Kingdom"]
+    }
+  ],
+
+  nutritionFacts: [
+    {
+      title: "Shareable",
+      value: "Social Snacking",
+      description:
+        "Snack gifts are easy to share at offices, events, family tables and celebrations."
+    },
+    {
+      title: "Longer Shelf Life",
+      value: "Practical Gifting",
+      description:
+        "Nuts, dried fruit and packaged treats are popular gifts because they store better than many fresh foods."
+    },
+    {
+      title: "Custom Mixes",
+      value: "Personal Touch",
+      description:
+        "Gift packs can be tailored for sweet, savoury, healthy or premium preferences."
+    },
+    {
+      title: "Presentation",
+      value: "Gift Experience",
+      description:
+        "Packaging, colour and variety turn everyday snacks into memorable gifting experiences."
+    }
+  ],
+
+  learnMore: [
+  {
+    title: "The Origins of Gift Giving",
+    description:
+      "Explore why people give gifts and how gifting became part of human relationships and culture.",
+    url: "https://www.youtube.com/watch?v=kmLo3KveUMU"
+  },
+{
+  title: "White Day In Japan",
+  description:
+    "Discover Japan's unique gift-giving tradition where gifts are exchanged one month after Valentine's Day.",
+  url: "https://www.youtube.com/watch?v=0hZnv75E3PI"
+},
+  {
+    title: "The History of Christmas Presents",
+    description:
+      "Learn how Christmas gift-giving traditions developed over time.",
+    url: "https://www.youtube.com/watch?v=6lCYmPZRdO0"
+  },
+  {
+    title: "The History of Father's Day",
+    description:
+      "Discover how Father's Day began and became a celebration of fathers and father figures.",
+    url: "https://www.youtube.com/watch?v=uqZvIgNeUsI"
+  }
+]
+},
+};
+
+const page = categoryContent[selectedCategoryPage];
+
+    return (
+    <div className="brand-website">
+      <main className="brand-category-page">
+        <button
+          type="button"
+          className="back-to-website-btn"
+          onClick={() => setSelectedCategoryPage(null)}
+        >
+          ← Back to Website
+        </button>
+{page.heroImage && (
+  <div className="brand-category-hero-image">
+    <img src={page.heroImage} alt={page.title} />
+  </div>
+)}
+
+<p className="brand-eyebrow">{page.eyebrow}</p>
+<h1>{page.title}</h1>
+<p>{page.description}</p>
+
+       <h2 className="brand-category-section-title">
+  Explore The Collection
+</h2>
+
+        <div className="brand-category-grid">
+          {(page.items || []).map((item) => (
+            <div className="brand-category-item" key={item.title}>
+              <img
+                src={item.image}
+                alt={item.title}
+                className="brand-category-image"
+              />
+
+              <h3>{item.title}</h3>
+              <p>{item.description}</p>
+            </div>
+          ))}
+        </div>
+
+        {page.didYouKnow && (
+          <section className="brand-info-section">
+            <h2>Did You Know?</h2>
+            <div className="brand-fact-grid">
+              {page.didYouKnow.map((fact) => (
+                <div className="brand-fact-card" key={fact.title}>
+                  <strong>{fact.stat}</strong>
+                  <h3>{fact.title}</h3>
+                  <p>{fact.text}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+      {page.growingRegions && (
+  <section className="brand-info-section brand-world-section">
+        <h2>Around The World</h2>
+    <p>
+  {page.worldIntro}
+</p>
+
+    <div className="brand-region-card-grid">
+      {page.growingRegions.map((row) => (
+        <div className="brand-region-card" key={row.nut}>
+          <h3>{row.nut}</h3>
+
+          <div className="brand-region-tags">
+          {row.regions.map((region) => {
+  const flags = {
+    USA: "https://flagcdn.com/w40/us.png",
+    Spain: "https://flagcdn.com/w40/es.png",
+    Australia: "https://flagcdn.com/w40/au.png",
+    Vietnam: "https://flagcdn.com/w40/vn.png",
+    India: "https://flagcdn.com/w40/in.png",
+    Africa: "https://flagcdn.com/w40/za.png",
+    "South Africa": "https://flagcdn.com/w40/za.png",
+    Iran: "https://flagcdn.com/w40/ir.png",
+    Turkey: "https://flagcdn.com/w40/tr.png",
+    Mexico: "https://flagcdn.com/w40/mx.png",
+    Thailand: "https://flagcdn.com/w40/th.png",
+    Canada: "https://flagcdn.com/w40/ca.png",
+    Egypt: "https://flagcdn.com/w40/eg.png",
+    UAE: "https://flagcdn.com/w40/ae.png",
+    "Saudi Arabia": "https://flagcdn.com/w40/sa.png",
+    Mexico: "https://flagcdn.com/w40/mx.png",
+    Argentina: "https://flagcdn.com/w40/ar.png",
+    Bolivia: "https://flagcdn.com/w40/bo.png",
+
+    Canada: "https://flagcdn.com/w40/ca.png",
+    Russia: "https://flagcdn.com/w40/ru.png",
+    China: "https://flagcdn.com/w40/cn.png",
+
+    Ukraine: "https://flagcdn.com/w40/ua.png",
+
+    Sudan: "https://flagcdn.com/w40/sd.png",
+    Ethiopia: "https://flagcdn.com/w40/et.png",
+    Ghana: "https://flagcdn.com/w40/gh.png",
+    "Ivory Coast": "https://flagcdn.com/w40/ci.png",
+    Ecuador: "https://flagcdn.com/w40/ec.png",
+
+    Brazil: "https://flagcdn.com/w40/br.png",
+    Madagascar: "https://flagcdn.com/w40/mg.png",
+    Indonesia: "https://flagcdn.com/w40/id.png",
+    Hungary: "https://flagcdn.com/w40/hu.png",
+    Romania: "https://flagcdn.com/w40/ro.png",
+
+    "New Zealand": "https://flagcdn.com/w40/nz.png",
+
+    Yemen: "https://flagcdn.com/w40/ye.png",
+    "Saudi Arabia": "https://flagcdn.com/w40/sa.png",
+
+    Japan: "https://flagcdn.com/w40/jp.png",
+    Germany: "https://flagcdn.com/w40/de.png",
+    Greece: "https://flagcdn.com/w40/gr.png",
+    "United Kingdom": "https://flagcdn.com/w40/gb.png",
+  };
+
+  return (
+    <span key={region}>
+      <img src={flags[region]} alt="" />
+      {region}
+    </span>
+  );
+})}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
+        {page.nutritionFacts && (
+  <section className="brand-info-section brand-nutrition-card">
+    <h2>Nutrition Spotlight</h2>
+
+    <div className="brand-nutrition-grid">
+      {page.nutritionFacts.map((fact) => (
+        <div className="brand-nutrition-item" key={fact.title}>
+          <strong>{fact.value}</strong>
+          <h3>{fact.title}</h3>
+          <p>{fact.description}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+)}
+
+ {page.learnMore && (
+  <section className="brand-info-section">
+    <h2>{page.learnMoreTitle || "Learn More"}</h2>
+
+    <div className="brand-learn-grid">
+      {page.learnMore.map((item) => {
+        const videoId = item.url ? item.url.split("v=")[1] : "";
+
+        return (
+          <div className="brand-learn-card" key={item.title}>
+            <div className="brand-learn-image-placeholder">
+              {videoId ? (
+                <img
+                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                  alt={item.title}
+                  className="brand-learn-thumbnail"
+                />
+              ) : (
+                <span>🎥</span>
+              )}
+            </div>
+
+            <h3>{item.title}</h3>
+            <p>{item.description}</p>
+
+            <a
+              href={item.url || "#"}
+              target="_blank"
+              rel="noreferrer"
+              className={`brand-learn-btn ${!item.url ? "disabled" : ""}`}
+              onClick={(e) => {
+                if (!item.url) e.preventDefault();
+              }}
+            >
+              Watch Video
+            </a>
+          </div>
+        );
+      })}
+    </div>
+  </section>
+)}
+      </main>
+    </div>
+  );
+}
+  return (
+    <div className="brand-website">
+      <header className="brand-nav">
+        <div className="brand-nav-logo">
+          <img src="/snack-logo.png" alt="The Snack Merchant" />
+          <div>
+            <strong>The Snack Merchant</strong>
+            <span>Artisan Nuts & Goodies</span>
+          </div>
+        </div>
+
+        <nav className="brand-nav-links">
+  <a href="#about">About</a>
+  <a href="#products">Products</a>
+  <a href="#markets">Markets</a>
+  <a href="#contact">Contact</a>
+
+  <button
+    type="button"
+    onClick={() => {
+      setShowShop(true);
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+    }}
+  >
+    Shop Online
+  </button>
+</nav>
+      </header>
+
+      <main>
+        <section className="brand-hero">
+  <img src="/website/hero-banner.jpg" alt="The Snack Merchant premium snacks" />
+
+  <div className="hero-center-logo">
+  <img src="/website/SMLogo.jpg" alt="The Snack Merchant logo" />
+</div>
+</section>
+
+        <section className="brand-hero-cta">
+  <p>Premium Nuts • Dried Fruit • Seeds • Gourmet Snacks</p>
+  <h1>Quality snacks for everyday orders, markets, offices and gifting.</h1>
+
+  <div className="brand-actions center">
+    <button
+  type="button"
+  onClick={() => {
+    setShowShop(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+  }}
+>
+      Shop Online
+    </button>
+   
+  </div>
+</section>
+
+
+
+   <section className="brand-why">
+  <p className="brand-eyebrow">Why Choose Us</p>
+  <h2>Premium snacks with convenience, quality and trust.</h2>
+
+  <div className="brand-why-grid">
+    <div className="brand-why-card">
+            <h3>Premium Quality</h3>
+      <p>Carefully selected nuts, dried fruit, seeds, treats and gourmet snacks.</p>
+    </div>
+
+    <div className="brand-why-card">
+           <h3>Nationwide Delivery</h3>
+      <p>PUDO locker delivery available across South Africa.</p>
+    </div>
+
+    <div className="brand-why-card">
+            <h3>Markets & Events</h3>
+      <p>Professional market presence for festivals, corporate events and gifting.</p>
+    </div>
+
+    <div className="brand-why-card">
+            <h3>Trusted Distributor</h3>
+      <p>Proud distributor for Crazy Nuts Snacks.</p>
+    </div>
+  </div>
+</section>
+<section className="brand-featured">
+  <p className="brand-eyebrow">Featured Favourites</p>
+  <h2>Our Best Sellers</h2>
+
+ <div className="brand-featured-grid">
+  <div className="brand-featured-card">
+    <img src="/website/Yogurt Cashews.png" alt="Yoghurt Cashews" />
+    <h3>Yoghurt Cashews</h3>
+    <p>Creamy yoghurt-coated cashews and one of our most popular sweet treats.</p>
+  </div>
+
+  <div className="brand-featured-card">
+    <img src="/website/Mixed Nuts.png" alt="Mixed Nuts" />
+    <h3>Mixed Nuts</h3>
+    <p>A premium nut blend for everyday snacking, sharing and gifting.</p>
+  </div>
+
+  <div className="brand-featured-card">
+    <img src="/website/Sugar Fruit Cubes.png" alt="Sugar Fruit Cubes" />
+    <h3>Sugar Fruit Cubes</h3>
+    <p>Colourful fruit cubes, perfect for kids, parties, gifting and sweet snacking.</p>
+  </div>
+
+  <div className="brand-featured-card">
+    <img src="/website/Cashew peri.jpg" alt="Peri-Peri Cashews" />
+    <h3>Peri-Peri Cashews</h3>
+    <p>Premium cashews with a bold peri-peri kick for savoury snack lovers.</p>
+  </div>
+</div>
+
+  <button
+    type="button"
+    className="brand-featured-btn"
+    onClick={() => {
+  setShowShop(true);
+  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+}}
+  >
+    View Full Product Range
+  </button>
+<section className="brand-gifts">
+  <div className="brand-gifts-content">
+    <p className="brand-eyebrow">Corporate Gifts & Bulk Orders</p>
+    <h2>Gift-ready snack packs for teams, clients and events.</h2>
+    <p>
+      From client thank-you gifts to team snack packs and event hampers, we can
+      prepare premium snack selections using nuts, dried fruit, honey and sweet
+      treats.
+    </p>
+
+    <div className="brand-actions left">
+           <button
+  type="button"
+  onClick={() => {
+    setShowShop(true);
+    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+  }}
+>
+  Shop Online
+</button>
+    </div>
+  </div>
+
+  <div className="brand-gifts-gallery">
+    <img src="/website/Corporate Gifts 1.jpg.png" alt="Corporate gift pack option 1" />
+    <img src="/website/Corporate Gifts 2.jpg.png" alt="Corporate gift pack option 2" />
+    <img src="/website/Corporate Gifts 3.jpg.png" alt="Corporate gift pack option 3" />
+  </div>
+</section>
+
+<section className="brand-trust">
+  <p className="brand-eyebrow">WHY CUSTOMERS LOVE US</p>
+
+  <h2>Quality, convenience and trusted service.</h2>
+
+  <div className="brand-trust-grid">
+
+    <div className="brand-trust-card">
+      <h3>Premium Ingredients</h3>
+      <p>
+        Premium nuts, dried fruit, seeds and treats sourced from trusted suppliers.
+      </p>
+    </div>
+
+    <div className="brand-trust-card">
+      <h3>Freshly Packed</h3>
+      <p>
+        Carefully packed and quality checked before reaching our customers.
+      </p>
+    </div>
+
+    <div className="brand-trust-card">
+      <h3>Markets & Community</h3>
+      <p>
+        Serving customers online, at markets, festivals and community events across South Africa.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+</section>
+       <section id="about" className="brand-section brand-about">
+          <div>
+            <p className="brand-eyebrow">About The Snack Merchant</p>
+            <h2>Quality you can taste, from Centurion to your door.</h2>
+            <p>
+              The Snack Merchant is a Centurion-based snack business offering premium nuts,
+              dried fruit, seeds, trail mixes, chocolate and yoghurt treats, savoury snacks,
+              honey and curated gift packs.
+            </p>
+            <p>
+              We proudly supply market customers, households, offices, events and gifting
+              orders, with PUDO delivery available nationwide and collection requests in
+              Centurion.
+            </p>
+            <p className="brand-note">Distributor for Crazy Nuts Snacks.</p>
+          </div>
+
+          <img src="/website/Snack Merchant Stand Front.jpg" alt="The Snack Merchant market stand" />
+        </section>
+
+        <section id="products" className="brand-section brand-products">
+          <p className="brand-eyebrow">Product Range</p>
+          <h2>Explore our premium snack range</h2>
+
+          <div className="brand-product-grid">
+            {productHighlights.map((item) => (
+              <button
+                type="button"
+                key={item.title}
+                className="brand-product-card"
+onClick={() => {
+  const pageMap = {
+    "Premium Nuts": "premium-nuts",
+    "Dried Fruit": "dried-fruit",
+    "Seeds & Health Pantry": "seeds-health",
+    "Chocolate & Yoghurt Treats": "chocolate-yoghurt",
+    Honey: "honey",
+    "Gift Packs & Events": "gift-packs"
+  };
+
+  setSelectedCategoryPage(pageMap[item.title]);
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}}
+              >
+                <img
+                img src={item.image} alt={item.title} />
+                <span>{item.title}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+      <section id="markets" className="brand-events">
+  <p className="brand-eyebrow">Markets & Events</p>
+  <h2>Find The Snack Merchant at markets and community events.</h2>
+
+  <h3 className="brand-events-subtitle">Upcoming Markets</h3>
+
+  <div className="brand-events-grid">
+    <div className="brand-event-card featured">
+      <span>27 June</span>
+      <h3>Inside Out Market</h3>
+      <p>Lenchen Avenue, Centurion.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>11 July</span>
+      <h3>Busstop 7 Market</h3>
+      <p>Weekend market event.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>18 July</span>
+      <h3>Busstop 7 Market</h3>
+      <p>Weekend market event.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>25 July</span>
+      <h3>Busstop 7 Market</h3>
+      <p>Weekend market event.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>1 Aug</span>
+      <h3>Sionspoort Vleisfees Randfontein</h3>
+      <p>Community food and market event.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>14–16 Aug</span>
+      <h3>Outdoor Expo Broederstroom</h3>
+      <p>Outdoor expo and vendor event.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>29 Aug</span>
+      <h3>Pierre van Ryneveld Dorpsfees</h3>
+      <p>Community market and festival day.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>10 Oct</span>
+      <h3>Oktoberfest Randfontein</h3>
+      <p>Festival and family market event.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>30–31 Oct</span>
+      <h3>Oppidorpfees Bronkhorstspruit</h3>
+      <p>Local festival and vendor market.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>13–15 Nov</span>
+      <h3>Kersfees is Groot</h3>
+      <p>Christmas market and festive gifting event.</p>
+    </div>
+  </div>
+
+  <h3 className="brand-events-subtitle past">Past Events</h3>
+
+  <div className="brand-events-grid past-events">
+    <div className="brand-event-card past">
+      <span>29–31 May</span>
+      <h3>Afridome Parys</h3>
+      <p>Three-day market event in Parys.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>20–21 June</span>
+      <h3>Killarney Golf Club Winter Soiree</h3>
+      <p>Premium winter market event.</p>
+    </div>
+  </div>
+  </section>
+
+  <section id="contact" className="brand-contact-forms">
+  <p className="brand-eyebrow">Contact</p>
+  <h2>Enquiries & Vendor Bookings</h2>
+  <p className="brand-contact-intro">
+    Send us a general enquiry or invite The Snack Merchant to exhibit at your
+    market, festival, school, estate day or corporate event.
+  </p>
+
+  <div className="brand-form-grid">
+    <form
+      className="brand-enquiry-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        const subject = "General Enquiry - The Snack Merchant";
+        const body = `
+General Enquiry
+
+Name: ${data.get("name")}
+Email: ${data.get("email")}
+Cell: ${data.get("cell")}
+
+Message:
+${data.get("message")}
+        `;
+        window.location.href = `mailto:gideonfick@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      }}
+    >
+      <h3>General Enquiry</h3>
+      <p>For product questions, bulk orders, gifts, pricing or delivery.</p>
+
+      <input name="name" placeholder="Your name" required />
+      <input name="email" type="email" placeholder="Email address" required />
+      <input name="cell" placeholder="Cell number" required />
+      <textarea name="message" placeholder="How can we help?" rows="5" required />
+
+      <button type="submit">Send General Enquiry</button>
+    </form>
+
+    <form
+      className="brand-enquiry-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        const data = new FormData(e.currentTarget);
+        const subject = "Vendor Booking Enquiry - The Snack Merchant";
+        const body = `
+Vendor / Market Booking Enquiry
+
+Contact Person: ${data.get("contactPerson")}
+Organisation / Venue: ${data.get("venue")}
+Event Name: ${data.get("eventName")}
+Event Date: ${data.get("eventDate")}
+Expected Visitors: ${data.get("visitors")}
+Cell: ${data.get("bookingCell")}
+Email: ${data.get("bookingEmail")}
+
+Event Details:
+${data.get("eventDetails")}
+        `;
+        window.location.href = `mailto:gideonfick@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      }}
+    >
+      <h3>Book Us As A Vendor</h3>
+      <p>For markets, festivals, schools, estates and corporate events.</p>
+
+      <input name="contactPerson" placeholder="Contact person" required />
+      <input name="venue" placeholder="Organisation / venue" required />
+      <input name="eventName" placeholder="Event name" required />
+      <input name="eventDate" type="date" required />
+      <input name="visitors" placeholder="Expected visitors" />
+      <input name="bookingCell" placeholder="Cell number" required />
+      <input name="bookingEmail" type="email" placeholder="Email address" required />
+      <textarea name="eventDetails" placeholder="Tell us about the event" rows="5" required />
+
+      <button type="submit">Send Booking Enquiry</button>
+    </form>
+  </div>
+</section>
+
+
+<footer className="brand-footer">
+  <div>
+    <strong>The Snack Merchant</strong>
+    <span>Artisan Nuts & Goodies</span>
+  </div>
+
+  <p>
+    Premium nuts, dried fruit, seeds, honey, treats and gift packs from Centurion, Gauteng.
+  </p>
+
+  <p>
+    PUDO delivery nationwide • Centurion collection requests • Distributor for Crazy Nuts Snacks
+  </p>
+</footer>
+
+</main>
+
+      
+    </div>
+  );
+}
+
  return (
   <div className="app">
+    <button
+      type="button"
+      className="back-to-website-btn"
+      onClick={() => setShowShop(false)}
+    >
+      ← Back to Website
+    </button>
 
     {cartToast && (
       <div className="cart-toast">
