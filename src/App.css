@@ -5802,3 +5802,44 @@ html {
     object-position: center !important;
   }
 }
+/* Final hero banner reset */
+.brand-hero {
+  min-height: 0 !important;
+  height: auto !important;
+  overflow: hidden !important;
+}
+
+.brand-hero picture {
+  display: block !important;
+  width: 100% !important;
+}
+
+.brand-hero img {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+}
+/* Final desktop hero image correction */
+@media (min-width: 901px) {
+  .brand-hero {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .brand-hero picture {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .brand-hero img {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+  }
+}
