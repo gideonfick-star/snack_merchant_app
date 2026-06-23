@@ -4494,12 +4494,17 @@ const page = categoryContent[selectedCategoryPage];
 )}
      </main>
 
-<div className="brand-floating-nav">
+<div className="brand-floating-nav brand-category-floating-nav">
   <a href="#top">Top</a>
-  <a href="#about">About</a>
-  <a href="#products">Products</a>
-  <a href="#markets">Markets</a>
-  <a href="#contact">Contact</a>
+  <button
+    type="button"
+    onClick={() => {
+      setSelectedCategoryPage(null);
+      setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), 0);
+    }}
+  >
+    Back
+  </button>
 </div>
 
 </div>
