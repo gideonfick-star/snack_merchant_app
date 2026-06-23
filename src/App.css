@@ -4958,3 +4958,157 @@ body {
     line-height: 1.45 !important;
   }
 }
+/* =========================================
+   WEBSITE MOBILE FIX - PHASE 1 FINAL
+========================================= */
+
+@media (max-width: 768px) {
+
+  .brand-nav {
+    padding: 12px 14px !important;
+  }
+
+  .brand-nav-logo strong {
+    font-size: 0.9rem !important;
+  }
+
+  .brand-nav-logo span {
+    font-size: 0.7rem !important;
+  }
+
+  .brand-nav-links button,
+  .brand-actions button,
+  .brand-actions a {
+    padding: 10px 18px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* HERO */
+
+  .brand-hero > img {
+    height: auto !important;
+    max-height: 340px !important;
+    object-fit: cover !important;
+  }
+
+  .hero-center-logo {
+    width: 180px !important;
+    top: 70% !important;
+  }
+
+  .hero-center-logo img {
+    width: 180px !important;
+  }
+
+  .brand-hero-cta {
+    padding: 35px 20px 40px !important;
+  }
+
+  .brand-hero-cta h1 {
+    font-size: 2rem !important;
+    line-height: 1.15 !important;
+  }
+
+  /* ABOUT */
+
+  .brand-about,
+  .brand-markets,
+  .brand-gifts {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+
+  .brand-about h2,
+  .brand-products h2,
+  .brand-markets h2,
+  .brand-events h2,
+  .brand-contact h2 {
+    font-size: 2.1rem !important;
+    line-height: 1.15 !important;
+  }
+
+  /* WHY CHOOSE US */
+
+  .brand-why-grid,
+  .brand-trust-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* PRODUCT CARDS */
+
+  .brand-product-grid {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .brand-product-card {
+    max-width: 100% !important;
+  }
+
+  .brand-product-card img {
+    height: 240px !important;
+  }
+
+  /* FEATURED PRODUCTS */
+
+  .brand-featured-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* GIFTS */
+
+  .brand-gifts-gallery {
+    grid-template-columns: 1fr !important;
+  }
+
+  .brand-gifts-gallery img {
+    height: 220px !important;
+  }
+
+  .brand-gifts h2 {
+    font-size: 2rem !important;
+  }
+
+  /* EVENTS */
+
+  .brand-events-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .brand-event-card {
+    padding: 24px !important;
+  }
+
+  /* FORMS */
+
+  .brand-form-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .brand-enquiry-form {
+    padding: 22px !important;
+  }
+
+  .brand-enquiry-form button {
+    width: 100% !important;
+  }
+
+  /* CATEGORY PAGES */
+
+  .brand-category-grid {
+    flex-direction: column !important;
+    align-items: center !important;
+  }
+
+  .brand-category-item {
+    max-width: 100% !important;
+  }
+
+  .brand-region-card-grid,
+  .brand-nutrition-grid,
+  .brand-learn-grid,
+  .brand-fact-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+}
