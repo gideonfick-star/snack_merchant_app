@@ -5351,3 +5351,23 @@ html {
     top: auto !important;
   }
 }
+/* MOBILE HERO FULL BANNER FIX */
+@media (max-width: 768px) {
+  .brand-hero {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    background: #000 !important;
+  }
+
+  .brand-hero > img {
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    display: block !important;
+  }
+}
