@@ -5783,3 +5783,19 @@ html {
     box-shadow: none;
   }
 }
+@media (max-width: 900px) {
+  .brand-hero {
+    min-height: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .brand-hero img {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    object-fit: contain !important;
+    object-position: center !important;
+  }
+}
