@@ -4492,9 +4492,18 @@ const page = categoryContent[selectedCategoryPage];
     </div>
   </section>
 )}
-      </main>
-    </div>
-  );
+     </main>
+
+<div className="brand-floating-nav">
+  <a href="#top">Top</a>
+  <a href="#about">About</a>
+  <a href="#products">Products</a>
+  <a href="#markets">Markets</a>
+  <a href="#contact">Contact</a>
+</div>
+
+</div>
+);
 }
   return (
     <div className="brand-website" id="top">
