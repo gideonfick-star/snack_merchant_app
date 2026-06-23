@@ -4297,7 +4297,11 @@ learnMore: [
 ]
 },
 };
-
+useEffect(() => {
+  if (selectedCategoryPage) {
+    window.scrollTo(0, 0);
+  }
+}, [selectedCategoryPage]);
 const page = categoryContent[selectedCategoryPage];
 
     return (

@@ -5315,3 +5315,25 @@ body {
     max-width: 360px !important;
   }
 }
+/* MOBILE HERO FINAL CROP FIX */
+@media (max-width: 768px) {
+  .brand-hero {
+    height: 190px !important;
+    max-height: 190px !important;
+    overflow: hidden !important;
+    background: #000 !important;
+  }
+
+  .brand-hero > img {
+    width: 100% !important;
+    height: 190px !important;
+    max-height: 190px !important;
+    object-fit: cover !important;
+    object-position: center 18% !important;
+    display: block !important;
+  }
+
+  .brand-nav {
+    align-items: center !important;
+  }
+}
