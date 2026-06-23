@@ -5371,3 +5371,123 @@ html {
     display: block !important;
   }
 }
+/* =========================================
+   MOBILE OPTIMISATION PHASE 2
+   CARD COMPACTING
+========================================= */
+
+@media (max-width: 768px) {
+
+  /* Market cards */
+  .brand-events {
+    padding-top: 38px !important;
+    padding-bottom: 38px !important;
+  }
+
+  .brand-events-grid {
+    gap: 16px !important;
+    margin-bottom: 24px !important;
+  }
+
+  .brand-event-card {
+    padding: 20px 18px !important;
+    border-radius: 22px !important;
+  }
+
+  .brand-event-card span {
+    margin-bottom: 8px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .brand-event-card h3 {
+    font-size: 1.35rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .brand-event-card p {
+    font-size: 0.95rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .brand-events-subtitle {
+    margin: 28px auto 18px !important;
+    font-size: 1.35rem !important;
+  }
+
+  .brand-events-subtitle.past {
+    margin-top: 34px !important;
+  }
+
+  /* Product cards */
+  .brand-product-grid,
+  .brand-featured-grid {
+    gap: 18px !important;
+    margin-top: 24px !important;
+  }
+
+  .brand-product-card,
+  .brand-featured-card {
+    border-radius: 22px !important;
+  }
+
+  .brand-product-card img,
+  .brand-featured-card img {
+    height: 190px !important;
+  }
+
+  .brand-product-card span {
+    padding: 14px 16px 16px !important;
+    font-size: 1rem !important;
+  }
+
+  .brand-featured-card h3 {
+    margin: 14px 14px 8px !important;
+    font-size: 1.25rem !important;
+  }
+
+  .brand-featured-card p {
+    padding: 0 14px 18px !important;
+    font-size: 0.95rem !important;
+    line-height: 1.45 !important;
+  }
+
+  /* Corporate gifts */
+  .brand-gifts {
+    gap: 24px !important;
+  }
+
+  .brand-gifts-gallery {
+    gap: 14px !important;
+  }
+
+  .brand-gifts-gallery img,
+  .brand-gifts-gallery img:first-child {
+    height: 175px !important;
+  }
+
+  /* Educational / Learn more cards */
+  .brand-learn-grid {
+    gap: 18px !important;
+  }
+
+  .brand-learn-card {
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  .brand-learn-image-placeholder {
+    height: 105px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .brand-learn-card h3 {
+    font-size: 1.2rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .brand-learn-card p {
+    font-size: 0.95rem !important;
+    line-height: 1.45 !important;
+    margin-bottom: 14px !important;
+  }
+}
