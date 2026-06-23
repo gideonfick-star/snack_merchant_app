@@ -4863,3 +4863,98 @@ body {
     grid-template-columns: 1fr;
   }
 }
+/* ================================
+   MOBILE OPTIMISATION PHASE 1
+   ================================ */
+
+@media (max-width: 768px) {
+  /* General mobile section spacing */
+  .brand-section,
+  .brand-products,
+  .brand-featured,
+  .brand-why,
+  .brand-about,
+  .brand-events,
+  .brand-contact-forms {
+    padding-top: 48px !important;
+    padding-bottom: 48px !important;
+  }
+
+  /* General mobile headings */
+  .brand-section h2,
+  .brand-products h2,
+  .brand-featured h2,
+  .brand-why h2,
+  .brand-about h2,
+  .brand-events h2,
+  .brand-contact-forms h2 {
+    font-size: 2.25rem !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  /* Eyebrow headings */
+  .brand-eyebrow {
+    font-size: 0.82rem !important;
+    letter-spacing: 0.18em !important;
+    line-height: 1.5 !important;
+    margin-bottom: 14px !important;
+  }
+
+  /* Hero intro area */
+  .brand-hero-copy {
+    padding: 54px 7% 46px !important;
+  }
+
+  .brand-hero-copy h1 {
+    font-size: 2.65rem !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  .brand-hero-copy .brand-actions {
+    margin-top: 24px !important;
+  }
+
+  /* Large hero banner image */
+  .brand-hero-image {
+    min-height: 420px !important;
+    height: 420px !important;
+    background-size: cover !important;
+    background-position: center top !important;
+  }
+
+  /* Fix broken customer-love cards */
+  .brand-love-grid,
+  .brand-proof-grid,
+  .brand-trust-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+    overflow: visible !important;
+  }
+
+  .brand-love-card,
+  .brand-proof-card,
+  .brand-trust-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 32px 26px !important;
+    border-radius: 28px !important;
+  }
+
+  .brand-love-card h3,
+  .brand-proof-card h3,
+  .brand-trust-card h3 {
+    font-size: 1.75rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .brand-love-card p,
+  .brand-proof-card p,
+  .brand-trust-card p {
+    font-size: 1.05rem !important;
+    line-height: 1.45 !important;
+  }
+}
