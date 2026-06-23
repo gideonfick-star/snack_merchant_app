@@ -5112,3 +5112,136 @@ body {
   }
 
 }
+/* =========================================
+   LIVE MOBILE HOTFIX - WEBSITE
+========================================= */
+
+@media (max-width: 768px) {
+
+  .brand-hero {
+    height: 280px !important;
+    max-height: 280px !important;
+    overflow: hidden !important;
+    background: #000 !important;
+  }
+
+  .brand-hero > img {
+    width: 100% !important;
+    height: 280px !important;
+    max-height: 280px !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+    display: block !important;
+  }
+
+  .hero-center-logo {
+    display: none !important;
+  }
+
+  .brand-hero-cta {
+    padding: 32px 18px 38px !important;
+  }
+
+  .brand-hero-cta p {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.16em !important;
+    line-height: 1.5 !important;
+  }
+
+  .brand-hero-cta h1 {
+    font-size: 1.85rem !important;
+    line-height: 1.18 !important;
+    letter-spacing: -0.03em !important;
+    margin: 0 auto 20px !important;
+    max-width: 360px !important;
+  }
+
+  .brand-section,
+  .brand-featured,
+  .brand-products,
+  .brand-why,
+  .brand-events,
+  .brand-contact-forms {
+    padding: 42px 20px !important;
+  }
+
+  .brand-about h2,
+  .brand-products h2,
+  .brand-featured h2,
+  .brand-why h2,
+  .brand-events h2,
+  .brand-contact-forms h2 {
+    font-size: 1.9rem !important;
+    line-height: 1.16 !important;
+    margin-bottom: 28px !important;
+  }
+
+  .brand-eyebrow {
+    font-size: 0.72rem !important;
+    letter-spacing: 0.2em !important;
+    margin-bottom: 12px !important;
+  }
+
+  .brand-why-card,
+  .brand-trust-card,
+  .brand-event-card {
+    padding: 24px 20px !important;
+    border-radius: 24px !important;
+  }
+
+  .brand-gifts {
+    margin: 34px 16px !important;
+    padding: 42px 22px !important;
+    border-radius: 32px !important;
+    width: auto !important;
+  }
+
+  .brand-gifts h2 {
+    font-size: 1.9rem !important;
+    line-height: 1.16 !important;
+  }
+
+  .brand-gifts p {
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+  }
+
+  .brand-gifts-gallery img,
+  .brand-gifts-gallery img:first-child {
+    height: 190px !important;
+    border-radius: 22px !important;
+  }
+
+  .brand-category-page {
+    padding: 28px 18px 50px !important;
+  }
+
+  .brand-category-page h1 {
+    font-size: 2rem !important;
+    line-height: 1.15 !important;
+  }
+
+  .brand-category-page > p {
+    font-size: 1rem !important;
+    line-height: 1.55 !important;
+    margin-bottom: 34px !important;
+  }
+
+  .brand-category-section-title {
+    margin: 34px 0 18px !important;
+    font-size: 1.7rem !important;
+  }
+
+  .brand-info-section {
+    padding: 22px 16px !important;
+    margin-top: 32px !important;
+  }
+
+  .brand-learn-card {
+    padding: 18px !important;
+  }
+
+  .brand-learn-image-placeholder {
+    height: 120px !important;
+  }
+}
