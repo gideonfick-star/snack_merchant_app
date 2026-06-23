@@ -5337,3 +5337,17 @@ body {
     align-items: center !important;
   }
 }
+html {
+  scroll-behavior: auto !important;
+}
+
+@media (max-width: 768px) {
+  .brand-website {
+    scroll-margin-top: 0 !important;
+  }
+
+  .brand-nav {
+    position: relative !important;
+    top: auto !important;
+  }
+}

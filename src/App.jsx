@@ -4297,11 +4297,7 @@ learnMore: [
 ]
 },
 };
-useEffect(() => {
-  if (selectedCategoryPage) {
-    window.scrollTo(0, 0);
-  }
-}, [selectedCategoryPage]);
+
 const page = categoryContent[selectedCategoryPage];
 
     return (
@@ -4310,7 +4306,10 @@ const page = categoryContent[selectedCategoryPage];
         <button
           type="button"
           className="back-to-website-btn"
-          onClick={() => setSelectedCategoryPage(null)}
+          onClick={() => {
+  setSelectedCategoryPage(null);
+  setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), 0);
+}}
         >
           ← Back to Website
         </button>
@@ -4723,8 +4722,11 @@ onClick={() => {
     "Gift Packs & Events": "gift-packs"
   };
 
+window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+setTimeout(() => {
   setSelectedCategoryPage(pageMap[item.title]);
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+}, 0);
 }}
               >
                 <img
