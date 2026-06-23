@@ -5732,17 +5732,31 @@ html {
 
 @media (max-width: 768px) {
   .brand-floating-nav {
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999;
+    display: flex;
     flex-direction: row;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 6px;
+    justify-content: space-around;
+    align-items: center;
+    gap: 0;
+    padding: 7px 6px calc(7px + env(safe-area-inset-bottom));
+    background: rgba(0, 0, 0, 0.92);
+    border-top: 1px solid rgba(245, 197, 66, 0.55);
   }
 
   .brand-floating-nav a {
-    padding: 8px 10px;
-    font-size: 0.7rem;
+    flex: 1;
+    padding: 4px 2px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: #f5c542;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-align: center;
+    box-shadow: none;
   }
 }
