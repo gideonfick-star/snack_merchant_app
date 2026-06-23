@@ -4544,7 +4544,7 @@ const page = categoryContent[selectedCategoryPage];
   <picture>
   <source
     media="(max-width: 768px)"
-    srcSet="/website/Hero Banner 1.png"
+    srcSet="/website/hero-banner-mobile.png"
   />
   <img
     src="/website/hero-banner.jpg"
