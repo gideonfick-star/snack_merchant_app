@@ -3586,11 +3586,16 @@ body.admin-mode .admin-variant-row select {
     height: 48px;
   }
 
-  .brand-hero,
-  .brand-hero img {
-    min-height: 700px;
-    height: 580px;
-  }
+.brand-hero,
+.brand-hero img {
+  min-height: 0;
+  height: auto;
+}
+
+.brand-hero img {
+  width: 100%;
+  object-fit: contain;
+}
 
   .brand-hero-overlay {
     left: 18px;
