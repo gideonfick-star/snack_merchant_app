@@ -4497,7 +4497,7 @@ const page = categoryContent[selectedCategoryPage];
   );
 }
   return (
-    <div className="brand-website">
+    <div className="brand-website" id="top">
       <header className="brand-nav">
         <div className="brand-nav-logo">
           <img src="/snack-logo.png" alt="The Snack Merchant" />
@@ -4553,8 +4553,7 @@ const page = categoryContent[selectedCategoryPage];
 </section>
 
 
-
-   <section className="brand-why">
+<section className="brand-why">
   <p className="brand-eyebrow">Why Choose Us</p>
   <h2>Premium snacks with convenience, quality and trust.</h2>
 
@@ -4919,9 +4918,16 @@ ${data.get("eventDetails")}
 
 </main>
 
-      
-    </div>
-  );
+<div className="brand-floating-nav">
+  <a href="#top">Top</a>
+  <a href="#about">About</a>
+  <a href="#products">Products</a>
+  <a href="#markets">Markets</a>
+  <a href="#contact">Contact</a>
+</div>
+
+</div>
+);
 }
 
  return (
