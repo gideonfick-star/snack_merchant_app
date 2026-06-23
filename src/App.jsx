@@ -4558,7 +4558,7 @@ const page = categoryContent[selectedCategoryPage];
 </section>
 
         <section className="brand-hero-cta">
-  <p>Premium Nuts • Dried Fruit • Seeds • Gourmet Snacks</p>
+  <p>Premium Nuts • Dried Fruit • Seeds • Snack Packs • Corporate Gifts • Hampers</p>
   <h1>Quality snacks for everyday orders, markets, offices and gifting.</h1>
 
   <div className="brand-actions center">
