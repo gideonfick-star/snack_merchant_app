@@ -3344,7 +3344,10 @@ body.admin-mode .admin-variant-row select {
   overflow: visible;
   background: #000;
 }
-
+.brand-hero picture {
+  display: block;
+  width: 100%;
+}
 .brand-hero img {
   width: 100%;
   height: auto;

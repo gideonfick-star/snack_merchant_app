@@ -4541,7 +4541,16 @@ const page = categoryContent[selectedCategoryPage];
 
       <main>
         <section className="brand-hero">
-  <img src="/website/hero-banner.jpg" alt="The Snack Merchant premium snacks" />
+  <picture>
+  <source
+    media="(max-width: 768px)"
+    srcSet="/website/Hero Banner 1.png"
+  />
+  <img
+    src="/website/hero-banner.jpg"
+    alt="The Snack Merchant premium snacks"
+  />
+</picture>
 
   <div className="hero-center-logo">
   <img src="/website/SMLogo.jpg" alt="The Snack Merchant logo" />
