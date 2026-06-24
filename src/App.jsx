@@ -1834,6 +1834,12 @@ ${data.paymentUrl}
 
 Once payment is received we will prepare your order.
 
+Questions or assistance?
+
+WhatsApp: 068 759 7884
+Email: info@thesnackmerchant.co.za
+Website: www.thesnackmerchant.co.za
+
 The Snack Merchant 🌰`;
 
     await navigator.clipboard.writeText(message);
@@ -2812,34 +2818,47 @@ Thank you for supporting The Snack Merchant.`;
 }
 
   if (orderStatus === "Closed") {
-    message += `${orderSummary}
+  message += `${orderSummary}
 
 Your order has been completed ✅
 
 Thank you for supporting The Snack Merchant 🌰`;
-    message += `
 
-The Snack Merchant 🌰`;
-    return message;
-  }
+  message += `
+
+The Snack Merchant 🌰
+WhatsApp: 068 759 7884
+Email: info@thesnackmerchant.co.za
+Website: www.thesnackmerchant.co.za`;
+
+  return message;
+}
 
   if (orderStatus === "Cancelled") {
-    message += `${orderSummary}
+  message += `${orderSummary}
 
 Your order has been cancelled.
 
 No further action is required. If you would still like to order, please place a new order through The Snack Merchant app or contact us via WhatsApp on 068 759 7884.`;
-    message += `
-
-The Snack Merchant 🌰`;
-    return message;
-  }
 
   message += `
 
-The Snack Merchant 🌰`;
+The Snack Merchant 🌰
+WhatsApp: 068 759 7884
+Email: info@thesnackmerchant.co.za
+Website: www.thesnackmerchant.co.za`;
 
   return message;
+}
+
+message += `
+
+The Snack Merchant 🌰
+WhatsApp: 068 759 7884
+Email: info@thesnackmerchant.co.za
+Website: www.thesnackmerchant.co.za`;
+
+return message;
 };
 
 const generateInvoicePDF = (order) => {
@@ -2847,7 +2866,11 @@ const generateInvoicePDF = (order) => {
 
   const orderStatus = normalizeOrderStatus(order.order_status);
   const paymentStatus = order.payment_status || "-";
-  const isPaid = paymentStatus === "Paid" || orderStatus === "Paid";
+
+  const isPaid =
+    paymentStatus === "Paid" ||
+    ["Paid", "Ready for Collection", "Dispatched", "Closed"].includes(orderStatus);
+
   const isFinal =
     ["Paid", "Ready for Collection", "Dispatched", "Closed"].includes(orderStatus);
 
@@ -2862,7 +2885,6 @@ const generateInvoicePDF = (order) => {
   const hasDeliveryFee = deliveryFee > 0;
   const finalTotal = Number(order.total_amount || productsTotal + deliveryFee);
 
-  // ================= HEADER =================
   try {
     doc.addImage("/invoice-logo.png", "PNG", 18, 10, 28, 28);
   } catch (error) {
@@ -2879,10 +2901,10 @@ const generateInvoicePDF = (order) => {
 
   doc.setFontSize(10);
   doc.setTextColor(80, 80, 80);
-  doc.text("WhatsApp Orders: 068 759 7884", 52, 38);
-  doc.text("https://snack-merchant-app.vercel.app/", 52, 45);
+  doc.text("WhatsApp: 068 759 7884", 52, 38);
+  doc.text("Email: info@thesnackmerchant.co.za", 52, 45);
+  doc.text("Website: www.thesnackmerchant.co.za", 52, 52);
 
-  // ================= INVOICE INFO =================
   doc.setFontSize(16);
   doc.setTextColor(isPaid || isFinal ? 20 : 160, isPaid || isFinal ? 120 : 90, 20);
   doc.text(invoiceTitle, 145, 20);
@@ -2892,19 +2914,17 @@ const generateInvoicePDF = (order) => {
   doc.text(`Invoice #: ${order.order_number}`, 145, 30);
   doc.text(`Date: ${new Date(order.created_at).toLocaleString()}`, 145, 38);
 
-  // ================= STATUS BOX =================
- doc.setDrawColor(212, 175, 55);
-doc.setLineWidth(0.4);
-doc.rect(105, 55, 85, 35);
+  doc.setDrawColor(212, 175, 55);
+  doc.setLineWidth(0.4);
+  doc.rect(105, 55, 85, 35);
 
-doc.setFontSize(9);
-doc.text("Order Status", 109, 63);
+  doc.setFontSize(9);
+  doc.text("Order Status", 109, 63);
 
-doc.setFontSize(11);
-const wrappedOrderStatus = doc.splitTextToSize(orderStatus || "-", 76);
-doc.text(wrappedOrderStatus, 109, 72);
+  doc.setFontSize(11);
+  const wrappedOrderStatus = doc.splitTextToSize(orderStatus || "-", 76);
+  doc.text(wrappedOrderStatus, 109, 72);
 
-    // ================= CUSTOMER DETAILS =================
   doc.setFontSize(13);
   doc.setTextColor(212, 175, 55);
   doc.text("Customer Details", 20, 60);
@@ -2915,13 +2935,11 @@ doc.text(wrappedOrderStatus, 109, 72);
   doc.text(`Phone: ${order.customer_phone || "-"}`, 20, 78);
   doc.text(`Email: ${order.customer_email || "Not provided"}`, 20, 86);
   doc.text(`Order Type: ${order.order_type || "-"}`, 20, 94);
-  
 
   if (hasDeliveryFee) {
     doc.text(`Delivery / PUDO Fee: R${deliveryFee.toFixed(2)}`, 20, 110);
   }
 
-  // ================= ITEMS TABLE =================
   autoTable(doc, {
     startY: hasDeliveryFee ? 122 : 114,
     head: [["Product", "Size", "Qty", "Unit Price", "Line Total"]],
@@ -2956,7 +2974,6 @@ doc.text(wrappedOrderStatus, 109, 72);
     },
   });
 
-  // ================= TOTALS =================
   const finalY = doc.lastAutoTable.finalY + 12;
 
   doc.setFontSize(11);
@@ -2969,81 +2986,75 @@ doc.text(wrappedOrderStatus, 109, 72);
 
   doc.setFontSize(14);
   doc.setTextColor(212, 175, 55);
-  doc.text(`Final Total: R${finalTotal.toFixed(2)}`, 130, hasDeliveryFee ? finalY + 18 : finalY + 10);
-
-  // ================= PAYMENT / CONFIRMATION SECTION =================
- 
-const paymentY = hasDeliveryFee ? finalY + 35 : finalY + 28;
-
-const paymentNotRequiredYet = [
-  "New Order",
-  "Pending Stock Confirmation",
-].includes(orderStatus);
-
-doc.setFontSize(13);
-doc.setTextColor(212, 175, 55);
-
-if (isPaid || isFinal) {
-  doc.text("Payment Confirmation", 20, paymentY);
-
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
-  doc.text("Payment has been received for this order.", 20, paymentY + 10);
-  doc.text("Thank you for your purchase from The Snack Merchant.", 20, paymentY + 18);
-} else if (paymentNotRequiredYet) {
-  const isCollectionOrder = order.order_type === "Collection";
-
-  doc.text("Payment Status", 20, paymentY);
-
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
-
   doc.text(
-    "This is a pro forma invoice for order review only.",
-    20,
-    paymentY + 10
+    `Final Total: R${finalTotal.toFixed(2)}`,
+    130,
+    hasDeliveryFee ? finalY + 18 : finalY + 10
   );
 
-  doc.text("Payment is not required yet.", 20, paymentY + 18);
+  const paymentY = hasDeliveryFee ? finalY + 25 : finalY + 22;
 
-  if (isCollectionOrder) {
-    doc.text(
-      "We will confirm local Centurion stock availability before requesting payment.",
-      20,
-      paymentY + 28
-    );
+  const paymentNotRequiredYet = [
+    "New Order",
+    "Pending Stock Confirmation",
+  ].includes(orderStatus);
+
+  doc.setFontSize(13);
+  doc.setTextColor(212, 175, 55);
+
+  if (isPaid || isFinal) {
+    doc.text("Payment Confirmation", 20, paymentY);
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+    doc.text("Payment has been received for this order.", 20, paymentY + 10);
+    doc.text("Thank you for your purchase from The Snack Merchant.", 20, paymentY + 18);
+  } else if (paymentNotRequiredYet) {
+    const isCollectionOrder = order.order_type === "Collection";
+
+    doc.text("Payment Status", 20, paymentY);
+
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
+
+    doc.text("This is a pro forma invoice for order review only.", 20, paymentY + 10);
+    doc.text("Payment is not required yet.", 20, paymentY + 18);
+
+    if (isCollectionOrder) {
+      doc.text(
+        "We will confirm local Centurion stock availability before requesting payment.",
+        20,
+        paymentY + 28
+      );
+    } else {
+      doc.text(
+        "We will confirm your order before requesting payment.",
+        20,
+        paymentY + 28
+      );
+    }
   } else {
-    doc.text("Payment is required before dispatch.", 20, paymentY + 28);
-
-    doc.text(
-      "Please use your Order Number as the payment reference.",
-      20,
-      paymentY + 38
-    );
-  }
-} else {
-
     doc.text("Payment Instructions", 20, paymentY);
 
-  doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0);
 
-  doc.text("This is a pro forma invoice. Payment is required before collection or dispatch.", 20, paymentY + 10);
+    doc.text(
+      "This is a pro forma invoice. Payment is required before collection or dispatch.",
+      20,
+      paymentY + 10
+    );
 
-  doc.text("EFT Banking Details:", 20, paymentY + 22);
-  doc.text(`Bank: ${EFT_BANK}`, 20, paymentY + 30);
-  doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, paymentY + 38);
-  doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, paymentY + 46);
-  doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, paymentY + 54);
-  doc.text(
-  `Reference: ${order.order_number || ""}`,
-  20,
-  paymentY + 62
-);
+    doc.text("EFT Banking Details:", 20, paymentY + 22);
+    doc.text(`Bank: ${EFT_BANK}`, 20, paymentY + 30);
+    doc.text(`Account Name: ${EFT_ACCOUNT_NAME}`, 20, paymentY + 38);
+    doc.text(`Account Number: ${EFT_ACCOUNT_NUMBER}`, 20, paymentY + 46);
+    doc.text(`Branch Code: ${EFT_BRANCH_CODE}`, 20, paymentY + 54);
+    doc.text(`Reference: ${order.order_number || ""}`, 20, paymentY + 62);
 
-  doc.text("For PayFast online payment, please use the secure payment link sent separately.", 20, paymentY + 74);
-}
-  // ================= FOOTER =================
+    doc.text("For PayFast online payment, please use the secure payment link sent separately.", 20, paymentY + 68);
+  }
+
   const pageHeight = doc.internal.pageSize.height;
 
   doc.setDrawColor(212, 175, 55);
@@ -3051,9 +3062,16 @@ if (isPaid || isFinal) {
 
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
-  doc.text("The Snack Merchant • Quality You Can Taste", 20, pageHeight - 17);
-  doc.text("WhatsApp Orders: 068 759 7884", 20, pageHeight - 11);
-  doc.text("Prices and stock availability are subject to confirmation.", 110, pageHeight - 11);
+
+  doc.text("The Snack Merchant • Quality You Can Taste", 20, pageHeight - 18);
+  doc.text("WhatsApp: 068 759 7884", 20, pageHeight - 12);
+  doc.text("Email: info@thesnackmerchant.co.za", 20, pageHeight - 6);
+
+  if (isPaid || isFinal) {
+    doc.text("Thank you for supporting The Snack Merchant.", 95, pageHeight - 6);
+  } else {
+    doc.text("Prices and stock availability are subject to confirmation.", 95, pageHeight - 6);
+  }
 
   const blobUrl = doc.output("bloburl");
   window.open(blobUrl, "_blank");
@@ -3063,6 +3081,7 @@ const generateReceiptPDF = (order) => {
   const doc = new jsPDF();
 
   const orderStatus = normalizeOrderStatus(order.order_status);
+
   const productsTotal = (order.items || []).reduce(
     (sum, item) => sum + Number(item.price || 0) * Number(item.qty || 0),
     0
@@ -3072,7 +3091,6 @@ const generateReceiptPDF = (order) => {
   const hasDeliveryFee = deliveryFee > 0;
   const finalTotal = Number(order.total_amount || productsTotal + deliveryFee);
 
-  // ================= HEADER =================
   try {
     doc.addImage("/invoice-logo.png", "PNG", 18, 10, 28, 28);
   } catch (error) {
@@ -3089,10 +3107,10 @@ const generateReceiptPDF = (order) => {
 
   doc.setFontSize(10);
   doc.setTextColor(80, 80, 80);
-  doc.text("WhatsApp Orders: 068 759 7884", 52, 38);
-  doc.text("https://snack-merchant-app.vercel.app/", 52, 45);
+  doc.text("WhatsApp: 068 759 7884", 52, 38);
+  doc.text("Email: info@thesnackmerchant.co.za", 52, 45);
+  doc.text("Website: www.thesnackmerchant.co.za", 52, 52);
 
-  // ================= RECEIPT INFO =================
   doc.setFontSize(14);
   doc.setTextColor(20, 120, 20);
   doc.text("PAYMENT RECEIPT", 145, 20);
@@ -3102,7 +3120,6 @@ const generateReceiptPDF = (order) => {
   doc.text(`Receipt #: ${order.order_number}`, 135, 30);
   doc.text(`Date: ${new Date().toLocaleString()}`, 135, 38);
 
-  // ================= STATUS BOX =================
   doc.setDrawColor(212, 175, 55);
   doc.setLineWidth(0.4);
   doc.rect(105, 55, 85, 35);
@@ -3120,7 +3137,6 @@ const generateReceiptPDF = (order) => {
   const wrappedOrderStatus = doc.splitTextToSize(orderStatus || "-", 76);
   doc.text(wrappedOrderStatus, 109, 87);
 
-  // ================= CUSTOMER DETAILS =================
   doc.setFontSize(13);
   doc.setTextColor(212, 175, 55);
   doc.text("Customer Details", 20, 60);
@@ -3132,7 +3148,6 @@ const generateReceiptPDF = (order) => {
   doc.text(`Email: ${order.customer_email || "Not provided"}`, 20, 86);
   doc.text(`Order Type: ${order.order_type || "-"}`, 20, 94);
 
-  // ================= ITEMS TABLE =================
   autoTable(doc, {
     startY: 112,
     head: [["Product", "Size", "Qty", "Unit Price", "Line Total"]],
@@ -3167,7 +3182,6 @@ const generateReceiptPDF = (order) => {
     },
   });
 
-  // ================= TOTAL PAID =================
   const finalY = doc.lastAutoTable.finalY + 12;
 
   doc.setFontSize(11);
@@ -3180,9 +3194,12 @@ const generateReceiptPDF = (order) => {
 
   doc.setFontSize(15);
   doc.setTextColor(20, 120, 20);
-  doc.text(`Total Paid: R${finalTotal.toFixed(2)}`, 130, hasDeliveryFee ? finalY + 18 : finalY + 10);
+  doc.text(
+    `Total Paid: R${finalTotal.toFixed(2)}`,
+    130,
+    hasDeliveryFee ? finalY + 18 : finalY + 10
+  );
 
-  // ================= RECEIPT CONFIRMATION =================
   const receiptY = hasDeliveryFee ? finalY + 35 : finalY + 28;
 
   doc.setFontSize(13);
@@ -3195,7 +3212,6 @@ const generateReceiptPDF = (order) => {
   doc.text("This receipt confirms payment received by The Snack Merchant.", 20, receiptY + 18);
   doc.text("Thank you for your purchase.", 20, receiptY + 26);
 
-  // ================= FOOTER =================
   const pageHeight = doc.internal.pageSize.height;
 
   doc.setDrawColor(212, 175, 55);
@@ -3203,9 +3219,10 @@ const generateReceiptPDF = (order) => {
 
   doc.setFontSize(9);
   doc.setTextColor(80, 80, 80);
-  doc.text("The Snack Merchant • Quality You Can Taste", 20, pageHeight - 17);
-  doc.text("WhatsApp Orders: 068 759 7884", 20, pageHeight - 11);
-  doc.text("Receipt generated after payment confirmation.", 110, pageHeight - 11);
+  doc.text("The Snack Merchant • Quality You Can Taste", 20, pageHeight - 18);
+  doc.text("WhatsApp: 068 759 7884", 20, pageHeight - 12);
+  doc.text("Email: info@thesnackmerchant.co.za", 20, pageHeight - 6);
+  doc.text("Payment received. Thank you for supporting The Snack Merchant.", 95, pageHeight - 6);
 
   const blobUrl = doc.output("bloburl");
   window.open(blobUrl, "_blank");
@@ -4869,7 +4886,7 @@ Cell: ${data.get("cell")}
 Message:
 ${data.get("message")}
         `;
-        window.location.href = `mailto:gideonfick@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = `mailto:info@thesnackmerchant.co.za?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       }}
     >
       <h3>General Enquiry</h3>
@@ -4903,7 +4920,7 @@ Email: ${data.get("bookingEmail")}
 Event Details:
 ${data.get("eventDetails")}
         `;
-        window.location.href = `mailto:gideonfick@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        window.location.href = `mailto:info@thesnackmerchant.co.za?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       }}
     >
       <h3>Book Us As A Vendor</h3>
@@ -4936,6 +4953,18 @@ ${data.get("eventDetails")}
 
   <p>
     PUDO delivery nationwide • Centurion collection requests • Distributor for Crazy Nuts Snacks
+  </p>
+
+  <p>
+    📧 info@thesnackmerchant.co.za
+  </p>
+
+  <p>
+    📱 WhatsApp: 068 759 7884
+  </p>
+
+  <p>
+    🌐 www.thesnackmerchant.co.za
   </p>
 </footer>
 
@@ -4971,17 +5000,24 @@ ${data.get("eventDetails")}
 {showOrderSuccess && (
   <div className="order-success-overlay">
     <div className="order-success-card">
-      <h2>
-        {orderSuccessType === "payfast"
-  ? "Payment Received ✅"
-  : orderSuccessType === "collection"
-  ? "Collection Request Submitted ✅"
-  : "Order Confirmed ✅"}
-      </h2>
-
-      {orderSuccessType === "payfast" ? (
+     <h2>
+  {orderSuccessType === "payfast"
+    ? "Payment Received ✅"
+    : orderSuccessType === "collection"
+    ? "Collection Request Submitted ✅"
+    : "Order Confirmed ✅"}
+</h2>
+        {orderSuccessType === "payfast" ? (
   <>
-    <p>Thank you. Your payment has been received.</p>
+    <p>Thank you. Your payment has been received successfully.</p>
+
+    <p className="order-success-note compact-popup">
+      Your order has been marked as Paid and will now be prepared for collection or dispatch.
+    </p>
+
+    <p className="order-success-note compact-popup">
+      Questions? Contact us on WhatsApp 068 759 7884 or info@thesnackmerchant.co.za
+    </p>
   </>
 ) : orderSuccessType === "collection" ? (
   <>
@@ -4992,6 +5028,14 @@ ${data.get("eventDetails")}
     <p className="order-success-note compact-popup">
       We will confirm local stock availability before requesting payment.
     </p>
+
+    <p className="order-success-note compact-popup">
+      Once stock is confirmed, you will receive payment instructions from The Snack Merchant.
+    </p>
+
+    <p className="order-success-note compact-popup">
+      Questions? Contact us on WhatsApp 068 759 7884 or info@thesnackmerchant.co.za
+    </p>
   </>
 ) : (
   <>
@@ -5001,13 +5045,21 @@ ${data.get("eventDetails")}
       <p><span>Account No</span><strong>{EFT_ACCOUNT_NUMBER}</strong></p>
       <p><span>Branch</span><strong>{EFT_BRANCH_CODE}</strong></p>
       <p>
-  <span>Reference</span>
-  <strong>{orderSuccessNumber}</strong>
-</p>
+        <span>Reference</span>
+        <strong>{orderSuccessNumber}</strong>
+      </p>
     </div>
 
     <p className="order-success-note compact-popup">
-      Please send proof of payment on WhatsApp.
+      Please use your Order Number as payment reference.
+    </p>
+
+    <p className="order-success-note compact-popup">
+      Send proof of payment via WhatsApp to 068 759 7884.
+    </p>
+
+    <p className="order-success-note compact-popup">
+      Website: www.thesnackmerchant.co.za
     </p>
   </>
 )}
@@ -6049,13 +6101,15 @@ ${data.get("eventDetails")}
     target="_blank"
     rel="noopener noreferrer"
   >
-    snack-merchant-app.vercel.app
+    www.thesnackmerchant.co.za
   </a>
 </div>
 
 <footer>
   <p>The Snack Merchant</p>
-  <p>Gideon Fick • 068 759 7884</p>
+  <p>WhatsApp: 068 759 7884</p>
+  <p>Email: info@thesnackmerchant.co.za</p>
+  <p>Website: www.thesnackmerchant.co.za</p>
 </footer>
 
 {showOrderConfirm && (
