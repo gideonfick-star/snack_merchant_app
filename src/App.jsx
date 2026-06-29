@@ -4555,7 +4555,7 @@ const page = categoryContent[selectedCategoryPage];
 </div>
 );
 }
-  if (showShop) {
+ if (showShop) {
     return (
       <div>
         <button
@@ -4597,7 +4597,7 @@ const page = categoryContent[selectedCategoryPage];
     type="button"
     onClick={() => {
       setShowShop(true);
-navigate("/shop");
+navigate("/");
 setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
     }}
   >
@@ -4633,7 +4633,7 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   type="button"
   onClick={() => {
    setShowShop(true);
-navigate("/shop");
+navigate("/");
 setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   }}
 >
@@ -4705,12 +4705,13 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
     className="brand-featured-btn"
     onClick={() => {
   setShowShop(true);
-navigate("/shop");
-setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+  navigate("/");
+  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
 }}
   >
     View Full Product Range
   </button>
+  
 <section className="brand-gifts">
   <div className="brand-gifts-content">
     <p className="brand-eyebrow">Corporate Gifts & Bulk Orders</p>
@@ -4726,7 +4727,7 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   type="button"
   onClick={() => {
     setShowShop(true);
-navigate("/shop");
+navigate("/");
 setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   }}
 >
@@ -5100,7 +5101,11 @@ ${data.get("eventDetails")}
     <button
       type="button"
       className="back-to-website-btn"
-      onClick={() => setShowShop(false)}
+      onClick={() => {
+  setShowShop(false);
+  navigate("/");
+  setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), 0);
+}}
     >
       ← Back to Website
     </button>
