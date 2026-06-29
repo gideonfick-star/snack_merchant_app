@@ -1670,7 +1670,7 @@ export default function App() {
   };
 
  const categoryFromPath = pathToCategory[location.pathname];
-
+ 
 if (categoryFromPath) {
   setShowShop(false);
   setSelectedCategoryPage(categoryFromPath);
@@ -4358,7 +4358,10 @@ const page = categoryContent[selectedCategoryPage];
         </button>
 {page.heroImage && (
   <div className="brand-category-hero-image">
-    <img src={page.heroImage} alt={page.title} />
+    <img
+  src={page.heroImage}
+  alt={`${page.title} | The Snack Merchant South Africa`}
+/>
   </div>
 )}
 
@@ -4465,7 +4468,7 @@ const page = categoryContent[selectedCategoryPage];
 
   return (
     <span key={region}>
-      <img src={flags[region]} alt="" />
+      <img src={flags[region]} alt={`${region} flag`} />
       {region}
     </span>
   );
@@ -4580,7 +4583,7 @@ const page = categoryContent[selectedCategoryPage];
     <div className="brand-website" id="top">
       <header className="brand-nav">
         <div className="brand-nav-logo">
-          <img src="/snack-logo.png" alt="The Snack Merchant" />
+          <img src="/snack-logo.png" alt="The Snack Merchant logo" />
           <div>
             <strong>The Snack Merchant</strong>
             <span>Artisan Nuts & Goodies</span>
@@ -4676,25 +4679,25 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
 
  <div className="brand-featured-grid">
   <div className="brand-featured-card">
-    <img src="/website/Yogurt Cashews.png" alt="Yoghurt Cashews" />
+    <img src="/website/Yogurt Cashews.png" alt="Premium yoghurt coated cashews from The Snack Merchant" />
     <h3>Yoghurt Cashews</h3>
     <p>Creamy yoghurt-coated cashews and one of our most popular sweet treats.</p>
   </div>
 
   <div className="brand-featured-card">
-    <img src="/website/Mixed Nuts.png" alt="Mixed Nuts" />
+    <img src="/website/Mixed Nuts.png" alt="Premium mixed nuts from The Snack Merchant South Africa" />
     <h3>Mixed Nuts</h3>
     <p>A premium nut blend for everyday snacking, sharing and gifting.</p>
   </div>
 
   <div className="brand-featured-card">
-    <img src="/website/Sugar Fruit Cubes.png" alt="Sugar Fruit Cubes" />
+    <img src="/website/Sugar Fruit Cubes.png" alt="Colourful sugar fruit cubes from The Snack Merchant" />
     <h3>Sugar Fruit Cubes</h3>
     <p>Colourful fruit cubes, perfect for kids, parties, gifting and sweet snacking.</p>
   </div>
 
   <div className="brand-featured-card">
-    <img src="/website/Cashew peri.jpg" alt="Peri-Peri Cashews" />
+    <img src="/website/Cashew peri.jpg" alt="Peri-peri cashews from The Snack Merchant" />
     <h3>Peri-Peri Cashews</h3>
     <p>Premium cashews with a bold peri-peri kick for savoury snack lovers.</p>
   </div>
@@ -4737,9 +4740,9 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   </div>
 
   <div className="brand-gifts-gallery">
-    <img src="/website/Corporate Gifts 1.jpg.png" alt="Corporate gift pack option 1" />
-    <img src="/website/Corporate Gifts 2.jpg.png" alt="Corporate gift pack option 2" />
-    <img src="/website/Corporate Gifts 3.jpg.png" alt="Corporate gift pack option 3" />
+    <img src="/website/Corporate Gifts 1.jpg.png" alt="Corporate snack gift hamper by The Snack Merchant" />
+    <img src="/website/Corporate Gifts 2.jpg.png" alt="Premium corporate gift box by The Snack Merchant" />
+    <img src="/website/Corporate Gifts 3.jpg.png" alt="Luxury gourmet snack hamper by The Snack Merchant" />
   </div>
 </section>
 
