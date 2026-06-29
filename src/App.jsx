@@ -4939,7 +4939,28 @@ ${data.get("eventDetails")}
     </form>
   </div>
 </section>
+<section className="brand-review-section">
+  <h3>Love The Snack Merchant?</h3>
+<p>
+  We're a proudly South African small business and every Google Review
+  helps more customers discover The Snack Merchant. If you've enjoyed
+  our products or service, we'd be incredibly grateful if you could
+  share your experience.
+</p>
 
+  <a
+  href="https://g.page/r/CVj2UTky_KjDEAE/review"
+  target="_blank"
+  rel="noopener noreferrer"
+  aria-label="Leave The Snack Merchant a Google Review"
+  className="brand-review-button"
+>
+    Leave Your Google Review
+  </a>
+  <p className="review-small">
+  Trusted by customers across South Africa • Thank you for supporting local business
+</p>
+</section>
 
 <footer className="brand-footer">
   <div>

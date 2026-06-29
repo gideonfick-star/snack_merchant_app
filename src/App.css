@@ -5843,3 +5843,68 @@ html {
     object-position: center center !important;
   }
 }
+/* ==========================
+   Google Review Section
+========================== */
+
+.brand-review-section {
+  background: #f8f3eb;
+  padding: 60px 7%;
+  text-align: center;
+  border-top: 1px solid rgba(0,0,0,0.08);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.brand-review-section h3 {
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: #2a1a0f;
+  margin-bottom: 18px;
+}
+
+.brand-review-section p {
+  max-width: 760px;
+  margin: 0 auto 28px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #555;
+}
+
+.brand-review-button {
+  display: inline-block;
+  background: linear-gradient(135deg, #d4af37, #b8860b);
+  color: #fff;
+  text-decoration: none;
+  padding: 18px 42px;
+  border-radius: 999px;
+  font-size: 1.08rem;
+  font-weight: 700;
+  transition: all 0.25s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+
+  /* NEW */
+  margin-bottom: 28px;
+}
+
+.brand-review-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(0,0,0,0.22);
+  background: linear-gradient(135deg, #e5c158, #c99712);
+}
+
+@media (max-width: 768px) {
+  .brand-review-section {
+    padding: 45px 6%;
+  }
+
+  .brand-review-button {
+    width: 100%;
+    max-width: 340px;
+    cursor: pointer;
+  }
+}
+.review-small {
+  font-size: 0.9rem;
+  color: #777;
+  line-height: 1.6;
+  margin: 0;
+}
