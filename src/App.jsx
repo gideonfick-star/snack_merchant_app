@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import "./App.css";
 import jsPDF from "jspdf";
@@ -1649,6 +1650,8 @@ const catalog = [
 ];
 
 export default function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showShop, setShowShop] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeStock, setActiveStock] = useState("All Stock");
@@ -1656,6 +1659,28 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCategoryPage, setSelectedCategoryPage] = useState(null);
+  useEffect(() => {
+  const pathToCategory = {
+    "/premium-nuts": "premium-nuts",
+    "/dried-fruit": "dried-fruit",
+    "/seeds-health": "seeds-health",
+    "/chocolate-yoghurt": "chocolate-yoghurt",
+    "/honey": "honey",
+    "/gift-packs": "gift-packs",
+  };
+
+ const categoryFromPath = pathToCategory[location.pathname];
+
+if (categoryFromPath) {
+  setShowShop(false);
+  setSelectedCategoryPage(categoryFromPath);
+  setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), 0);
+} else {
+  setSelectedCategoryPage(null);
+  setShowShop(false);
+}
+
+}, [location.pathname]);
 
   const [customer, setCustomer] = useState({
   name: "",
@@ -4323,8 +4348,9 @@ const page = categoryContent[selectedCategoryPage];
         <button
           type="button"
           className="back-to-website-btn"
-          onClick={() => {
+        onClick={() => {
   setSelectedCategoryPage(null);
+  navigate("/");
   setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), 0);
 }}
         >
@@ -4516,9 +4542,11 @@ const page = categoryContent[selectedCategoryPage];
   <button
     type="button"
     onClick={() => {
-      setSelectedCategoryPage(null);
-      setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), 0);
-    }}
+  setSelectedCategoryPage(null);
+  setShowShop(false);
+  navigate("/");
+  setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), 0);
+}}
   >
     Back
   </button>
@@ -4527,6 +4555,27 @@ const page = categoryContent[selectedCategoryPage];
 </div>
 );
 }
+  if (showShop) {
+    return (
+      <div>
+        <button
+          type="button"
+          className="back-to-website-btn"
+          onClick={() => {
+  setSelectedCategoryPage(null);
+  setShowShop(false);
+  window.history.pushState({}, "", "/");
+  navigate("/", { replace: true });
+  setTimeout(() => window.scrollTo({ top: 0, left: 0, behavior: "auto" }), 0);
+}}
+        >
+          ← Back to Website
+        </button>
+
+        {renderShopContent()}
+      </div>
+    );
+  }
   return (
     <div className="brand-website" id="top">
       <header className="brand-nav">
@@ -4548,7 +4597,8 @@ const page = categoryContent[selectedCategoryPage];
     type="button"
     onClick={() => {
       setShowShop(true);
-      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+navigate("/shop");
+setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
     }}
   >
     Shop Online
@@ -4582,8 +4632,9 @@ const page = categoryContent[selectedCategoryPage];
     <button
   type="button"
   onClick={() => {
-    setShowShop(true);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+   setShowShop(true);
+navigate("/shop");
+setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   }}
 >
       Shop Online
@@ -4654,7 +4705,8 @@ const page = categoryContent[selectedCategoryPage];
     className="brand-featured-btn"
     onClick={() => {
   setShowShop(true);
-  setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+navigate("/shop");
+setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
 }}
   >
     View Full Product Range
@@ -4674,7 +4726,8 @@ const page = categoryContent[selectedCategoryPage];
   type="button"
   onClick={() => {
     setShowShop(true);
-    setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+navigate("/shop");
+setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   }}
 >
   Shop Online
@@ -4761,9 +4814,13 @@ onClick={() => {
     "Gift Packs & Events": "gift-packs"
   };
 
+const targetPage = pageMap[item.title];
+
 window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+
 setTimeout(() => {
-  setSelectedCategoryPage(pageMap[item.title]);
+  setSelectedCategoryPage(targetPage);
+  navigate(`/${targetPage}`);
   window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 }, 0);
 }}

@@ -8,30 +8,44 @@
   </url>
 
   <url>
-    <loc>https://www.thesnackmerchant.co.za/#about</loc>
-    <lastmod>2026-06-29</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <url>
-    <loc>https://www.thesnackmerchant.co.za/#products</loc>
+    <loc>https://www.thesnackmerchant.co.za/premium-nuts</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://www.thesnackmerchant.co.za/#markets</loc>
+    <loc>https://www.thesnackmerchant.co.za/dried-fruit</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.thesnackmerchant.co.za/seeds-health</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://www.thesnackmerchant.co.za/chocolate-yoghurt</loc>
     <lastmod>2026-06-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://www.thesnackmerchant.co.za/#contact</loc>
+    <loc>https://www.thesnackmerchant.co.za/honey</loc>
     <lastmod>2026-06-29</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.thesnackmerchant.co.za/gift-packs</loc>
+    <lastmod>2026-06-29</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 </urlset>
