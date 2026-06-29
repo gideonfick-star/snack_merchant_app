@@ -4962,6 +4962,41 @@ ${data.get("eventDetails")}
 </p>
 </section>
 
+<section className="brand-seo-section">
+  <div className="brand-seo-content">
+
+    <h2>Premium Nuts, Dried Fruit & Healthy Snacks in South Africa</h2>
+
+    <p>
+      The Snack Merchant is a proudly South African business based in Centurion,
+      Gauteng, supplying premium nuts, dried fruit, seeds, gourmet snacks,
+      healthy snack packs and corporate gifts throughout South Africa.
+    </p>
+
+    <p>
+      Our range includes premium almonds, cashews, macadamias, pecans,
+      pistachios, walnuts, hazelnuts, Brazil nuts, peanuts, trail mixes,
+      pumpkin seeds, sunflower seeds, chia seeds, flaxseed, dried mango,
+      dried apricots, cranberries, raisins, dates, fruit cubes, yoghurt-coated
+      treats, honey and beautifully presented gift packs.
+    </p>
+
+    <p>
+      Whether you're shopping for healthy everyday snacks, school snack packs,
+      office treats, corporate gifting, market favourites or premium artisan
+      products, The Snack Merchant offers quality products with nationwide
+      delivery and convenient collection in Centurion.
+    </p>
+
+    <p>
+      We proudly serve customers across Pretoria, Johannesburg, Gauteng and
+      the rest of South Africa through our online store, local markets and
+      festivals.
+    </p>
+
+  </div>
+</section>
+
 <footer className="brand-footer">
   <div>
     <strong>The Snack Merchant</strong>

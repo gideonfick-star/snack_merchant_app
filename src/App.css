@@ -5908,3 +5908,49 @@ html {
   line-height: 1.6;
   margin: 0;
 }
+/* SEO Content Section */
+
+.brand-seo-section {
+  padding: 70px 7%;
+  background: #f9f4ea;
+  border-top: 1px solid #e6dac4;
+  border-bottom: 1px solid #e6dac4;
+}
+
+.brand-seo-content {
+  max-width: 950px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.brand-seo-content h2 {
+  color: #2a1a0f;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  margin-bottom: 28px;
+  font-weight: 800;
+}
+
+.brand-seo-content p {
+  color: #4f4238;
+  font-size: 1.08rem;
+  line-height: 1.9;
+  margin: 0 auto 24px;
+  max-width: 900px;
+}
+
+@media (max-width: 768px) {
+
+  .brand-seo-section {
+    padding: 50px 6%;
+  }
+
+  .brand-seo-content h2 {
+    font-size: 1.8rem;
+  }
+
+  .brand-seo-content p {
+    font-size: 1rem;
+    line-height: 1.8;
+  }
+
+}
