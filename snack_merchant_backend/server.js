@@ -6,6 +6,9 @@ const path = require("path");
 const fs = require("fs");
 const { Pool } = require("pg");
 const crypto = require("crypto");
+const { Resend } = require("resend");
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const app = express();
 
@@ -419,9 +422,151 @@ app.post("/orders", async (req, res) => {
       ]
     );
 
+    const savedOrder = result.rows[0];
+
+    // ================= NEW ORDER EMAIL NOTIFICATION =================
+
+    try {
+      const orderItems = Array.isArray(items) ? items : [];
+
+      const itemRows = orderItems
+        .map((item) => {
+          const itemName = item.name || item.product || "Product";
+          const itemSize = item.size || "";
+          const itemQty = Number(item.qty || item.quantity || 0);
+          const itemPrice = Number(item.price || 0);
+
+          return `
+            <tr>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">
+                ${itemName}
+              </td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd;">
+                ${itemSize}
+              </td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">
+                ${itemQty}
+              </td>
+              <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">
+                R${itemPrice.toFixed(2)}
+              </td>
+            </tr>
+          `;
+        })
+        .join("");
+
+      const { data, error } = await resend.emails.send({
+        from: "The Snack Merchant <orders@thesnackmerchant.co.za>",
+        to: ["gideon@thesnackmerchant.co.za"],
+        subject: `NEW ONLINE ORDER - ${orderNumber}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; color: #222; max-width: 700px; margin: 0 auto;">
+            <div style="background: #111; color: #d4af37; padding: 20px;">
+              <h1 style="margin: 0; font-size: 24px;">
+                THE SNACK MERCHANT
+              </h1>
+              <p style="margin: 6px 0 0; color: #fff;">
+                New Online Order Notification
+              </p>
+            </div>
+
+            <div style="padding: 20px;">
+              <h2 style="color: #b8860b;">
+                New Order Received
+              </h2>
+
+              <p>
+                A new customer order has been successfully submitted through the online store.
+              </p>
+
+              <h3>Order Details</h3>
+
+              <p>
+                <strong>Order Number:</strong> ${orderNumber}<br>
+                <strong>Customer:</strong> ${customerName}<br>
+                <strong>Phone:</strong> ${customerPhone}<br>
+                <strong>Email:</strong> ${customerEmail || "Not provided"}<br>
+                <strong>Order Type:</strong> ${orderType}<br>
+                <strong>Payment Method:</strong> ${paymentMethod || "Not specified"}
+              </p>
+
+              ${
+                deliveryAddress
+                  ? `
+                    <p>
+                      <strong>Delivery Address:</strong><br>
+                      ${deliveryAddress}
+                    </p>
+                  `
+                  : ""
+              }
+
+              <h3>Order Items</h3>
+
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background: #111; color: #d4af37;">
+                    <th style="padding: 8px; text-align: left;">Product</th>
+                    <th style="padding: 8px; text-align: left;">Size</th>
+                    <th style="padding: 8px; text-align: center;">Qty</th>
+                    <th style="padding: 8px; text-align: right;">Price</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  ${itemRows}
+                </tbody>
+              </table>
+
+              <div style="margin-top: 20px; font-size: 18px;">
+                <strong>Delivery Fee:</strong>
+                R${Number(deliveryFee || 0).toFixed(2)}
+                <br>
+
+                <strong>Order Total:</strong>
+                R${Number(totalAmount).toFixed(2)}
+              </div>
+
+              ${
+                customerNotes
+                  ? `
+                    <div style="margin-top: 20px;">
+                      <strong>Customer Notes:</strong>
+                      <p>${customerNotes}</p>
+                    </div>
+                  `
+                  : ""
+              }
+
+              <div style="margin-top: 25px; padding: 15px; background: #f5f5f5;">
+                <strong>Action Required:</strong>
+                Open the Snack Merchant Admin Orders Dashboard to review and process this order.
+              </div>
+            </div>
+          </div>
+        `,
+      });
+
+      if (error) {
+        console.error("ORDER NOTIFICATION EMAIL ERROR:", error);
+      } else {
+        console.log(
+          `ORDER NOTIFICATION EMAIL SENT: ${orderNumber}`,
+          data?.id || ""
+        );
+      }
+    } catch (emailError) {
+      console.error(
+        "ORDER NOTIFICATION EMAIL ERROR:",
+        emailError
+      );
+    }
+
+    // ================= END EMAIL NOTIFICATION =================
+
     res.json({
       success: true,
-      order: result.rows[0],
+      order: savedOrder,
     });
   } catch (err) {
     console.error("CREATE ORDER ERROR:", err);
