@@ -14,18 +14,23 @@ const app = express();
 
 // ================= DATABASE =================
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  ssl:
-    process.env.DB_HOST === "127.0.0.1" ||
-    process.env.DB_HOST === "localhost"
-      ? false
-      : { rejectUnauthorized: false },
-});
+const pool = process.env.DATABASE_URL
+  ? new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    })
+  : new Pool({
+      user: process.env.DB_USER,
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      port: process.env.DB_PORT,
+      ssl:
+        process.env.DB_HOST === "127.0.0.1" ||
+        process.env.DB_HOST === "localhost"
+          ? false
+          : { rejectUnauthorized: false },
+    });
 
 // ================= MIDDLEWARE =================
 
