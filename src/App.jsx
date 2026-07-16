@@ -114,6 +114,7 @@ function getCustomerCategory(product) {
 
   return "Mixed Nuts";
 }
+
 const catalog = [
   {
     code: "CNL01",
@@ -1650,8 +1651,27 @@ const catalog = [
 ];
 
 export default function App() {
+  const PROMOTION_VERSION = "PROMO-001";
+
+  const [showPromotionPopup, setShowPromotionPopup] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => {
+  const storageKey = `promotion-${PROMOTION_VERSION}`;
+
+  const lastClosed = localStorage.getItem(storageKey);
+
+  if (!lastClosed) {
+    setShowPromotionPopup(true);
+    return;
+  }
+
+  const sevenDays = 7 * 24 * 60 * 60 * 1000;
+
+  if (Date.now() - Number(lastClosed) > sevenDays) {
+    setShowPromotionPopup(true);
+  }
+}, []);
   const [showShop, setShowShop] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeStock, setActiveStock] = useState("All Stock");
@@ -4608,8 +4628,54 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   </button>
 </nav>
       </header>
+{showPromotionPopup && (
+  <div
+    className="promotion-overlay"
+    onClick={() => setShowPromotionPopup(false)}
+  >
+    <div
+      className="promotion-modal"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+  className="promotion-close"
+  onClick={(e) => {
+  e.stopPropagation();
 
+  localStorage.setItem(
+    `promotion-${PROMOTION_VERSION}`,
+    Date.now().toString()
+  );
+
+  setShowPromotionPopup(false);
+}}
+>
+  ✕
+</button>
+
+      <img
+  src="/website/promotion.jpg"
+  alt="Latest Promotions"
+  className="promotion-image"
+  onClick={() => {
+    setShowPromotionPopup(false);
+    setShowShop(true);
+    navigate("/");
+    setTimeout(() => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }, 100);
+  }}
+/>
+
+      
+    </div>
+  </div>
+)}
       <main>
+      
         <section className="brand-hero">
   <picture>
   <source
@@ -4844,82 +4910,116 @@ setTimeout(() => {
   <h3 className="brand-events-subtitle">Upcoming Markets</h3>
 
   <div className="brand-events-grid">
-    <div className="brand-event-card featured">
-      <span>27 June</span>
-      <h3>Inside Out Market</h3>
-      <p>Lenchen Avenue, Centurion.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>11 July</span>
-      <h3>Busstop 7 Market</h3>
-      <p>Weekend market event.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>18 July</span>
-      <h3>Busstop 7 Market</h3>
-      <p>Weekend market event.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>25 July</span>
-      <h3>Busstop 7 Market</h3>
-      <p>Weekend market event.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>1 Aug</span>
-      <h3>Sionspoort Vleisfees Randfontein</h3>
-      <p>Community food and market event.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>14–16 Aug</span>
-      <h3>Outdoor Expo Broederstroom</h3>
-      <p>Outdoor expo and vendor event.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>29 Aug</span>
-      <h3>Pierre van Ryneveld Dorpsfees</h3>
-      <p>Community market and festival day.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>10 Oct</span>
-      <h3>Oktoberfest Randfontein</h3>
-      <p>Festival and family market event.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>30–31 Oct</span>
-      <h3>Oppidorpfees Bronkhorstspruit</h3>
-      <p>Local festival and vendor market.</p>
-    </div>
-
-    <div className="brand-event-card">
-      <span>13–15 Nov</span>
-      <h3>Kersfees is Groot</h3>
-      <p>Christmas market and festive gifting event.</p>
-    </div>
+  <div className="brand-event-card featured">
+    <span>18 July 2026</span>
+    <h3>Busstop 7 Market</h3>
+    <p>Weekend market event.</p>
   </div>
 
-  <h3 className="brand-events-subtitle past">Past Events</h3>
+  <div className="brand-event-card">
+    <span>25 July 2026</span>
+    <h3>Busstop 7 Market</h3>
+    <p>Weekend market event.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>25 July 2026</span>
+    <h3>Innesdale Market</h3>
+    <p>Community market event.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>1 August 2026</span>
+    <h3>Sionspoort Vleisfees</h3>
+    <p>Randfontein • Community food and family festival.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>14–16 August 2026</span>
+    <h3>Outdoor Expo</h3>
+    <p>Broederstroom • Outdoor expo and vendor event.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>21–23 August 2026</span>
+    <h3>Bakkie SUV Fees</h3>
+    <p>Sondela • Outdoor and motoring festival.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>29 August 2026</span>
+    <h3>Pierre van Ryneveld Dorpsfees</h3>
+    <p>Community market and festival day.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>4–5 September 2026</span>
+    <h3>Die Krip Landboufees</h3>
+    <p>Agricultural festival and community market.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>3 October 2026</span>
+    <h3>Kiepersol Kermis</h3>
+    <p>Community market and festival.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>10 October 2026</span>
+    <h3>Oktoberfest</h3>
+    <p>Randfontein • Festival and family market.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>30–31 October 2026</span>
+    <h3>Oppidorpfees</h3>
+    <p>Bronkhorstspruit • Local festival and vendor market.</p>
+  </div>
+
+  <div className="brand-event-card">
+    <span>25 November – 26 December 2026</span>
+    <h3>The Festive Collection</h3>
+    <p>Montecasino • Festive shopping and Christmas market.</p>
+  </div>
+</div>
+
+  <h3 className="brand-events-subtitle past">
+Recent Markets & Events
+</h3>
 
   <div className="brand-events-grid past-events">
-    <div className="brand-event-card past">
-      <span>29–31 May</span>
-      <h3>Afridome Parys</h3>
-      <p>Three-day market event in Parys.</p>
-    </div>
 
-    <div className="brand-event-card past">
-      <span>20–21 June</span>
-      <h3>Killarney Golf Club Winter Soiree</h3>
-      <p>Premium winter market event.</p>
-    </div>
+  <div className="brand-event-card past">
+    <span>20–21 June 2026</span>
+    <h3>Killarney Golf Club Winter Soiree</h3>
+    <p>Johannesburg • Winter lifestyle market.</p>
   </div>
+
+  <div className="brand-event-card past">
+    <span>27 June 2026</span>
+    <h3>Inside Out Market</h3>
+    <p>Centurion • Community market.</p>
+  </div>
+
+  <div className="brand-event-card past">
+    <span>3–4 July 2026</span>
+    <h3>NG Raslouw Winter Market</h3>
+    <p>Centurion • Winter market event.</p>
+  </div>
+
+  <div className="brand-event-card past">
+    <span>11–12 July 2026</span>
+    <h3>Busstop 7 Market</h3>
+    <p>Weekend market event.</p>
+  </div>
+
+  <div className="brand-event-card past">
+    <span>29–31 May 2026</span>
+    <h3>Afridome Parys</h3>
+    <p>Three-day exhibition and food festival.</p>
+  </div>
+
+</div>
   </section>
 
   <section id="contact" className="brand-contact-forms">

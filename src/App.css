@@ -5954,3 +5954,193 @@ html {
   }
 
 }
+
+/* ==========================================================
+   PROMOTION POPUP
+   ========================================================== */
+
+.promotion-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 30px;
+  z-index: 99999;
+
+  animation: promotionFade 0.35s ease;
+}
+
+@keyframes promotionFade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.promotion-modal {
+  position: relative;
+
+  background: transparent;
+
+  max-width: 1350px;
+  width: 99vw;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  animation: promotionPop 0.35s ease;
+}
+
+@keyframes promotionPop {
+  from {
+    opacity: 0;
+    transform: scale(.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.promotion-image {
+  width: 100%;
+  max-height: 98vh;
+  object-fit: contain;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: transform .25s ease;
+  box-shadow:
+    0 20px 60px rgba(0,0,0,.55),
+    0 0 30px rgba(198,145,40,.25);
+}
+
+.promotion-image:hover {
+  transform: scale(1.01);
+}
+.promotion-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+
+  z-index: 999999;
+
+  width: 56px;
+  height: 56px;
+
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+
+  background: rgba(198,145,40,0.95);
+  color: #fff;
+
+  font-size: 34px;
+  font-weight: bold;
+  line-height: 1;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+
+  box-shadow: 0 8px 25px rgba(0,0,0,.35);
+
+  transition: .25s;
+}
+
+.promotion-close:hover {
+  background: #9d6e12;
+  transform: scale(1.08);
+}
+
+.promotion-close:hover {
+  background: #9d6e12;
+  transform: rotate(90deg);
+}
+
+.promotion-actions {
+  margin-top: 22px;
+
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.promotion-shop,
+.promotion-later {
+  border: none;
+  cursor: pointer;
+
+  padding: 14px 34px;
+
+  border-radius: 999px;
+
+  font-weight: 700;
+  font-size: 16px;
+
+  transition: .25s;
+}
+
+.promotion-shop {
+  background: #c69128;
+  color: white;
+}
+
+.promotion-shop:hover {
+  background: #9d6e12;
+  transform: translateY(-2px);
+}
+
+.promotion-later {
+  background: white;
+  color: #333;
+}
+
+.promotion-later:hover {
+  background: #ececec;
+  transform: translateY(-2px);
+}
+
+@media (max-width:768px){
+
+  .promotion-overlay{
+    padding:15px;
+  }
+
+  .promotion-modal{
+    width:100%;
+  }
+
+  .promotion-image{
+    max-height:75vh;
+    border-radius:12px;
+  }
+
+  .promotion-actions{
+    flex-direction:column;
+    width:100%;
+  }
+
+  .promotion-shop,
+  .promotion-later{
+    width:100%;
+  }
+
+  .promotion-close{
+    top:-12px;
+    right:-12px;
+  }
+
+}
