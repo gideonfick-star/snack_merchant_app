@@ -1651,7 +1651,7 @@ const catalog = [
 ];
 
 export default function App() {
-  const PROMOTION_VERSION = "PROMO-001";
+  const PROMOTION_VERSION = "PROMO-004";
 
   const [showPromotionPopup, setShowPromotionPopup] = useState(false);
   const navigate = useNavigate();
@@ -4671,23 +4671,44 @@ setShowPromotionPopup(false);
   ✕
 </button>
 
-      <img
-  src="/website/promotion.jpg"
-  alt="Latest Promotions"
+      <video
+  src="/website/christmas-in-july.mp4"
   className="promotion-image"
-  onClick={() => {
-    setShowPromotionPopup(false);
-    setShowShop(true);
-    navigate("/");
-    setTimeout(() => {
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }, 100);
-  }}
+  autoPlay
+  muted
+  loop
+  playsInline
+  controls
+preload="auto"
+poster="/website/promotion.jpg"
+  onClick={(e) => e.stopPropagation()}
 />
+<div className="promotion-info">
 
+  <h2>🎄 Christmas in July Market</h2>
+
+  <p>📅 Saturday, 25 July 2026</p>
+
+  <p>📍 Innesdale Sports Club</p>
+
+  <button
+    className="promotion-shop"
+    onClick={() => {
+      setShowPromotionPopup(false);
+      setShowShop(true);
+      navigate("/");
+      setTimeout(() => {
+        window.scrollTo({
+          top: 0,
+          behavior: "smooth",
+        });
+      }, 100);
+    }}
+  >
+    🛒 Can't make the market? Shop Online
+  </button>
+
+</div>
       
     </div>
   </div>
@@ -4914,7 +4935,7 @@ setTimeout(() => {
 }}
               >
                 <img
-                img src={item.image} alt={item.title} />
+                 src={item.image} alt={item.title} />
                 <span>{item.title}</span>
               </button>
             ))}
