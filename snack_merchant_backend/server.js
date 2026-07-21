@@ -7,6 +7,7 @@ const fs = require("fs");
 const { Pool } = require("pg");
 const crypto = require("crypto");
 const { Resend } = require("resend");
+const cookieParser = require("cookie-parser");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -34,7 +35,13 @@ const pool = process.env.DATABASE_URL
 
 // ================= MIDDLEWARE =================
 
-app.use(cors());
+app.use(cors({
+  origin: true,
+  credentials: true,
+}));
+
+app.use(cookieParser());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -74,7 +81,27 @@ app.get("/", (req, res) => {
     status: "Snack Merchant Backend Running",
   });
 });
+// ================= VISITOR COOKIE =================
 
+app.get("/visitor", (req, res) => {
+  let visitorId = req.cookies.visitor_id;
+
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+
+    res.cookie("visitor_id", visitorId, {
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+      httpOnly: false,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+    });
+  }
+
+  res.json({
+    success: true,
+    visitorId,
+  });
+});
 // ================= IMAGE UPLOAD ROUTE =================
 
 app.post("/upload", upload.single("image"), async (req, res) => {
