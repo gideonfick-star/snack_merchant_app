@@ -1658,8 +1658,20 @@ export default function App() {
   const location = useLocation();
   useEffect(() => {
   const storageKey = `promotion-${PROMOTION_VERSION}`;
+  const cookieKey = `${storageKey}=`;
 
-  const lastClosed = localStorage.getItem(storageKey);
+  let lastClosed = localStorage.getItem(storageKey);
+
+  // Cookie fallback
+  if (!lastClosed) {
+    const cookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith(cookieKey));
+
+    if (cookie) {
+      lastClosed = cookie.split("=")[1];
+    }
+  }
 
   if (!lastClosed) {
     setShowPromotionPopup(true);
@@ -4642,12 +4654,18 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   onClick={(e) => {
   e.stopPropagation();
 
-  localStorage.setItem(
-    `promotion-${PROMOTION_VERSION}`,
-    Date.now().toString()
-  );
+  const timestamp = Date.now().toString();
 
-  setShowPromotionPopup(false);
+localStorage.setItem(
+  `promotion-${PROMOTION_VERSION}`,
+  timestamp
+);
+
+// Cookie fallback for mobile browsers
+document.cookie =
+  `promotion-${PROMOTION_VERSION}=${timestamp}; max-age=${7 * 24 * 60 * 60}; path=/; SameSite=Lax`;
+
+setShowPromotionPopup(false);
 }}
 >
   ✕
