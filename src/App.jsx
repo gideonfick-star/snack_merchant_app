@@ -4640,7 +4640,7 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   </button>
 </nav>
       </header>
-{showPromotionPopup && (
+{false && (
   <div
     className="promotion-overlay"
     onClick={() => setShowPromotionPopup(false)}
