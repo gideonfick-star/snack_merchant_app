@@ -4832,7 +4832,8 @@ body {
 }
 
 .brand-enquiry-form input,
-.brand-enquiry-form textarea {
+.brand-enquiry-form textarea,
+.brand-enquiry-form select {
   width: 100%;
   border: 1px solid rgba(122, 83, 35, 0.22);
   border-radius: 14px;
