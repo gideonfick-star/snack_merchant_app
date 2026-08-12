@@ -25,6 +25,8 @@ const API_BASE_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
     : "https://snack-merchant-app.onrender.com";
+const RESELLER_API_BASE_URL =
+  "https://snack-merchant-reseller-app.onrender.com";    
 
 const CUSTOMER_CATEGORIES = [
   "All",
@@ -4626,6 +4628,7 @@ const page = categoryContent[selectedCategoryPage];
   <a href="#about">About</a>
   <a href="#products">Products</a>
   <a href="#markets">Markets</a>
+  <a href="#reseller">Become a Reseller</a>
   <a href="#contact">Contact</a>
 
   <button
@@ -5060,7 +5063,162 @@ Recent Markets & Events
 
 </div>
   </section>
+<section id="reseller" className="brand-contact-forms">
+  <p className="brand-eyebrow">Reseller Programme</p>
 
+  <h2>Become a Snack Merchant Reseller</h2>
+
+  <p className="brand-contact-intro">
+    Interested in stocking The Snack Merchant products in your business?
+    Apply to join our reseller programme and become part of our growing
+    network of approved resellers.
+  </p>
+
+  <p className="brand-contact-intro">
+    Choose between our Wholesale and Consignment programmes. All applications
+    are reviewed and subject to approval by The Snack Merchant.
+  </p>
+  <div className="brand-form-grid">
+  <form
+  className="brand-enquiry-form"
+  onSubmit={async (e) => {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    const data = new FormData(form);
+
+    try {
+      await axios.post(
+        "https://snack-merchant-reseller-app.onrender.com/resellers",
+        {
+          business_name: data.get("businessName"),
+          trading_name: data.get("tradingName"),
+          company_registration: data.get("companyRegistration"),
+          vat_number: data.get("vatNumber"),
+          contact_person: data.get("contactPerson"),
+          phone: data.get("phone"),
+          email: data.get("email"),
+          website: data.get("website"),
+          programme: data.get("programme"),
+          delivery_preference: data.get("deliveryPreference"),
+          bank_name: "",
+          account_holder: "",
+          account_number: "",
+          branch_code: "",
+          account_type: "Cheque",
+          business_address: data.get("businessAddress"),
+          postal_address: data.get("postalAddress"),
+        }
+      );
+
+      alert(
+        "Thank you. Your reseller application has been submitted successfully and will be reviewed by The Snack Merchant."
+      );
+
+      form.reset();
+    } catch (error) {
+      console.error("Reseller application error:", error);
+
+      alert(
+        "We were unable to submit your reseller application. Please try again or contact The Snack Merchant."
+      );
+    }
+  }}
+>
+    <h3>Reseller Application</h3>
+
+    <p>
+      Complete the application below. Your application will be reviewed
+      before reseller access is approved.
+    </p>
+
+    <input
+      name="businessName"
+      placeholder="Business name *"
+      required
+    />
+
+    <input
+      name="tradingName"
+      placeholder="Trading name"
+    />
+
+    <input
+      name="companyRegistration"
+      placeholder="Company registration no."
+    />
+
+    <input
+      name="vatNumber"
+      placeholder="VAT number"
+    />
+
+    <input
+      name="contactPerson"
+      placeholder="Contact person *"
+      required
+    />
+
+    <input
+      name="email"
+      type="email"
+      placeholder="Email address *"
+      required
+    />
+
+    <input
+      name="phone"
+      placeholder="Mobile number *"
+      required
+    />
+
+    <input
+      name="website"
+      placeholder="Website"
+    />
+    <textarea
+  name="businessAddress"
+  placeholder="Business address *"
+  rows="3"
+  required
+/>
+
+<textarea
+  name="postalAddress"
+  placeholder="Postal address"
+  rows="3"
+/>
+
+<select name="programme" defaultValue="Wholesale" required>
+  <option value="Wholesale">Wholesale</option>
+  <option value="Consignment">Consignment</option>
+</select>
+
+<select
+  name="deliveryPreference"
+  defaultValue="Courier Delivery"
+  required
+>
+  <option value="Courier Delivery">
+    Courier Delivery
+  </option>
+
+  <option value="Collection from The Snack Merchant">
+    Collection from The Snack Merchant
+  </option>
+
+  <option value="Delivery by Supplier">
+    Delivery by Supplier
+  </option>
+</select>
+
+<button type="submit">
+  Submit Reseller Application
+</button>
+
+</form>
+</div>
+</section>
   <section id="contact" className="brand-contact-forms">
   <p className="brand-eyebrow">Contact</p>
   <h2>Enquiries & Vendor Bookings</h2>
