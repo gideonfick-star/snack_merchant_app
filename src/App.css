@@ -4866,6 +4866,26 @@ body {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
 }
+/* ==========================================================
+   RESELLER APPLICATION FORM LAYOUT
+   ========================================================== */
+
+#reseller .brand-form-grid {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#reseller .brand-form-grid .reseller-application-form {
+  width: min(760px, 100%);
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
 .brand-enquiry-form input,
 .brand-enquiry-form textarea,
 .brand-enquiry-form select {
