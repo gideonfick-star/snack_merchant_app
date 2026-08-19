@@ -4830,7 +4830,42 @@ body {
   color: #6a4d34;
   line-height: 1.5;
 }
+/* ==========================================================
+   RESELLER EXISTING LOGIN
+   ========================================================== */
 
+.reseller-existing-login {
+  width: 100%;
+  max-width: 700px;
+  margin: 22px auto 30px;
+  padding: 20px 24px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(122, 83, 35, 0.22);
+  border-radius: 16px;
+}
+
+.reseller-existing-login p {
+  margin: 0 0 14px;
+  color: #6a4d34;
+  font-weight: 600;
+}
+
+.reseller-login-btn {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 14px;
+  background: #d9a21b;
+  color: #1f1608;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reseller-login-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.14);
+}
 .brand-enquiry-form input,
 .brand-enquiry-form textarea,
 .brand-enquiry-form select {

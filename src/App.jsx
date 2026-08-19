@@ -5078,9 +5078,21 @@ Recent Markets & Events
     Choose between our Wholesale and Consignment programmes. All applications
     are reviewed and subject to approval by The Snack Merchant.
   </p>
+  <div className="reseller-existing-login">
+  <p>Already an approved Snack Merchant reseller?</p>
+
+  <a
+    href="https://reseller.thesnackmerchant.co.za"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="reseller-login-btn"
+  >
+    Existing Reseller Login
+  </a>
+</div>
   <div className="brand-form-grid">
   <form
-  className="brand-enquiry-form"
+  className="brand-enquiry-form reseller-application-form"
   onSubmit={async (e) => {
     e.preventDefault();
 
