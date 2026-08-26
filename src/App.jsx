@@ -2939,7 +2939,8 @@ const generateInvoicePDF = (order) => {
   const doc = new jsPDF();
 
   const orderStatus = normalizeOrderStatus(order.order_status);
-  const paymentStatus = order.payment_status || "-";
+const paymentStatus = order.payment_status || "-";
+const isManualOrder = order.order_type === "Manual Order";
 
   const isPaid =
     paymentStatus === "Paid" ||
@@ -2988,6 +2989,7 @@ const generateInvoicePDF = (order) => {
   doc.text(`Invoice #: ${order.order_number}`, 145, 30);
   doc.text(`Date: ${new Date(order.created_at).toLocaleString()}`, 145, 38);
 
+  if (!isManualOrder) {
   doc.setDrawColor(212, 175, 55);
   doc.setLineWidth(0.4);
   doc.rect(105, 55, 85, 35);
@@ -2998,6 +3000,7 @@ const generateInvoicePDF = (order) => {
   doc.setFontSize(11);
   const wrappedOrderStatus = doc.splitTextToSize(orderStatus || "-", 76);
   doc.text(wrappedOrderStatus, 109, 72);
+}
 
   doc.setFontSize(13);
   doc.setTextColor(212, 175, 55);
@@ -3068,7 +3071,6 @@ const generateInvoicePDF = (order) => {
 
   const paymentY = hasDeliveryFee ? finalY + 25 : finalY + 22;
 
-  const isManualOrder = order.order_type === "Manual Order";
 
 const paymentNotRequiredYet =
   !isManualOrder &&
@@ -5976,6 +5978,64 @@ ${data.get("eventDetails")}
         >
           Generate Pro Forma Invoice
         </button>
+        <button
+  type="button"
+  className="manual-generate-btn"
+  onClick={() => {
+    if (!manualOrder.customer_name.trim()) {
+      alert("Customer name is required.");
+      return;
+    }
+
+    if (
+      manualOrder.items.length === 0 ||
+      manualOrder.items.some(
+        (item) =>
+          !item.name.trim() ||
+          Number(item.qty) <= 0 ||
+          Number(item.price) < 0
+      )
+    ) {
+      alert("Please complete all order items.");
+      return;
+    }
+
+    const totalAmount = manualOrder.items.reduce(
+      (total, item) =>
+        total +
+        Number(item.qty || 0) * Number(item.price || 0),
+      0
+    );
+
+    const manualPaidOrder = {
+      order_number: `MAN-${Date.now()}`,
+      created_at: new Date().toISOString(),
+
+      customer_name: manualOrder.customer_name,
+      customer_phone: manualOrder.customer_phone,
+      customer_email: manualOrder.customer_email,
+      customer_vat_number: manualOrder.customer_vat_number,
+
+      order_type: "Manual Order",
+      order_status: "Paid",
+      payment_status: "Paid",
+
+      items: manualOrder.items.map((item) => ({
+        name: item.name,
+        size: item.size || "-",
+        qty: Number(item.qty),
+        price: Number(item.price),
+      })),
+
+      delivery_fee: 0,
+      total_amount: totalAmount,
+    };
+
+    generateInvoicePDF(manualPaidOrder);
+  }}
+>
+  Generate Paid Invoice / Receipt
+</button>
       </div>
     </div>
   </div>
