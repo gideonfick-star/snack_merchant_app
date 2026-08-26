@@ -1656,6 +1656,21 @@ export default function App() {
   const PROMOTION_VERSION = "PROMO-004";
 
   const [showPromotionPopup, setShowPromotionPopup] = useState(false);
+  const [showManualOrderForm, setShowManualOrderForm] = useState(false);
+  const [manualOrder, setManualOrder] = useState({
+  customer_name: "",
+  customer_phone: "",
+  customer_email: "",
+  customer_vat_number: "",
+  items: [
+    {
+      name: "",
+      size: "",
+      qty: 1,
+      price: "",
+    },
+  ],
+});
   const navigate = useNavigate();
   const location = useLocation();
   useEffect(() => {
@@ -3053,7 +3068,11 @@ const generateInvoicePDF = (order) => {
 
   const paymentY = hasDeliveryFee ? finalY + 25 : finalY + 22;
 
-  const paymentNotRequiredYet = [
+  const isManualOrder = order.order_type === "Manual Order";
+
+const paymentNotRequiredYet =
+  !isManualOrder &&
+  [
     "New Order",
     "Pending Stock Confirmation",
   ].includes(orderStatus);
@@ -3129,6 +3148,13 @@ const generateInvoicePDF = (order) => {
   if (isPaid || isFinal) {
     doc.text("Thank you for supporting The Snack Merchant.", 95, pageHeight - 6);
   } else {
+    doc.setFontSize(8);
+doc.setTextColor(80, 80, 80);
+doc.text(
+  "The Snack Merchant is not registered for VAT. No VAT has been charged on this invoice.",
+  95,
+  pageHeight - 12
+);
     doc.text("Prices and stock availability are subject to confirmation.", 95, pageHeight - 6);
   }
 
@@ -5647,7 +5673,314 @@ ${data.get("eventDetails")}
   <button onClick={loadOrders}>
     Refresh Orders
   </button>
+  <button
+  onClick={() => setShowManualOrderForm(true)}
+>
+  + Manual Order
+</button>
 </div>
+{showManualOrderForm && (
+  <div className="manual-order-form">
+    <div className="manual-order-form-header">
+      <h3>Create Manual Order</h3>
+      <span>Manual / Corporate Order</span>
+    </div>
+
+    {/* CUSTOMER DETAILS */}
+    <div className="manual-customer-grid">
+      <div>
+        <label>Customer Name</label>
+        <input
+          type="text"
+          value={manualOrder.customer_name}
+          onChange={(e) =>
+            setManualOrder({
+              ...manualOrder,
+              customer_name: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <label>Customer Phone</label>
+        <input
+          type="text"
+          value={manualOrder.customer_phone}
+          onChange={(e) =>
+            setManualOrder({
+              ...manualOrder,
+              customer_phone: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <label>Customer Email</label>
+        <input
+          type="email"
+          value={manualOrder.customer_email}
+          onChange={(e) =>
+            setManualOrder({
+              ...manualOrder,
+              customer_email: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <label>Customer VAT Number (optional)</label>
+        <input
+          type="text"
+          value={manualOrder.customer_vat_number}
+          onChange={(e) =>
+            setManualOrder({
+              ...manualOrder,
+              customer_vat_number: e.target.value,
+            })
+          }
+        />
+      </div>
+    </div>
+
+    {/* ORDER ITEMS */}
+    <div className="manual-order-items">
+      <div className="manual-items-header">
+        <h4>Order Items</h4>
+
+        <button
+          type="button"
+          className="manual-add-btn"
+          onClick={() =>
+            setManualOrder({
+              ...manualOrder,
+              items: [
+                ...manualOrder.items,
+                {
+                  name: "",
+                  size: "",
+                  qty: 1,
+                  price: "",
+                },
+              ],
+            })
+          }
+        >
+          + Add Item
+        </button>
+      </div>
+
+      <div className="manual-items-column-headings">
+        <span>Product / Description</span>
+        <span>Size / Option</span>
+        <span>Qty</span>
+        <span>Unit Price (R)</span>
+        <span>Line Total</span>
+        <span></span>
+      </div>
+
+      {manualOrder.items.map((item, index) => (
+        <div className="manual-order-item-row" key={index}>
+          <input
+            type="text"
+            value={item.name}
+            placeholder="Corporate Gift Pack"
+            onChange={(e) => {
+              const items = [...manualOrder.items];
+              items[index] = {
+                ...items[index],
+                name: e.target.value,
+              };
+
+              setManualOrder({
+                ...manualOrder,
+                items,
+              });
+            }}
+          />
+
+          <input
+            type="text"
+            value={item.size}
+            placeholder="Standard"
+            onChange={(e) => {
+              const items = [...manualOrder.items];
+              items[index] = {
+                ...items[index],
+                size: e.target.value,
+              };
+
+              setManualOrder({
+                ...manualOrder,
+                items,
+              });
+            }}
+          />
+
+          <input
+            type="number"
+            min="1"
+            value={item.qty}
+            onChange={(e) => {
+              const items = [...manualOrder.items];
+              items[index] = {
+                ...items[index],
+                qty: e.target.value,
+              };
+
+              setManualOrder({
+                ...manualOrder,
+                items,
+              });
+            }}
+          />
+
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={item.price}
+            placeholder="0.00"
+            onChange={(e) => {
+              const items = [...manualOrder.items];
+              items[index] = {
+                ...items[index],
+                price: e.target.value,
+              };
+
+              setManualOrder({
+                ...manualOrder,
+                items,
+              });
+            }}
+          />
+
+          <div className="manual-row-total">
+            R
+            {(
+              Number(item.qty || 0) *
+              Number(item.price || 0)
+            ).toFixed(2)}
+          </div>
+
+          <div>
+            {manualOrder.items.length > 1 && (
+              <button
+                type="button"
+                className="manual-remove-btn"
+                onClick={() => {
+                  const items = manualOrder.items.filter(
+                    (_, itemIndex) => itemIndex !== index
+                  );
+
+                  setManualOrder({
+                    ...manualOrder,
+                    items,
+                  });
+                }}
+              >
+                ×
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* TOTAL + ACTIONS */}
+    <div className="manual-order-footer">
+      <div className="manual-order-total">
+        <span>Order Total</span>
+        <strong>
+          R
+          {manualOrder.items
+            .reduce(
+              (total, item) =>
+                total +
+                Number(item.qty || 0) *
+                  Number(item.price || 0),
+              0
+            )
+            .toFixed(2)}
+        </strong>
+      </div>
+
+      <div className="manual-order-actions">
+        <button
+          type="button"
+          className="manual-cancel-btn"
+          onClick={() => setShowManualOrderForm(false)}
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          className="manual-generate-btn"
+          onClick={() => {
+            if (!manualOrder.customer_name.trim()) {
+              alert("Customer name is required.");
+              return;
+            }
+
+            if (
+              manualOrder.items.length === 0 ||
+              manualOrder.items.some(
+                (item) =>
+                  !item.name.trim() ||
+                  Number(item.qty) <= 0 ||
+                  Number(item.price) < 0
+              )
+            ) {
+              alert("Please complete all order items.");
+              return;
+            }
+
+            const totalAmount = manualOrder.items.reduce(
+              (total, item) =>
+                total +
+                Number(item.qty || 0) *
+                  Number(item.price || 0),
+              0
+            );
+
+            const manualInvoiceOrder = {
+              order_number: `MAN-${Date.now()}`,
+              created_at: new Date().toISOString(),
+
+              customer_name: manualOrder.customer_name,
+              customer_phone: manualOrder.customer_phone,
+              customer_email: manualOrder.customer_email,
+              customer_vat_number:
+                manualOrder.customer_vat_number,
+
+              order_type: "Manual Order",
+              order_status: "New Order",
+              payment_status: "Unpaid",
+
+              items: manualOrder.items.map((item) => ({
+                name: item.name,
+                size: item.size || "-",
+                qty: Number(item.qty),
+                price: Number(item.price),
+              })),
+
+              delivery_fee: 0,
+              total_amount: totalAmount,
+            };
+
+            generateInvoicePDF(manualInvoiceOrder);
+          }}
+        >
+          Generate Pro Forma Invoice
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 <div className="admin-metrics-grid">
   <div
   className={`admin-metric-card ${orderDashboardFilter === "all" ? "active" : ""}`}
