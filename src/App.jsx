@@ -1006,12 +1006,11 @@ const catalog = [
     code: "CNL69",
     name: "Mini Fruit Rolls",
     category: "Dried Fruit & Fruit Snacks",
-    desc: "Mini fruit rolls available in raspberry or strawberry.",
-    variants: [
-      { size: "24 Pack", price: 78 },
-      { size: "12 Pack", price: 38 },
-      { size: "5 Pack", price: 17 },
-    ],
+    desc: "Mini fruit rolls available in peach, berry, apricot, guava and mango flavours.",
+variants: [
+  { size: "25 Mix Pack", price: 0 },
+  { size: "5 Mix Pack", price: 0 },
+],
   },
   {
     code: "CNL70",
