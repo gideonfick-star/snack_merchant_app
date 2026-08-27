@@ -1657,11 +1657,14 @@ export default function App() {
 
   const [showPromotionPopup, setShowPromotionPopup] = useState(false);
   const [showManualOrderForm, setShowManualOrderForm] = useState(false);
-  const [manualOrder, setManualOrder] = useState({
+const [manualOrder, setManualOrder] = useState({
+  order_number: "",
+
   customer_name: "",
   customer_phone: "",
   customer_email: "",
   customer_vat_number: "",
+
   items: [
     {
       name: "",
@@ -5690,6 +5693,20 @@ ${data.get("eventDetails")}
 
     {/* CUSTOMER DETAILS */}
     <div className="manual-customer-grid">
+    <div>
+  <label>Invoice Number</label>
+  <input
+    type="text"
+    value={manualOrder.order_number}
+    placeholder="Leave blank for new invoice"
+    onChange={(e) =>
+      setManualOrder({
+        ...manualOrder,
+        order_number: e.target.value,
+      })
+    }
+  />
+</div>
       <div>
         <label>Customer Name</label>
         <input
@@ -5910,13 +5927,31 @@ ${data.get("eventDetails")}
       </div>
 
       <div className="manual-order-actions">
-        <button
-          type="button"
-          className="manual-cancel-btn"
-          onClick={() => setShowManualOrderForm(false)}
-        >
-          Cancel
-        </button>
+       <button
+  type="button"
+  className="manual-cancel-btn"
+  onClick={() => {
+    setManualOrder({
+      order_number: "",
+      customer_name: "",
+      customer_phone: "",
+      customer_email: "",
+      customer_vat_number: "",
+      items: [
+        {
+          name: "",
+          size: "",
+          qty: 1,
+          price: "",
+        },
+      ],
+    });
+
+    setShowManualOrderForm(false);
+  }}
+>
+  Cancel
+</button>
 
         <button
           type="button"
@@ -5948,9 +5983,10 @@ ${data.get("eventDetails")}
               0
             );
 
-            const manualInvoiceOrder = {
-              order_number: `MAN-${Date.now()}`,
-              created_at: new Date().toISOString(),
+           const manualInvoiceOrder = {
+  order_number: manualOrder.order_number,order_number:
+  manualOrder.order_number.trim() || `MAN-${Date.now()}`,
+  created_at: new Date().toISOString(),
 
               customer_name: manualOrder.customer_name,
               customer_phone: manualOrder.customer_phone,
@@ -6007,9 +6043,10 @@ ${data.get("eventDetails")}
       0
     );
 
-    const manualPaidOrder = {
-      order_number: `MAN-${Date.now()}`,
-      created_at: new Date().toISOString(),
+   const manualPaidOrder = {
+  order_number:
+  manualOrder.order_number.trim() || `MAN-${Date.now()}`,
+  created_at: new Date().toISOString(),
 
       customer_name: manualOrder.customer_name,
       customer_phone: manualOrder.customer_phone,
