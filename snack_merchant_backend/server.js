@@ -411,6 +411,7 @@ app.post("/orders", async (req, res) => {
       totalAmount,
       deliveryFee,
       paymentMethod,
+      gaClientId,
     } = req.body;
 
     if (!customerName || !customerPhone || !orderType || !items || !totalAmount) {
@@ -424,19 +425,20 @@ app.post("/orders", async (req, res) => {
     const result = await pool.query(
       `
       INSERT INTO public.orders (
-        order_number,
-        customer_name,
-        customer_phone,
-        customer_email,
-        order_type,
-        delivery_address,
-        customer_notes,
-        items,
-        total_amount,
-        delivery_fee,
-        payment_method
-      )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+  order_number,
+  customer_name,
+  customer_phone,
+  customer_email,
+  order_type,
+  delivery_address,
+  customer_notes,
+  items,
+  total_amount,
+  delivery_fee,
+  payment_method,
+  ga_client_id
+)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
       `,
       [
@@ -451,6 +453,7 @@ app.post("/orders", async (req, res) => {
         totalAmount,
         deliveryFee || 0,
         paymentMethod,
+        gaClientId || null,
       ]
     );
 
@@ -611,6 +614,42 @@ app.post("/orders", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+const sendGA4Event = async (clientId, eventName, params = {}) => {
+  try {
+    const measurementId = process.env.GA4_MEASUREMENT_ID;
+    const apiSecret = process.env.GA4_API_SECRET;
+
+    if (!measurementId || !apiSecret) {
+      console.warn("GA4 Measurement Protocol credentials missing");
+      return;
+    }
+
+    const response = await fetch(
+      `https://www.google-analytics.com/mp/collect?measurement_id=${measurementId}&api_secret=${apiSecret}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          client_id: clientId,
+          events: [
+            {
+              name: eventName,
+              params,
+            },
+          ],
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      console.error("GA4 EVENT ERROR:", response.status);
+    }
+  } catch (err) {
+    console.error("GA4 EVENT ERROR:", err);
+  }
+};
 
 // ================= PAYFAST ITN ROUTE =================
 
@@ -622,6 +661,7 @@ app.post("/payfast-notify", async (req, res) => {
 
     const orderNumber = itn.m_payment_id;
     const paymentStatus = itn.payment_status;
+    const paymentAmount = Number(itn.amount_gross || 0);
 
     if (!orderNumber) {
       return res.status(400).send("Missing m_payment_id");
@@ -641,7 +681,7 @@ app.post("/payfast-notify", async (req, res) => {
       newOrderStatus = paymentStatus === "FAILED" ? "Payment Failed" : "Cancelled";
     }
 
-   await pool.query(
+   const updateResult = await pool.query(
   `
   UPDATE public.orders
   SET
@@ -655,10 +695,29 @@ order_status = CASE
 END,  
     updated_at = CURRENT_TIMESTAMP
   WHERE order_number = $3
+  AND payment_status IS DISTINCT FROM 'Paid'
+RETURNING *
   `,
   [newPaymentStatus, newOrderStatus, orderNumber]
 );
+const updatedOrder = updateResult.rows[0];
+if (
+  paymentStatus === "COMPLETE" &&
+  updatedOrder &&
+  updatedOrder.ga_client_id
+) {
+  await sendGA4Event(
+    updatedOrder.ga_client_id,
+    "purchase",
+    {
+      transaction_id: orderNumber,
+      value: paymentAmount,
+      currency: "ZAR",
+    }
+  );
 
+  console.log("GA4 PURCHASE SENT:", orderNumber);
+}
     res.status(200).send("OK");
   } catch (err) {
     console.error("PAYFAST ITN ERROR:", err);

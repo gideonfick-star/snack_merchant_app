@@ -4,6 +4,7 @@ import axios from "axios";
 import "./App.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import ReactGA from "react-ga4";
 
 
 const WHATSAPP_NUMBER = "27687597884";
@@ -1842,7 +1843,15 @@ useEffect(() => {
   loadProductPricing();
   loadOrders();
 }, []);
+useEffect(() => {
+  if (typeof window.gtag !== "function") return;
 
+  window.gtag("get", "G-988YSMN008", "client_id", (clientId) => {
+    if (clientId) {
+      localStorage.setItem("ga_client_id", clientId);
+    }
+  });
+}, []);
 useEffect(() => {
   if (window.location.pathname === "/payment-success") {
     localStorage.removeItem("pendingPayfastOrderId");
@@ -3386,7 +3395,7 @@ const total = productTotal + deliveryFee;
     customer.orderType === "Collection"
       ? "Pending Stock Confirmation"
       : "Awaiting Payment";
-
+const gaClientId = localStorage.getItem("ga_client_id") || null;
   return {
     customerName: customer.name,
     customerPhone: customer.phone,
@@ -3401,6 +3410,7 @@ const total = productTotal + deliveryFee;
     items: cart,
     totalAmount: total,
     deliveryFee: deliveryFee,
+    gaClientId,
     orderStatus,
     paymentStatus,
   };
@@ -3467,11 +3477,38 @@ if (!data.success || !data.order) {
 
 await loadOrders();
 
+// Google Analytics - successful order submission
+if (typeof window.gtag === "function") {
+  ReactGA.event("order_submitted", {
+    transaction_id: data.order.order_number,
+    value: Number(data.order.total || 0),
+    currency: "ZAR",
+items: cart.map((item) => ({
+  item_id: item.code,
+  item_name: item.name,
+  item_variant: item.size,
+  price: Number(item.price || 0),
+  quantity: Number(item.qty || 1),
+})),
+  });
+}
+
 return data.order;
 };
 
 const submitEftOrder = async () => {
   try {
+    ReactGA.event("begin_checkout", {
+  currency: "ZAR",
+  value: Number(total),
+  items: cart.map((item) => ({
+    item_id: item.code,
+    item_name: item.name,
+    item_variant: item.size,
+    quantity: item.qty,
+    price: Number(item.price),
+  })),
+});
     const savedOrder = await saveOrderOnly();
 
 setOrderSuccessNumber(savedOrder.order_number);
@@ -3489,6 +3526,18 @@ setOrderSuccessType(
 
 const payWithPayFast = async () => {
   try {
+    ReactGA.event("begin_checkout", {
+      currency: "ZAR",
+      value: Number(total),
+      items: cart.map((item) => ({
+        item_id: item.code,
+        item_name: item.name,
+        item_variant: item.size,
+        quantity: item.qty,
+        price: Number(item.price),
+      })),
+    });
+
     const savedOrder = await saveOrderOnly();
     localStorage.setItem("pendingPayfastOrderId", savedOrder.id);
 
