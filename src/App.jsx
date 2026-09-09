@@ -3683,11 +3683,11 @@ const productHighlights = [
 if (selectedCategoryPage) {
   const categoryContent = {
 "premium-nuts": {
-  eyebrow: "Origins • Nutrition • Fun Facts",
-  title: "Premium Nuts",
+  eyebrow: "Premium Nuts • Online Shopping • South Africa",
+  title: "Premium Nuts Online in South Africa",
   heroImage: "/website/Premium Nuts/PremiumNutsBanner.jpg",
   description:
-    "From ancient pistachio orchards to South African macadamia farms, premium nuts have travelled across continents and cultures for thousands of years. Explore where they grow, what makes them unique, and the fascinating stories behind some of the world's most loved nuts.",
+    "Shop premium nuts from The Snack Merchant, including cashews, almonds, macadamias, pistachios, pecans and mixed nuts. Order online for nationwide delivery across South Africa, with collection available in Centurion. Explore our nut range, discover where these favourites are grown and learn more about their origins and nutrition.",
   learnMoreTitle: "Learn More About Premium Nuts",
     worldIntro:
   "Premium nuts are grown in very specific climates, from warm orchards in South Africa to historic growing regions across the world.",
@@ -3819,10 +3819,10 @@ if (selectedCategoryPage) {
 },
 
 "dried-fruit": {
-  eyebrow: "Origins • Drying Methods • Fruit Facts",
-  title: "Dried Fruit",
+  eyebrow: "Dried Fruit • Online Shopping • South Africa",
+  title: "Dried Fruit Online in South Africa",
   description:
-    "From sun-dried raisins to tropical mango strips, dried fruit has helped people preserve flavour, nutrition and seasonal harvests for thousands of years. Discover how fruit is dried, where it originates and why it remains one of the world's most popular natural snacks.",
+    "Shop dried fruit from The Snack Merchant, including dried mango, raisins, dates, dried apricots, peaches and our colourful diced fruit range. Order online for nationwide delivery across South Africa, with collection available in Centurion. Explore our dried fruit range and discover more about these naturally convenient and flavourful snacks.",
 learnMoreTitle: "Learn More About Dried Fruit",
     worldIntro:
   "Different fruits thrive in different climates around the world, from tropical mango farms in South Africa and India to historic date-growing regions across the Middle East.",
@@ -3952,12 +3952,12 @@ learnMoreTitle: "Learn More About Dried Fruit",
 ]
 },
 
-    "seeds-health": {
-  eyebrow: "Ancient Superfoods • Natural Nutrition • Pantry Staples",
-  title: "Seeds & Health Pantry",
+   "seeds-health": {
+  eyebrow: "Seeds • Healthy Pantry • Online Shopping",
+  title: "Seeds & Healthy Pantry Online in South Africa",
   heroImage: "/website/Seeds/Healthy.jpg",
   description:
-    "Seeds and pantry staples have nourished people for thousands of years. From chia and linseed to sesame, sunflower and oats, these small ingredients carry big stories, global origins and everyday nutritional value.",
+    "Shop seeds and healthy pantry favourites from The Snack Merchant, including chia seeds, linseed, pumpkin seeds, sesame seeds, sunflower seeds and trail mixes. Order online for nationwide delivery across South Africa, with collection available in Centurion. Explore our range and learn more about these versatile everyday pantry favourites.",
   worldIntro:
     "Seeds and health pantry foods are grown across many regions of the world, from chia fields in Latin America to sesame, sunflower and grain-producing regions across Africa, Europe and Asia.",
   learnMoreTitle: "Learn More About Seeds & Health Pantry",
@@ -4097,12 +4097,12 @@ learnMore: [
   }
 ]
 },
-    "chocolate-yoghurt": {
-  eyebrow: "Chocolate • Yoghurt Treats • Candy Favourites",
-  title: "Chocolate, Candy & Yoghurt Treats",
+   "chocolate-yoghurt": {
+  eyebrow: "Chocolate • Yoghurt Treats • Online Shopping",
+  title: "Chocolate & Yoghurt Treats Online in South Africa",
   heroImage: "/website/Chocolate & Yoghurt/Yogurt.jpg",
   description:
-    "From chocolate-coated nuts and yoghurt treats to colourful candy favourites...",
+    "Shop chocolate and yoghurt treats from The Snack Merchant, including chocolate-coated almonds, peanuts and cashews, creamy yoghurt treats and colourful candy favourites. Order online for nationwide delivery across South Africa, with collection available in Centurion. Explore our range of sweet, crunchy and indulgent snack treats.",
  items: [
   {
     title: "Chocolate Almonds",
@@ -4236,12 +4236,12 @@ learnMore: [
 ],
 },
 
-  "honey": {
-  eyebrow: "Bees • Honey • Natural Sweetness",
-  title: "Honey & Honey Roasted Treats",
+ "honey": {
+  eyebrow: "Honey • Honey Roasted Treats • Online Shopping",
+  title: "Honey & Honey Roasted Treats Online in South Africa",
   heroImage: "/website/Honey/Hon 2.jpg",
   description:
-    "For thousands of years honey has been treasured as one of nature's most remarkable foods. Discover the story of bees, honey production and the delicious snacks inspired by this golden ingredient.",
+    "Shop honey and honey-inspired treats from The Snack Merchant, including pure honey, raw honey, honey roasted peanuts, honey roasted bananas and honey sesame cashews. Order online for nationwide delivery across South Africa, with collection available in Centurion. Explore our range and discover more about honey, bees and this naturally sweet favourite.",
   worldIntro:
     "Honey is produced on every continent except Antarctica, with unique flavours and traditions shaped by local flowers, climates and bee species.",
   learnMoreTitle: "Learn More About Honey",
@@ -4379,12 +4379,12 @@ learnMore: [
 }
 ]
 },
-   "gift-packs": {
-  eyebrow: "Celebrations • Corporate Gifts • Special Occasions",
-  title: "Gift Packs & Events",
+  "gift-packs": {
+  eyebrow: "Corporate Gifts • Snack Gift Packs • Special Occasions",
+  title: "Corporate Gifts & Snack Gift Packs South Africa",
   heroImage: "/website/Gifts Events/Corp Gift 1.jpg",
   description:
-    "From corporate appreciation gifts to festive hampers and special event packs, discover thoughtful snack gifting ideas for every occasion.",
+    "Discover corporate gifts and snack gift packs from The Snack Merchant, featuring premium nuts, dried fruit and treats for clients, employees, celebrations and special events. From appreciation boxes and festive hampers to custom event gifts, we offer thoughtful snack gifting options with nationwide delivery across South Africa.",
   worldIntro:
     "Gift giving has been part of human culture for thousands of years, from harvest celebrations and festivals to modern corporate appreciation and personal milestones.",
   learnMoreTitle: "Learn More About Gift Giving",
