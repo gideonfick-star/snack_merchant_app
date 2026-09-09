@@ -1704,6 +1704,79 @@ const [manualOrder, setManualOrder] = useState({
     setShowPromotionPopup(true);
   }
 }, []);
+// SEO metadata for category pages
+useEffect(() => {
+  const seoPages = {
+    "/premium-nuts": {
+      title: "Buy Nuts Online South Africa | Premium Nuts | The Snack Merchant",
+      description:
+        "Shop premium nuts online including cashews, almonds, macadamias, peanuts and mixed nuts. Nationwide delivery across South Africa and collection in Centurion.",
+    },
+    "/dried-fruit": {
+      title: "Buy Dried Fruit Online South Africa | The Snack Merchant",
+      description:
+        "Shop dried fruit and fruit snacks online from The Snack Merchant. Quality dried fruit with nationwide delivery across South Africa and collection in Centurion.",
+    },
+    "/seeds-health": {
+      title: "Seeds & Healthy Snacks Online South Africa | The Snack Merchant",
+      description:
+        "Shop seeds and healthy pantry snacks online from The Snack Merchant. Nationwide delivery across South Africa and collection in Centurion.",
+    },
+    "/chocolate-yoghurt": {
+      title: "Chocolate & Yoghurt Treats Online | The Snack Merchant",
+      description:
+        "Shop chocolate and yoghurt-coated treats online from The Snack Merchant. Delicious snack treats delivered nationwide across South Africa.",
+    },
+    "/honey": {
+      title: "Buy Honey Online South Africa | The Snack Merchant",
+      description:
+        "Shop quality honey online from The Snack Merchant with nationwide delivery across South Africa and collection available in Centurion.",
+    },
+    "/gift-packs": {
+      title: "Corporate Gifts & Snack Gift Packs South Africa | The Snack Merchant",
+      description:
+        "Shop snack gift packs, nut and dried fruit gifts and corporate gifting options from The Snack Merchant. Nationwide delivery across South Africa.",
+    },
+  };
+
+  const seo = seoPages[location.pathname];
+
+ if (seo) {
+  document.title = seo.title;
+
+  const description = document.querySelector('meta[name="description"]');
+  if (description) {
+    description.setAttribute("content", seo.description);
+  }
+
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) {
+    canonical.setAttribute(
+      "href",
+      `https://www.thesnackmerchant.co.za${location.pathname}`
+    );
+  }
+} else {
+  document.title =
+    "The Snack Merchant | Nuts, Dried Fruit, Corporate Gifts & Snack Packs South Africa";
+
+  const description = document.querySelector('meta[name="description"]');
+  if (description) {
+    description.setAttribute(
+      "content",
+      "Shop premium nuts, dried fruit, seeds, trail mixes, corporate gifts, snack packs, school snack packs, hampers and gourmet treats. Nationwide delivery across South Africa. Collection available in Centurion."
+    );
+  }
+
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) {
+    canonical.setAttribute(
+      "href",
+      "https://www.thesnackmerchant.co.za/"
+    );
+  }
+}
+}, [location.pathname]);
   const [showShop, setShowShop] = useState(false);
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeStock, setActiveStock] = useState("All Stock");
