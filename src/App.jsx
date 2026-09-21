@@ -3152,7 +3152,21 @@ const isManualOrder = order.order_type === "Manual Order";
     hasDeliveryFee ? finalY + 18 : finalY + 10
   );
 
-  const paymentY = hasDeliveryFee ? finalY + 25 : finalY + 22;
+  let paymentY = hasDeliveryFee ? finalY + 25 : finalY + 22;
+
+// Keep the payment section clear of the fixed footer.
+// Payment Instructions is the longest section and extends about 68mm below paymentY.
+const paymentSectionBottom =
+  isPaid || isFinal
+    ? paymentY + 18
+    : paymentY + 68;
+
+const footerSafeY = doc.internal.pageSize.height - 32;
+
+if (paymentSectionBottom > footerSafeY) {
+  doc.addPage();
+  paymentY = 25;
+}
 
 
 const paymentNotRequiredYet =
