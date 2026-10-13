@@ -7454,7 +7454,90 @@ ${data.get("eventDetails")}
     </div>
   </div>
 )}
+      {showAdminPinModal && (
+        <div className="snack-notification-overlay">
+          <div className="snack-notification-box">
+            <div className="snack-notification-header">
+              THE SNACK MERCHANT
+            </div>
 
+            <form
+              className="snack-notification-body"
+              onSubmit={(e) => {
+                e.preventDefault();
+
+                if (adminPinInput === "7106") {
+                  setIsAdmin(true);
+                  setShowAdminPinModal(false);
+                  setAdminPinInput("");
+                  showNotification(
+                    "Admin mode enabled.",
+                    "success",
+                    "Admin Access"
+                  );
+                } else {
+                  setAdminPinInput("");
+                  setShowAdminPinModal(false);
+                  showNotification(
+                    "Incorrect PIN. Please try again.",
+                    "error",
+                    "Access Denied"
+                  );
+                }
+              }}
+            >
+              <h2>Admin Access</h2>
+              <p>Enter your Admin PIN to continue.</p>
+
+              <input
+                type="password"
+                inputMode="numeric"
+                autoComplete="off"
+                value={adminPinInput}
+                onChange={(e) => setAdminPinInput(e.target.value)}
+                placeholder="Enter PIN"
+                autoFocus
+                required
+                style={{
+                  width: "100%",
+                  padding: "12px",
+                  marginBottom: "24px",
+                  background: "#080808",
+                  color: "#fff",
+                  border: "1px solid #d4af37",
+                  borderRadius: "8px",
+                  textAlign: "center",
+                  fontSize: "18px",
+                  boxSizing: "border-box",
+                }}
+              />
+
+              <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+                <button
+                  type="button"
+                  className="snack-notification-button"
+                  onClick={() => {
+                    setShowAdminPinModal(false);
+                    setAdminPinInput("");
+                  }}
+                  style={{ background: "#333", color: "#fff" }}
+                >
+                  Cancel
+                </button>
+
+                <button type="submit" className="snack-notification-button">
+                  Confirm
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      <SnackNotification
+        notification={notification}
+        onClose={closeNotification}
+      />
       {selectedImage && (
   <div className="image-modal" onClick={() => setSelectedImage(null)}>
     <div className="image-modal-content">
