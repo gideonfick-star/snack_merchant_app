@@ -5266,7 +5266,7 @@ Recent Markets & Events
 
     try {
       await axios.post(
-        "https://snack-merchant-reseller-app.onrender.com/resellers",
+        "https://snack-merchant-reseller-app.onrender.com/reseller-applications",
         {
           business_name: data.get("businessName"),
           trading_name: data.get("tradingName"),
