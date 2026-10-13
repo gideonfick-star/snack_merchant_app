@@ -1651,8 +1651,80 @@ variants: [
     ],
   },
 ];
+function SnackNotification({ notification, onClose }) {
+  if (!notification) return null;
 
+  const type = notification.type || "info";
+
+  const titles = {
+    success: "Success",
+    error: "Something Went Wrong",
+    warning: "Attention",
+    info: "Notification",
+  };
+
+  const symbols = {
+    success: "✓",
+    error: "!",
+    warning: "!",
+    info: "i",
+  };
+
+  return (
+    <div className="snack-notification-overlay">
+      <div
+        className={`snack-notification-box snack-notification-${type}`}
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="snack-notification-title"
+        aria-describedby="snack-notification-message"
+      >
+        <div className="snack-notification-header">
+          THE SNACK MERCHANT
+        </div>
+
+        <div className="snack-notification-body">
+          <div className="snack-notification-icon">
+            {symbols[type]}
+          </div>
+
+          <h2 id="snack-notification-title">
+            {notification.title || titles[type]}
+          </h2>
+
+          <p id="snack-notification-message">
+            {notification.message}
+          </p>
+
+          <button
+            type="button"
+            className="snack-notification-button"
+            onClick={onClose}
+            autoFocus
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 export default function App() {
+  const [notification, setNotification] = useState(null);
+  const [showAdminPinModal, setShowAdminPinModal] = useState(false);
+const [adminPinInput, setAdminPinInput] = useState("");
+
+const showNotification = (message, type = "info", title = "") => {
+  setNotification({
+    message: String(message),
+    type,
+    title,
+  });
+};
+
+const closeNotification = () => {
+  setNotification(null);
+};
   const PROMOTION_VERSION = "PROMO-004";
 
   const [showPromotionPopup, setShowPromotionPopup] = useState(false);
@@ -1956,8 +2028,11 @@ useEffect(() => {
       });
   }
 
-  alert("Payment was not completed. No payment was received. Please place your order again or choose EFT.");
-  window.history.replaceState({}, "", "/");
+  showNotification(
+  "Payment was not completed. No payment was received. Please place your order again or choose EFT.",
+  "warning",
+  "Payment Cancelled"
+);
 }
   }
 , []);
@@ -1974,7 +2049,11 @@ const generatePayFastLinkForOrder = async (order) => {
     const data = await response.json();
 
     if (!data.success || !data.paymentUrl) {
-      alert("Could not generate PayFast payment link.");
+      showNotification(
+  "Failed to generate the PayFast payment link. Please try again.",
+  "error",
+  "Payment Link Error"
+);
       return;
     }
 
@@ -2002,10 +2081,18 @@ The Snack Merchant 🌰`;
 
     await navigator.clipboard.writeText(message);
 
-    alert("PayFast payment message copied.");
+    showNotification(
+  "PayFast payment message copied successfully.",
+  "success",
+  "Message Copied"
+);
   } catch (error) {
     console.error("Generate PayFast link error:", error);
-    alert("Failed to generate PayFast payment link.");
+    showNotification(
+  "Failed to generate PayFast payment link. Please try again.",
+  "error",
+  "Payment Link Error"
+);
   }
 };
 const supplierWholesalePrices = {
@@ -3468,7 +3555,11 @@ const total = productTotal + deliveryFee;
   } catch (err) {
     console.error(err);
 
-    alert("Image upload failed");
+    showNotification(
+  "Image upload failed. Please try again.",
+  "error",
+  "Image Upload Error"
+);
   }
 };
 
@@ -3505,17 +3596,29 @@ const gaClientId = localStorage.getItem("ga_client_id") || null;
 
 const validateOrderDetails = () => {
   if (cart.length === 0) {
-    alert("Your cart is empty.");
+    showNotification(
+  "Your cart is empty. Please add products before placing an order.",
+  "warning",
+  "Empty Cart"
+);
     return false;
   }
 
   if (!customer.name.trim() || !customer.phone.trim()) {
-    alert("Please enter your name and phone number before placing the order.");
+  showNotification(
+  "Please enter your name and phone number before placing the order.",
+  "warning",
+  "Customer Details Required"
+);
     return false;
   }
 
   if (customer.orderType === "Delivery" && !customer.address.trim()) {
-    alert("Please enter your delivery address.");
+    showNotification(
+  "Please enter your delivery address.",
+  "warning",
+  "Delivery Address Required"
+);
     return false;
   }
 
@@ -3607,7 +3710,11 @@ setOrderSuccessType(
     setShowOrderSuccess(true);
   } catch (error) {
     console.error("EFT order error:", error);
-    alert("Failed to save order. Please try again.");
+    showNotification(
+  "Failed to save order. Please try again.",
+  "error",
+  "Order Save Failed"
+);
   }
 };
 
@@ -3656,14 +3763,22 @@ const payWithPayFast = async () => {
     const data = await response.json();
 
     if (!data.paymentUrl) {
-      alert("Your order was saved, but the PayFast payment link could not be created. Please contact us or choose EFT.");
+      showNotification(
+  "Your order was saved, but the PayFast payment link could not be created. Please contact us for assistance.",
+  "warning",
+  "Order Saved — Payment Pending"
+);
       return;
     }
 
     window.location.href = data.paymentUrl;
   } catch (error) {
     console.error("PayFast error:", error);
-    alert("Payment could not be started. Please try again or use EFT.");
+    showNotification(
+  "Payment could not be started. Please try again or use EFT.",
+  "error",
+  "Payment Error"
+);
   }
 };
 
@@ -4881,6 +4996,93 @@ poster="/website/promotion.jpg"
     </div>
   </div>
 )}
+{showAdminPinModal && (
+  <div className="snack-notification-overlay">
+    <div className="snack-notification-box">
+      <div className="snack-notification-header">
+        THE SNACK MERCHANT
+      </div>
+
+      <form
+        className="snack-notification-body"
+        onSubmit={(e) => {
+          e.preventDefault();
+
+          if (adminPinInput === "7106") {
+            setIsAdmin(true);
+            setShowAdminPinModal(false);
+            setAdminPinInput("");
+            showNotification(
+              "Admin mode enabled.",
+              "success",
+              "Admin Access"
+            );
+          } else {
+            setAdminPinInput("");
+            setShowAdminPinModal(false);
+            showNotification(
+              "Incorrect PIN. Please try again.",
+              "error",
+              "Access Denied"
+            );
+          }
+        }}
+      >
+        <h2>Admin Access</h2>
+
+        <p>Enter your Admin PIN to continue.</p>
+
+        <input
+          type="password"
+          inputMode="numeric"
+          autoComplete="off"
+          value={adminPinInput}
+          onChange={(e) => setAdminPinInput(e.target.value)}
+          placeholder="Enter PIN"
+          autoFocus
+          required
+          style={{
+            width: "100%",
+            padding: "12px",
+            marginBottom: "24px",
+            background: "#080808",
+            color: "#fff",
+            border: "1px solid #d4af37",
+            borderRadius: "8px",
+            textAlign: "center",
+            fontSize: "18px",
+            boxSizing: "border-box",
+          }}
+        />
+
+        <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+          <button
+            type="button"
+            className="snack-notification-button"
+            onClick={() => {
+              setShowAdminPinModal(false);
+              setAdminPinInput("");
+            }}
+            style={{ background: "#333", color: "#fff" }}
+          >
+            Cancel
+          </button>
+
+          <button
+            type="submit"
+            className="snack-notification-button"
+          >
+            Confirm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+<SnackNotification
+  notification={notification}
+  onClose={closeNotification}
+/>
       <main>
       
         <section className="brand-hero">
@@ -5288,17 +5490,21 @@ Recent Markets & Events
         }
       );
 
-      alert(
-        "Thank you. Your reseller application has been submitted successfully and will be reviewed by The Snack Merchant."
-      );
+      showNotification(
+  "Thank you. Your reseller application has been submitted successfully and will be reviewed by The Snack Merchant.",
+  "success",
+  "Application Submitted"
+);
 
       form.reset();
     } catch (error) {
       console.error("Reseller application error:", error);
 
-      alert(
-        "We were unable to submit your reseller application. Please try again or contact The Snack Merchant."
-      );
+      showNotification(
+  "We were unable to submit your reseller application. Please try again or contact The Snack Merchant.",
+  "error",
+  "Application Failed"
+);
     }
   }}
 >
@@ -5689,15 +5895,9 @@ ${data.get("eventDetails")}
 >
   <button
     onClick={() => {
-      const pin = prompt("Enter Admin PIN");
-
-      if (pin === "7106") {
-        setIsAdmin(true);
-        alert("Admin mode enabled");
-      } else {
-        alert("Incorrect PIN");
-      }
-    }}
+  setAdminPinInput("");
+  setShowAdminPinModal(true);
+}}
     style={{
       background: "#111",
       color: "#d4af37",
@@ -6092,7 +6292,11 @@ ${data.get("eventDetails")}
           className="manual-generate-btn"
           onClick={() => {
             if (!manualOrder.customer_name.trim()) {
-              alert("Customer name is required.");
+              showNotification(
+  "Please enter the customer's name before generating the invoice.",
+  "warning",
+  "Customer Name Required"
+);
               return;
             }
 
@@ -6105,7 +6309,11 @@ ${data.get("eventDetails")}
                   Number(item.price) < 0
               )
             ) {
-              alert("Please complete all order items.");
+              showNotification(
+  "Please complete all order items, including quantities and prices.",
+  "warning",
+  "Incomplete Order Items"
+);
               return;
             }
 
@@ -6153,7 +6361,11 @@ ${data.get("eventDetails")}
   className="manual-generate-btn"
   onClick={() => {
     if (!manualOrder.customer_name.trim()) {
-      alert("Customer name is required.");
+      showNotification(
+  "Please enter the customer's name before generating the invoice.",
+  "warning",
+  "Customer Name Required"
+);
       return;
     }
 
@@ -6166,7 +6378,11 @@ ${data.get("eventDetails")}
           Number(item.price) < 0
       )
     ) {
-      alert("Please complete all order items.");
+      showNotification(
+  "Please complete all order items, including quantities and prices.",
+  "warning",
+  "Incomplete Order Items"
+);
       return;
     }
 
@@ -6561,7 +6777,11 @@ ${data.get("eventDetails")}
   className="copy-confirmation-btn"
   onClick={() => {
     navigator.clipboard.writeText(buildCustomerConfirmationMessage(order));
-    alert("Customer update copied.");
+    showNotification(
+  "Customer update copied successfully.",
+  "success",
+  "Customer Update Copied"
+);
   }}
 >
   Copy Customer Update
