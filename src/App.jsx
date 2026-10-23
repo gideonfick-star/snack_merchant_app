@@ -5312,124 +5312,149 @@ setTimeout(() => {
           </div>
         </section>
 
-      <section id="markets" className="brand-events">
-  <p className="brand-eyebrow">Markets & Events</p>
-  <h2>Find The Snack Merchant at markets and community events.</h2>
 
-  <h3 className="brand-events-subtitle">Upcoming Markets</h3>
+<section id="markets" className="brand-events">
+  <p className="brand-eyebrow">Markets & Events</p>
+  <h2>
+    Find The Snack Merchant at markets and community events.
+  </h2>
+
+  <h3 className="brand-events-subtitle">
+    Upcoming Markets
+  </h3>
 
   <div className="brand-events-grid">
-  <div className="brand-event-card featured">
-    <span>18 July 2026</span>
-    <h3>Busstop 7 Market</h3>
-    <p>Weekend market event.</p>
+    <div className="brand-event-card featured">
+      <span>30–31 October 2026</span>
+      <h3>Oppidorpfees</h3>
+      <p>Bronkhorstspruit • Local festival and vendor market.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>25 November – 26 December 2026</span>
+      <h3>The Festive Collection</h3>
+      <p>Montecasino • Festive shopping and Christmas market.</p>
+    </div>
+
+    <div className="brand-event-card">
+      <span>1–3 July 2027</span>
+      <h3>Innibos</h3>
+      <p>Community festival and market event.</p>
+    </div>
   </div>
 
-  <div className="brand-event-card">
-    <span>25 July 2026</span>
-    <h3>Busstop 7 Market</h3>
-    <p>Weekend market event.</p>
-  </div>
+  <h3 className="brand-events-subtitle">
+    Permanent Market Locations
+  </h3>
 
-  <div className="brand-event-card">
-    <span>25 July 2026</span>
-    <h3>Innesdale Market</h3>
-    <p>Community market event.</p>
+  <div className="brand-events-grid">
+    <div className="brand-event-card">
+      <span>Permanent Location</span>
+      <h3>HartMark – Chameleon Village</h3>
+      <p>
+        Hartbeespoortdam • Visit The Snack Merchant
+        at our permanent market location.
+      </p>
+    </div>
   </div>
-
-  <div className="brand-event-card">
-    <span>1 August 2026</span>
-    <h3>Sionspoort Vleisfees</h3>
-    <p>Randfontein • Community food and family festival.</p>
-  </div>
-
-  <div className="brand-event-card">
-    <span>14–16 August 2026</span>
-    <h3>Outdoor Expo</h3>
-    <p>Broederstroom • Outdoor expo and vendor event.</p>
-  </div>
-
-  <div className="brand-event-card">
-    <span>21–23 August 2026</span>
-    <h3>Bakkie SUV Fees</h3>
-    <p>Sondela • Outdoor and motoring festival.</p>
-  </div>
-
-  <div className="brand-event-card">
-    <span>29 August 2026</span>
-    <h3>Pierre van Ryneveld Dorpsfees</h3>
-    <p>Community market and festival day.</p>
-  </div>
-
-  <div className="brand-event-card">
-    <span>4–5 September 2026</span>
-    <h3>Die Krip Landboufees</h3>
-    <p>Agricultural festival and community market.</p>
-  </div>
-
-  <div className="brand-event-card">
-    <span>3 October 2026</span>
-    <h3>Kiepersol Kermis</h3>
-    <p>Community market and festival.</p>
-  </div>
-
-  <div className="brand-event-card">
-    <span>10 October 2026</span>
-    <h3>Oktoberfest</h3>
-    <p>Randfontein • Festival and family market.</p>
-  </div>
-
-  <div className="brand-event-card">
-    <span>30–31 October 2026</span>
-    <h3>Oppidorpfees</h3>
-    <p>Bronkhorstspruit • Local festival and vendor market.</p>
-  </div>
-
-  <div className="brand-event-card">
-    <span>25 November – 26 December 2026</span>
-    <h3>The Festive Collection</h3>
-    <p>Montecasino • Festive shopping and Christmas market.</p>
-  </div>
-</div>
 
   <h3 className="brand-events-subtitle past">
-Recent Markets & Events
-</h3>
+    Recent Markets & Events
+  </h3>
 
   <div className="brand-events-grid past-events">
+    <div className="brand-event-card past">
+      <span>10 October 2026</span>
+      <h3>Oktoberfest</h3>
+      <p>Randfontein • Festival and family market.</p>
+    </div>
 
-  <div className="brand-event-card past">
-    <span>20–21 June 2026</span>
-    <h3>Killarney Golf Club Winter Soiree</h3>
-    <p>Johannesburg • Winter lifestyle market.</p>
+    <div className="brand-event-card past">
+      <span>2–3 October 2026</span>
+      <h3>NAMPO Alfa</h3>
+      <p>Agricultural exhibition and market event.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>19 September 2026</span>
+      <h3>CGSV Market Day</h3>
+      <p>Community market event.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>4–5 September 2026</span>
+      <h3>Die Krip Landboufees</h3>
+      <p>Agricultural festival and community market.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>29 August 2026</span>
+      <h3>Pierre van Ryneveld Dorpsfees</h3>
+      <p>Community market and festival day.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>21–23 August 2026</span>
+      <h3>Bakkie SUV Fees</h3>
+      <p>Sondela • Outdoor and motoring festival.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>14–16 August 2026</span>
+      <h3>Outdoor Expo</h3>
+      <p>Broederstroom • Outdoor expo and vendor event.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>1 August 2026</span>
+      <h3>Sionspoort Vleisfees</h3>
+      <p>Randfontein • Community food and family festival.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>25 July 2026</span>
+      <h3>Innesdale Market</h3>
+      <p>Community market event.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>18 July 2026</span>
+      <h3>Busstop 7 Market</h3>
+      <p>Weekend market event.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>11–12 July 2026</span>
+      <h3>Busstop 7 Market</h3>
+      <p>Weekend market event.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>3–4 July 2026</span>
+      <h3>NG Raslouw Winter Market</h3>
+      <p>Centurion • Winter market event.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>27 June 2026</span>
+      <h3>Inside Out Market</h3>
+      <p>Centurion • Community market.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>20–21 June 2026</span>
+      <h3>Killarney Golf Club Winter Soiree</h3>
+      <p>Johannesburg • Winter lifestyle market.</p>
+    </div>
+
+    <div className="brand-event-card past">
+      <span>29–31 May 2026</span>
+      <h3>Afridome Parys</h3>
+      <p>Three-day exhibition and food festival.</p>
+    </div>
   </div>
+</section>
 
-  <div className="brand-event-card past">
-    <span>27 June 2026</span>
-    <h3>Inside Out Market</h3>
-    <p>Centurion • Community market.</p>
-  </div>
-
-  <div className="brand-event-card past">
-    <span>3–4 July 2026</span>
-    <h3>NG Raslouw Winter Market</h3>
-    <p>Centurion • Winter market event.</p>
-  </div>
-
-  <div className="brand-event-card past">
-    <span>11–12 July 2026</span>
-    <h3>Busstop 7 Market</h3>
-    <p>Weekend market event.</p>
-  </div>
-
-  <div className="brand-event-card past">
-    <span>29–31 May 2026</span>
-    <h3>Afridome Parys</h3>
-    <p>Three-day exhibition and food festival.</p>
-  </div>
-
-</div>
-  </section>
 <section id="reseller" className="brand-contact-forms">
   <p className="brand-eyebrow">Reseller Programme</p>
 
