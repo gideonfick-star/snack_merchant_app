@@ -1743,7 +1743,10 @@ const closeNotification = () => {
   const [clearanceCart, setClearanceCart] = useState({});
   const [clearanceCustomer, setClearanceCustomer] = useState({customerName:'',customerPhone:'',customerEmail:'',orderType:'Collection',deliveryAddress:'',customerNotes:'',paymentMethod:'EFT'});
   const [clearanceSubmitting, setClearanceSubmitting] = useState(false);
-  const [clearanceReceipt, setClearanceReceipt] = useState(null);
+  const [clearanceReceipt, setClearanceReceipt] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem('snackMerchantClearanceReceipt') || 'null'); }
+    catch { return null; }
+  });
   const [clearanceCheckoutEnabled, setClearanceCheckoutEnabled] = useState(true);
   const clearanceSelected = clearanceProducts.filter(p => (clearanceCart[p.id] || 0) > 0);
   const clearanceSubtotal = clearanceSelected.reduce((sum,p) => sum + Number(p.promotional_price) * clearanceCart[p.id], 0);
@@ -1763,7 +1766,12 @@ const closeNotification = () => {
       })});
       const data = await response.json();
       if (!response.ok || !data.success || !data.order) throw new Error(data.error || 'Could not reserve clearance stock.');
-      setClearanceReceipt(data.order); setClearanceCart({});
+      setClearanceReceipt(data.order);
+      sessionStorage.setItem('snackMerchantClearanceReceipt', JSON.stringify(data.order));
+      setClearanceCart({});
+      setClearanceCustomer({customerName:'',customerPhone:'',customerEmail:'',orderType:'Collection',deliveryAddress:'',customerNotes:'',paymentMethod:'EFT'});
+      setClearanceDetailsOpen(false);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
       if (clearanceCustomer.paymentMethod === 'PayFast') {
         const linkResponse = await fetch(`${API_BASE_URL}/orders/${data.order.id}/create-payment-link`,{method:'POST'});
         const linkData = await linkResponse.json();
@@ -1849,7 +1857,7 @@ const closeNotification = () => {
       {clearanceLoading && <p>Loading specials…</p>}
       {clearanceError && <p role="alert" style={{padding:12,border:'1px solid #d4af37',borderRadius:8}}>Could not load specials from the backend. This is a data connection issue, not a page layout issue.</p>}
       {!clearanceLoading && !clearanceError && clearanceProducts.length === 0 && <p>These specials are not available yet.</p>}
-      <div className="clearance-preview-grid">
+      {!clearanceReceipt && <div className="clearance-preview-grid">
         {clearanceProducts.map(product => (
           <article className="clearance-preview-card" key={product.id}>
             {clearanceImageFor(product) && (
@@ -1867,8 +1875,8 @@ const closeNotification = () => {
             </div>
           </article>
         ))}
-      </div>
-      <section className="clearance-checkout">
+      </div>}
+      {!clearanceReceipt && <section className="clearance-checkout">
         <h2>Your Specials Basket</h2>
         {clearanceSelected.length === 0 ? <p style={{margin:'6px 0'}}>Select products above to build your basket.</p> : clearanceSelected.map(p=><p key={p.id} style={{margin:'5px 0'}}>{p.product_name} · {p.pack_size} × {clearanceCart[p.id]} — R{(Number(p.promotional_price)*clearanceCart[p.id]).toFixed(2)}</p>)}
         <p style={{margin:'8px 0',fontWeight:700}}>Subtotal: R{clearanceSubtotal.toFixed(2)}</p>
@@ -1887,15 +1895,26 @@ const closeNotification = () => {
           <button className="clearance-full-row" type="submit" disabled={!clearanceCheckoutEnabled || clearanceSubmitting || !clearanceSelected.length || clearanceDelivery===null}>{clearanceSubmitting?'Processing…':'Place Clearance Order'}</button>
           {!clearanceCheckoutEnabled && <p className="clearance-preview-note clearance-full-row">Preview only — checkout disabled until payment and stock testing passes.</p>}
         </form>}
-        {clearanceReceipt && <div role="status" className="clearance-full-row" style={{padding:16,border:'1px solid #d4af37',borderRadius:8}}>
-          <strong>Order {clearanceReceipt.order_number} received.</strong>
-          {clearanceReceipt.payment_method === 'EFT' ? <div>
-            <p>Please pay R{Number(clearanceReceipt.total_amount).toFixed(2)} within 24 hours using the following banking details:</p>
-            <p>Bank: {EFT_BANK}<br/>Account: {EFT_ACCOUNT_NAME}<br/>Account number: {EFT_ACCOUNT_NUMBER}<br/>Branch: {EFT_BRANCH_CODE}<br/><strong>Reference: {clearanceReceipt.order_number}</strong></p>
-            <p>Send proof of payment to WhatsApp 068 759 7884. Your order remains Awaiting Payment until verified.</p>
-          </div> : <p>PayFast payment pending. If the redirect did not open, contact us with your order number.</p>}
-        </div>}
-      </section>
+      </section>}
+      {clearanceReceipt && <section role="status" aria-live="polite" className="clearance-checkout" style={{maxWidth:760,margin:'28px auto',textAlign:'center',padding:'28px 20px',border:'2px solid #d4af37',borderRadius:12,background:'#fff'}}>
+        <div style={{fontSize:44,color:'#8a6a10'}} aria-hidden="true">✓</div>
+        <h2 style={{color:'#111',fontSize:28,margin:'8px 0'}}>Order Placed Successfully</h2>
+        <p style={{fontSize:18,fontWeight:700,color:'#8a6a10'}}>Awaiting {clearanceReceipt.payment_method === 'EFT' ? 'EFT' : 'PayFast'} Payment</p>
+        <p>Your November Clearance order has been received and your stock is reserved for the payment window.</p>
+        <p><strong>Order number:</strong> {clearanceReceipt.order_number}</p>
+        <p><strong>Amount due:</strong> R{Number(clearanceReceipt.total_amount).toFixed(2)}</p>
+        {clearanceReceipt.payment_method === 'EFT' ? <div style={{margin:'20px auto',padding:18,background:'#f7f3e9',borderRadius:8,lineHeight:1.8}}>
+          <h3 style={{margin:'0 0 8px'}}>EFT Payment Details</h3>
+          <p style={{margin:0}}>Please pay within 24 hours. Payment is not yet confirmed.</p>
+          <p><strong>Bank:</strong> {EFT_BANK}<br/><strong>Account:</strong> {EFT_ACCOUNT_NAME}<br/><strong>Account number:</strong> {EFT_ACCOUNT_NUMBER}<br/><strong>Branch:</strong> {EFT_BRANCH_CODE}</p>
+          <p><strong>Payment reference:</strong><br/><span style={{fontWeight:700,overflowWrap:'anywhere'}}>{clearanceReceipt.order_number}</span></p>
+          <button type="button" onClick={() => navigator.clipboard?.writeText(clearanceReceipt.order_number)}>Copy Payment Reference</button>
+          <p>Send proof of payment to WhatsApp 068 759 7884 for verification.</p>
+          <a href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`November Clearance EFT proof of payment for order ${clearanceReceipt.order_number}, amount R${Number(clearanceReceipt.total_amount).toFixed(2)}. I will attach my proof of payment.`)}`} target="_blank" rel="noopener noreferrer">Open WhatsApp to Send Proof of Payment</a>
+        </div> : <p>Payment has not yet been confirmed. If you cancelled PayFast, contact us with your order number before placing another order.</p>}
+        <p style={{fontSize:13}}>Please keep your order number. A new-order notification is not confirmation of payment.</p>
+        <button type="button" onClick={() => {sessionStorage.removeItem('snackMerchantClearanceReceipt');setClearanceReceipt(null);setClearanceCustomer({customerName:'',customerPhone:'',customerEmail:'',orderType:'Collection',deliveryAddress:'',customerNotes:'',paymentMethod:'EFT'});setClearanceCart({});setClearanceDetailsOpen(false);}}>Place Another Clearance Order</button>
+      </section>}
       <button type="button" onClick={() => setShowClearancePreview(false)}>Back to Website</button>
     </div>
   );
