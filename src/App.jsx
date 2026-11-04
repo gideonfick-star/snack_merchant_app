@@ -6323,11 +6323,12 @@ ${data.get("eventDetails")}
   <button onClick={loadOrders}>
     Refresh Orders
   </button>
-  <label style={{display:'flex',alignItems:'center',gap:10,fontSize:13,fontWeight:600,color:'#d4af37',whiteSpace:'nowrap'}}>
-    Clearance Admin Secret
+  <label style={{display:'flex',alignItems:'center',gap:12,padding:'7px 14px',border:'1px solid rgba(212,175,55,0.55)',borderRadius:14,background:'#111',color:'#d4af37',fontSize:14,fontWeight:700,lineHeight:1.4,whiteSpace:'nowrap',boxSizing:'border-box',maxWidth:'100%'}}>
+    <span style={{fontSize:14,fontWeight:700,letterSpacing:'0.1px'}}>Clearance Admin Secret</span>
     <input type="password" autoComplete="off" value={clearanceAdminSecret}
-      onChange={e=>setClearanceAdminSecret(e.target.value)} placeholder="Enter clearance secret"
-      style={{boxSizing:'border-box',width:220,maxWidth:'100%',height:38,padding:'8px 12px',background:'#111',color:'#f5eedb',border:'1px solid #d4af37',borderRadius:8,fontSize:13,outlineOffset:2}} />
+      onChange={e=>setClearanceAdminSecret(e.target.value)} placeholder="Enter secret"
+      aria-label="Clearance Admin Secret"
+      style={{boxSizing:'border-box',width:185,maxWidth:'100%',height:38,padding:'8px 13px',background:'#1d1d1d',color:'#f5eedb',border:'1px solid #d4af37',borderRadius:9,fontFamily:'inherit',fontSize:14,fontWeight:500,lineHeight:1.4,outlineOffset:3}} />
   </label>
   <button
   onClick={() => setShowManualOrderForm(true)}
