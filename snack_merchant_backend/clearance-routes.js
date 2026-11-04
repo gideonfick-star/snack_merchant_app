@@ -497,6 +497,44 @@ module.exports = function registerClearanceRoutes(app, pool) {
     }
   });
 
+  // Authenticated clearance fulfilment changes. Payment confirmation is NOT handled here.
+  app.patch('/clearance-orders/:id/fulfilment', async (req, res) => {
+    const secret = process.env.CLEARANCE_ADMIN_SECRET;
+    const supplied = req.get('x-clearance-admin-secret');
+    const crypto = require('crypto');
+    if (!secret || !supplied || Buffer.byteLength(secret) !== Buffer.byteLength(supplied) ||
+        !crypto.timingSafeEqual(Buffer.from(secret), Buffer.from(supplied))) {
+      return res.status(403).json({ success: false, error: 'Clearance admin access denied.' });
+    }
+    const id = Number(req.params.id);
+    const status = req.body?.orderStatus;
+    if (!Number.isSafeInteger(id) || id <= 0 || !['Ready for Collection', 'Dispatched', 'Closed'].includes(status)) {
+      return res.status(400).json({ success: false, error: 'Invalid clearance fulfilment request.' });
+    }
+    let client;
+    try {
+      client = await pool.connect();
+      await client.query('BEGIN');
+      const result = await client.query(`SELECT o.id, o.payment_status, o.order_status,
+        (SELECT COUNT(*)::int FROM public.clearance_reservations WHERE order_id = o.id AND status = 'CONFIRMED') AS confirmed,
+        (SELECT COUNT(*)::int FROM public.clearance_reservations WHERE order_id = o.id) AS total
+        FROM public.orders o WHERE o.id = $1 FOR UPDATE`, [id]);
+      const order = result.rows[0];
+      if (!order || !order.total) throw error('Clearance order not found.', 404);
+      if (order.payment_status !== 'Paid' || order.confirmed !== order.total) {
+        throw error('Confirm payment and stock reservation before fulfilment.', 409);
+      }
+      if (['Cancelled', 'Expired'].includes(order.order_status)) throw error('Order is no longer active.', 409);
+      const updated = await client.query(`UPDATE public.orders SET order_status = $1, updated_at = CURRENT_TIMESTAMP
+        WHERE id = $2 RETURNING *`, [status, id]);
+      await client.query('COMMIT');
+      res.json({ success: true, order: updated.rows[0] });
+    } catch (err) {
+      if (client) await client.query('ROLLBACK');
+      res.status(err.status || 500).json({ success: false, error: err.status ? err.message : 'Unable to update fulfilment.' });
+    } finally { if (client) client.release(); }
+  });
+
   // A successful transaction reserves stock, creates the order, and records
   // the reservation atomically. Do NOT enable until the PayFast ITN,
   // cancellation and manual EFT reconciliation routes are wired to reservations.
@@ -641,6 +679,11 @@ module.exports = function registerClearanceRoutes(app, pool) {
       await client.query('COMMIT');
       res.status(201).json({ success: true, order, subtotal: subtotalCents / 100,
         deliveryFee: feeCents / 100, totalAmount: totalCents / 100 });
+      // Notify only for committed real orders; notification failure cannot roll back the order.
+      if (typeof app.locals.notifyClearanceOrder === 'function') {
+        void app.locals.notifyClearanceOrder(order).catch(err =>
+          console.error('CLEARANCE NOTIFICATION ERROR:', err));
+      }
     } catch (err) {
       if (client) {
         try { await client.query('ROLLBACK'); } catch (rollbackError) { console.error('CLEARANCE ROLLBACK ERROR:', rollbackError); }

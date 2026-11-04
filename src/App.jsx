@@ -1744,7 +1744,7 @@ const closeNotification = () => {
   const [clearanceCustomer, setClearanceCustomer] = useState({customerName:'',customerPhone:'',customerEmail:'',orderType:'Collection',deliveryAddress:'',customerNotes:'',paymentMethod:'EFT'});
   const [clearanceSubmitting, setClearanceSubmitting] = useState(false);
   const [clearanceReceipt, setClearanceReceipt] = useState(null);
-  const [clearanceCheckoutEnabled, setClearanceCheckoutEnabled] = useState(false);
+  const [clearanceCheckoutEnabled, setClearanceCheckoutEnabled] = useState(true);
   const clearanceSelected = clearanceProducts.filter(p => (clearanceCart[p.id] || 0) > 0);
   const clearanceSubtotal = clearanceSelected.reduce((sum,p) => sum + Number(p.promotional_price) * clearanceCart[p.id], 0);
   const clearanceWeight = clearanceSelected.reduce((sum,p) => sum + (Number.parseInt(p.pack_size,10)||0) * clearanceCart[p.id]/1000, 0);
@@ -1887,7 +1887,14 @@ const closeNotification = () => {
           <button className="clearance-full-row" type="submit" disabled={!clearanceCheckoutEnabled || clearanceSubmitting || !clearanceSelected.length || clearanceDelivery===null}>{clearanceSubmitting?'Processing…':'Place Clearance Order'}</button>
           {!clearanceCheckoutEnabled && <p className="clearance-preview-note clearance-full-row">Preview only — checkout disabled until payment and stock testing passes.</p>}
         </form>}
-        {clearanceReceipt && <p role="status">Order {clearanceReceipt.order_number} reserved. Await payment instructions or confirmation.</p>}
+        {clearanceReceipt && <div role="status" className="clearance-full-row" style={{padding:16,border:'1px solid #d4af37',borderRadius:8}}>
+          <strong>Order {clearanceReceipt.order_number} received.</strong>
+          {clearanceReceipt.payment_method === 'EFT' ? <div>
+            <p>Please pay R{Number(clearanceReceipt.total_amount).toFixed(2)} within 24 hours using the following banking details:</p>
+            <p>Bank: {EFT_BANK}<br/>Account: {EFT_ACCOUNT_NAME}<br/>Account number: {EFT_ACCOUNT_NUMBER}<br/>Branch: {EFT_BRANCH_CODE}<br/><strong>Reference: {clearanceReceipt.order_number}</strong></p>
+            <p>Send proof of payment to WhatsApp 068 759 7884. Your order remains Awaiting Payment until verified.</p>
+          </div> : <p>PayFast payment pending. If the redirect did not open, contact us with your order number.</p>}
+        </div>}
       </section>
       <button type="button" onClick={() => setShowClearancePreview(false)}>Back to Website</button>
     </div>
@@ -2061,6 +2068,42 @@ const [isAdmin, setIsAdmin] = useState(false);
 const [adminView, setAdminView] = useState("products");
 const [orderDashboardFilter, setOrderDashboardFilter] = useState("all");
 const [orders, setOrders] = useState([]);
+const [clearanceAdminSecret, setClearanceAdminSecret] = useState('');
+const [clearanceAdminBusy, setClearanceAdminBusy] = useState(false);
+const changeClearanceOrderStatus = async (order, nextStatus) => {
+  if (!clearanceAdminSecret) {
+    showNotification('Enter the clearance administration secret in the Orders Dashboard before changing a clearance order.', 'warning', 'Clearance Admin Secret Required');
+    return;
+  }
+  const headers = { 'x-clearance-admin-secret': clearanceAdminSecret };
+  if (!['Paid', 'Cancelled', 'Ready for Collection', 'Dispatched', 'Closed'].includes(nextStatus)) {
+    showNotification('Use Paid, Cancelled, Ready for Collection, Dispatched or Closed for clearance orders.', 'warning', 'Invalid Clearance Status');
+    return;
+  }
+  const isPaid = order.payment_status === 'Paid';
+  const isCancel = nextStatus === 'Cancelled';
+  const isPay = nextStatus === 'Paid';
+  if (isPay && order.payment_method === 'PayFast') {
+    showNotification('PayFast payments must be confirmed by PayFast. Manual confirmation is blocked.', 'warning', 'PayFast Confirmation Required');
+    return;
+  }
+  if (isCancel && isPaid) {
+    showNotification('Paid clearance orders require manual refund and stock reconciliation. Cancellation is blocked.', 'warning', 'Paid Order');
+    return;
+  }
+  setClearanceAdminBusy(true);
+  try {
+    if (isCancel || isPay) {
+      await axios.post(`${API_BASE_URL}/clearance-orders/${order.id}/reconcile`, {action: isCancel ? 'RELEASED' : 'CONFIRMED'}, {headers});
+    } else {
+      await axios.patch(`${API_BASE_URL}/clearance-orders/${order.id}/fulfilment`, {orderStatus: nextStatus}, {headers});
+    }
+    await loadOrders();
+    showNotification('Clearance order updated successfully.', 'success', 'Order Updated');
+  } catch (err) {
+    showNotification(err.response?.data?.error || 'Could not update clearance order.', 'error', 'Clearance Update Failed');
+  } finally { setClearanceAdminBusy(false); }
+};
 const [expandedOrderId, setExpandedOrderId] = useState(null);
 const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 const [paymentMethod, setPaymentMethod] = useState("EFT / Proof of Payment");
@@ -6261,6 +6304,12 @@ ${data.get("eventDetails")}
   <button onClick={loadOrders}>
     Refresh Orders
   </button>
+  <label style={{display:'flex',alignItems:'center',gap:8,fontSize:12}}>
+    Clearance Admin Secret
+    <input type="password" autoComplete="off" value={clearanceAdminSecret}
+      onChange={e=>setClearanceAdminSecret(e.target.value)} placeholder="Enter Render clearance secret"
+      style={{maxWidth:230,padding:8}} />
+  </label>
   <button
   onClick={() => setShowManualOrderForm(true)}
 >
@@ -6902,7 +6951,7 @@ ${data.get("eventDetails")}
     <div key={order.id} className="admin-order-card">
       <div className="admin-order-card-header">
         <div>
-          <h3>{order.order_number}</h3>
+          <h3>{order.order_number} {order.is_clearance && <span style={{color:'#d4af37',fontSize:12}}>NOVEMBER CLEARANCE</span>}</h3>
           <p>{new Date(order.created_at).toLocaleString()}</p>
         </div>
 
@@ -6915,6 +6964,7 @@ ${data.get("eventDetails")}
         <p><span>Email</span>{order.customer_email || "Not provided"}</p>
         <p><span>Type</span>{order.order_type}</p>
         <p><span>Method</span>{order.payment_method || "-"}</p>
+        {order.is_clearance && <p><span>Reservation</span>{order.clearance_reservation_status || 'Unknown'}</p>}
        <p>
   <span>Delivery Fee</span>
   {order.order_type === "Collection"
@@ -6930,6 +6980,7 @@ ${data.get("eventDetails")}
   .toLowerCase()
   .replace(/[\/\s]+/g, "-")}`}
           value={normalizeOrderStatus(order.order_status)}
+          disabled={Boolean(order.is_clearance && (clearanceAdminBusy || ['Expired', 'Cancelled'].includes(order.order_status)))}
           style={{
   backgroundColor:
     normalizeOrderStatus(order.order_status) === "Pending Stock Confirmation"
@@ -6957,6 +7008,10 @@ ${data.get("eventDetails")}
           onChange={async (e) => {
             const newOrderStatus = e.target.value;
 
+            if (order.is_clearance) {
+              await changeClearanceOrderStatus(order, newOrderStatus);
+              return;
+            }
             await axios.patch(
   `${API_BASE_URL}/orders/${order.id}/status`,
   {

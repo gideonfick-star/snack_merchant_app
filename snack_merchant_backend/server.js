@@ -11,7 +11,39 @@ const cookieParser = require("cookie-parser");
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+// Clearance orders use the same Resend email notification protocol as normal orders.
+const escapeOrderHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (ch) => ({
+  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+}[ch]));
+async function notifyNewClearanceOrder(order) {
+  try {
+    const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+    const money = (n) => `R${Number(n || 0).toFixed(2)}`;
+    const rows = items.map(i => `<tr><td>${escapeOrderHtml(i.name)}</td><td>${escapeOrderHtml(i.size)}</td><td>${Number(i.qty)}</td><td>${money(i.price)}</td></tr>`).join('');
+    const html = `<div style="font-family:Arial,sans-serif;max-width:700px;color:#222">
+      <div style="background:#111;color:#d4af37;padding:18px"><h2>THE SNACK MERCHANT</h2><p style="color:#fff">New November Clearance Order</p></div>
+      <p><strong>Order:</strong> ${escapeOrderHtml(order.order_number)}</p>
+      <p><strong>Customer:</strong> ${escapeOrderHtml(order.customer_name)}<br><strong>Phone:</strong> ${escapeOrderHtml(order.customer_phone)}<br><strong>Email:</strong> ${escapeOrderHtml(order.customer_email || 'Not provided')}</p>
+      <p><strong>Fulfilment:</strong> ${escapeOrderHtml(order.order_type)}<br><strong>Address:</strong> ${escapeOrderHtml(order.delivery_address || 'Collection')}<br><strong>Payment:</strong> ${escapeOrderHtml(order.payment_method)} / ${escapeOrderHtml(order.payment_status)}</p>
+      <table border="1" cellspacing="0" cellpadding="8" style="border-collapse:collapse;width:100%"><tr><th>Product</th><th>Pack</th><th>Qty</th><th>Unit price</th></tr>${rows}</table>
+      <p>Delivery: ${money(order.delivery_fee)}<br><strong>Total: ${money(order.total_amount)}</strong></p>
+      <p><strong>Notes:</strong> ${escapeOrderHtml(order.customer_notes || 'None')}</p>
+      <p>Process this order in the existing Orders Dashboard.</p></div>`;
+    const { error } = await resend.emails.send({
+      from: 'The Snack Merchant <orders@thesnackmerchant.co.za>',
+      to: ['gideon@thesnackmerchant.co.za'],
+      subject: `NEW NOVEMBER CLEARANCE ORDER - ${order.order_number}`,
+      html
+    });
+    if (error) throw new Error(error.message || 'Resend email rejected');
+    console.log('CLEARANCE EMAIL SENT:', order.order_number);
+  } catch (err) {
+    console.error('CLEARANCE ORDER EMAIL ERROR:', err);
+  }
+}
+
 const app = express();
+app.locals.notifyClearanceOrder = notifyNewClearanceOrder;
 
 // ================= DATABASE =================
 
@@ -349,9 +381,14 @@ require('./clearance-routes')(app, pool);
 app.get("/orders", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT *
-      FROM public.orders
-      ORDER BY created_at DESC
+      SELECT o.*,
+        EXISTS (SELECT 1 FROM public.clearance_reservations r WHERE r.order_id = o.id) AS is_clearance,
+        (SELECT CASE WHEN COUNT(*) = 0 THEN NULL
+          WHEN COUNT(DISTINCT r.status) = 1 THEN MIN(r.status)
+          ELSE 'MIXED' END
+         FROM public.clearance_reservations r WHERE r.order_id = o.id) AS clearance_reservation_status
+      FROM public.orders o
+      ORDER BY o.created_at DESC
     `);
 
     res.json(result.rows);
