@@ -341,6 +341,9 @@ app.post("/product-pricing", async (req, res) => {
   }
 });
 
+// Clearance catalogue is isolated from the normal shop and remains inactive until approved.
+require('./clearance-routes')(app, pool);
+
 // ================= LOAD ORDERS =================
 
 app.get("/orders", async (req, res) => {
@@ -368,6 +371,14 @@ app.patch("/orders/:id/status", async (req, res) => {
   try {
     const { id } = req.params;
     const { paymentStatus, orderStatus } = req.body;
+
+    // Clearance reservations require the separate verified reconciliation flow.
+    const clearanceGuard = await pool.query(
+      'SELECT 1 FROM public.clearance_reservations WHERE order_id = $1 LIMIT 1', [id]
+    );
+    if (clearanceGuard.rowCount) return res.status(409).json({
+      success: false, error: 'Use verified clearance reconciliation for this order.'
+    });
 
     const result = await pool.query(
       `
@@ -651,13 +662,47 @@ const sendGA4Event = async (clientId, eventName, params = {}) => {
   }
 };
 
+// Clearance PayFast notifications are verified independently of the legacy flow.
+// Signature, merchant, order amount and PayFast server validation must ALL pass.
+async function verifyClearancePayFastITN(itn, order) {
+  const expectedMerchant = process.env.PAYFAST_MERCHANT_ID;
+  if (!expectedMerchant || String(itn.merchant_id || '') !== expectedMerchant) return false;
+  const actualCents = Math.round(Number(itn.amount_gross) * 100);
+  const expectedCents = Math.round(Number(order.total_amount) * 100);
+  if (!Number.isSafeInteger(actualCents) || actualCents !== expectedCents) return false;
+  const suppliedSignature = String(itn.signature || '').toLowerCase();
+  if (!/^[a-f0-9]{32}$/.test(suppliedSignature)) return false;
+  const fields = Object.entries(itn)
+    .filter(([key, value]) => key !== 'signature' && value !== undefined && value !== null && String(value) !== '')
+    .map(([key, value]) => `${key}=${encodeURIComponent(String(value).trim()).replace(/%20/g, '+')}`);
+  const passphrase = String(process.env.PAYFAST_PASSPHRASE || '').trim();
+  if (passphrase) fields.push(`passphrase=${encodeURIComponent(passphrase).replace(/%20/g, '+')}`);
+  const calculated = crypto.createHash('md5').update(fields.join('&')).digest('hex');
+  if (!crypto.timingSafeEqual(Buffer.from(suppliedSignature), Buffer.from(calculated))) return false;
+  const configured = String(process.env.PAYFAST_URL || '');
+  const sandbox = configured.includes('sandbox.payfast.co.za');
+  const validationUrl = sandbox
+    ? 'https://sandbox.payfast.co.za/eng/query/validate'
+    : 'https://www.payfast.co.za/eng/query/validate';
+  const validationBody = Object.entries(itn)
+    .filter(([, value]) => value !== undefined && value !== null)
+    .map(([key, value]) => `${key}=${encodeURIComponent(String(value)).replace(/%20/g, '+')}`)
+    .join('&');
+  const response = await fetch(validationUrl, {
+    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: validationBody, signal: AbortSignal.timeout(10000)
+  });
+  return response.ok && (await response.text()).trim() === 'VALID';
+}
+
 // ================= PAYFAST ITN ROUTE =================
 
 app.post("/payfast-notify", async (req, res) => {
   try {
     const itn = req.body;
 
-    console.log("PAYFAST ITN RECEIVED:", itn);
+    // Do not log the full notification: it may contain customer and payment data.
+    console.log("PAYFAST ITN RECEIVED:", { orderNumber: itn?.m_payment_id, status: itn?.payment_status });
 
     const orderNumber = itn.m_payment_id;
     const paymentStatus = itn.payment_status;
@@ -665,6 +710,51 @@ app.post("/payfast-notify", async (req, res) => {
 
     if (!orderNumber) {
       return res.status(400).send("Missing m_payment_id");
+    }
+
+    // Clearance ITNs require signature, amount and PayFast server validation.
+    // Route by reserved order-number namespace, including unknown/deleted orders.
+    // Never allow clearance-prefixed notifications to reach legacy status updates.
+    if (String(orderNumber).startsWith("SM-CL-")) {
+      const exists = await pool.query(
+        "SELECT 1 FROM public.orders WHERE order_number = $1 LIMIT 1", [orderNumber]);
+      if (!exists.rowCount) return res.status(404).send("Unknown clearance order");
+    }
+    const clearanceGuard = await pool.query(`
+      SELECT 1 FROM public.orders o
+      JOIN public.clearance_reservations r ON r.order_id = o.id
+      WHERE o.order_number = $1 LIMIT 1`, [orderNumber]);
+    if (clearanceGuard.rowCount) {
+      const lookup = await pool.query(`
+        SELECT DISTINCT o.id, o.total_amount, o.payment_method
+        FROM public.orders o
+        JOIN public.clearance_reservations r ON r.order_id = o.id
+        WHERE o.order_number = $1`, [orderNumber]);
+      const order = lookup.rows[0];
+      if (!order || order.payment_method !== 'PayFast' ||
+          !await verifyClearancePayFastITN(itn, order)) {
+        console.error('CLEARANCE PAYFAST ITN REJECTED:', orderNumber);
+        return res.status(400).send('Invalid clearance payment notification');
+      }
+      if (paymentStatus === 'COMPLETE') {
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          await app.locals.confirmClearanceReservation(order.id, client);
+          await client.query('COMMIT');
+        } catch (err) {
+          await client.query('ROLLBACK');
+          console.error('CLEARANCE PAYMENT RECONCILIATION FAILED:', err);
+          return res.status(500).send('Clearance reconciliation failed');
+        } finally { client.release(); }
+      }
+      // FAILED/CANCELLED notifications are verified but never release stock
+      // automatically: an EFT/manual reconciliation or delayed payment may exist.
+      return res.status(200).send('OK');
+    }
+
+    if (String(orderNumber).startsWith("SM-CL-")) {
+      return res.status(409).send("Clearance reservation missing; manual reconciliation required");
     }
 
     let newPaymentStatus = "Awaiting Payment";
@@ -748,6 +838,34 @@ app.post("/orders/:id/create-payment-link", async (req, res) => {
     }
 
     const order = orderResult.rows[0];
+    const clearanceGuard = await pool.query(
+      'SELECT 1 FROM public.clearance_reservations WHERE order_id = $1 LIMIT 1', [id]
+    );
+    if (clearanceGuard.rowCount) {
+      // Clearance links use the persisted, server-calculated order total.
+      // Never use /create-payment (which accepts browser-supplied amounts).
+      const clearanceEnabled =
+        process.env.CLEARANCE_CHECKOUT_ENABLED === 'true' &&
+        process.env.CLEARANCE_PAYMENT_INTEGRATION_VERIFIED === 'true';
+      if (!clearanceEnabled) return res.status(503).json({
+        success: false, error: 'Clearance PayFast checkout is not enabled yet.'
+      });
+      if (order.payment_method !== 'PayFast') return res.status(409).json({
+        success: false, error: 'This clearance order is not a PayFast order.'
+      });
+      const reservations = await pool.query(
+        `SELECT status, expires_at, (expires_at IS NOT NULL AND expires_at <= CURRENT_TIMESTAMP) AS expired
+         FROM public.clearance_reservations WHERE order_id = $1`, [id]
+      );
+      if (!reservations.rows.length ||
+          reservations.rows.some(row => row.status !== 'RESERVED' || row.expired || !row.expires_at) ||
+          order.payment_status === 'Paid' ||
+          order.order_status === 'Cancelled') {
+        return res.status(409).json({
+          success: false, error: 'This clearance reservation is not awaiting payment.'
+        });
+      }
+    }
 
     const paymentData = {
       merchant_id: process.env.PAYFAST_MERCHANT_ID,
@@ -819,6 +937,15 @@ app.post("/orders/:id/create-payment-link", async (req, res) => {
 app.post("/create-payment", async (req, res) => {
   try {
     const { amount, customerName, customerEmail, orderNumber, itemName, itemDescription } = req.body;
+    // The legacy payment endpoint accepts a browser-supplied amount. Do not
+    // allow it to generate a clearance payment link.
+    const clearanceGuard = await pool.query(`
+      SELECT 1 FROM public.orders o
+      JOIN public.clearance_reservations r ON r.order_id = o.id
+      WHERE o.order_number = $1 LIMIT 1`, [orderNumber || '']);
+    if (String(orderNumber || "").startsWith("SM-CL-") || clearanceGuard.rowCount) return res.status(503).json({
+      success: false, error: 'Clearance PayFast checkout is not enabled yet.'
+    });
 
     const paymentData = {
   merchant_id: process.env.PAYFAST_MERCHANT_ID,

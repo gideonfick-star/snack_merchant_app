@@ -6730,3 +6730,20 @@ html {
 .snack-notification-button:hover {
   background: #f1c75b;
 }
+
+/* November 2026 clearance preview — isolated from normal shop */
+.clearance-preview-page{max-width:1180px;margin:0 auto;padding:36px 20px 70px;background:#fffaf0;color:#171717;min-height:100vh}
+.clearance-preview-heading{text-align:center;padding:30px 18px;border:2px solid #c6a044;background:#111;color:#f9edcd}
+.clearance-eyebrow{letter-spacing:3px;color:#d4af37;font-weight:700}
+.clearance-preview-heading h1{font-size:clamp(30px,5vw,52px);margin:14px 0}
+.clearance-sale{font-size:clamp(20px,3vw,30px);font-weight:800;color:#d4af37}
+.clearance-preview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:18px;margin:28px 0}
+.clearance-preview-card{border:1px solid #d6c391;border-radius:10px;padding:22px;background:#fff;box-shadow:0 4px 14px #0000000c}
+.clearance-preview-card h2{font-size:19px;margin:0 0 12px}
+.clearance-preview-card s{color:#777;margin-right:12px}
+.clearance-preview-card strong{font-size:23px;color:#806000}
+.clearance-best-before{font-size:13px;color:#5b5140}
+.clearance-preview-note{font-weight:700;text-align:center}
+.clearance-preview-page>button{background:#111;color:#d4af37;border:1px solid #d4af37;padding:12px 22px;border-radius:6px;cursor:pointer}
+
+.clearance-quantity{display:flex;align-items:center;gap:14px;margin-top:15px}.clearance-quantity button{background:#111;color:#d4af37;border:1px solid #d4af37;border-radius:5px;padding:6px 14px;cursor:pointer}.clearance-quantity button:disabled{opacity:.35;cursor:not-allowed}.clearance-checkout{background:#fff;border:1px solid #d4af37;padding:25px;margin:25px 0;border-radius:10px}.clearance-checkout form{display:grid;gap:14px;max-width:550px}.clearance-checkout label{display:grid;gap:5px;font-weight:600}.clearance-checkout input,.clearance-checkout select,.clearance-checkout textarea{padding:10px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#111}.clearance-checkout button[type=submit]{background:#111;color:#d4af37;padding:12px;border:1px solid #d4af37;border-radius:6px}.clearance-checkout button:disabled{opacity:.5}

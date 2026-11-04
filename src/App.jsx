@@ -1725,6 +1725,174 @@ const showNotification = (message, type = "info", title = "") => {
 const closeNotification = () => {
   setNotification(null);
 };
+  // Clearance preview is opt-in locally; it does not activate the live promotion.
+  const localClearancePreview = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+  const [showClearanceWelcome, setShowClearanceWelcome] = useState(() =>
+    ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
+    new URLSearchParams(window.location.search).get('clearancePreview') !== '1' &&
+    sessionStorage.getItem('clearance-preview-dismissed') !== '1'
+  );
+  const dismissClearanceWelcome = () => {
+    sessionStorage.setItem('clearance-preview-dismissed', '1');
+    setShowClearanceWelcome(false);
+  };
+  const [showClearancePreview, setShowClearancePreview] = useState(
+    () => new URLSearchParams(window.location.search).get('clearancePreview') === '1'
+  );
+  const [clearanceProducts, setClearanceProducts] = useState([]);
+  const [clearanceDetailsOpen, setClearanceDetailsOpen] = useState(false);
+  const [clearanceCart, setClearanceCart] = useState({});
+  const [clearanceCustomer, setClearanceCustomer] = useState({customerName:'',customerPhone:'',customerEmail:'',orderType:'Collection',deliveryAddress:'',customerNotes:'',paymentMethod:'EFT'});
+  const [clearanceSubmitting, setClearanceSubmitting] = useState(false);
+  const [clearanceReceipt, setClearanceReceipt] = useState(null);
+  const [clearanceCheckoutEnabled, setClearanceCheckoutEnabled] = useState(false);
+  const clearanceSelected = clearanceProducts.filter(p => (clearanceCart[p.id] || 0) > 0);
+  const clearanceSubtotal = clearanceSelected.reduce((sum,p) => sum + Number(p.promotional_price) * clearanceCart[p.id], 0);
+  const clearanceWeight = clearanceSelected.reduce((sum,p) => sum + (Number.parseInt(p.pack_size,10)||0) * clearanceCart[p.id]/1000, 0);
+  const clearanceDelivery = clearanceCustomer.orderType === 'Delivery' ? (DELIVERY_TIERS.find(t=>clearanceWeight <= t.maxKg)?.fee ?? null) : 0;
+  const clearanceTotal = clearanceDelivery === null ? null : clearanceSubtotal + clearanceDelivery;
+  const setClearanceField = (field,value) => setClearanceCustomer(prev => ({...prev,[field]:value}));
+  const addClearance = (p, delta) => setClearanceCart(prev => ({...prev,[p.id]:Math.max(0,Math.min(Number(p.available_quantity), (prev[p.id]||0)+delta))}));
+  const submitClearanceOrder = async (event) => {
+    event.preventDefault();
+    if (!clearanceCheckoutEnabled || clearanceSubmitting || !clearanceSelected.length || clearanceDelivery === null) return;
+    setClearanceSubmitting(true); setClearanceError('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/clearance-orders`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        ...clearanceCustomer,
+        items: clearanceSelected.map(p=>({clearanceProductId:p.id,qty:clearanceCart[p.id]}))
+      })});
+      const data = await response.json();
+      if (!response.ok || !data.success || !data.order) throw new Error(data.error || 'Could not reserve clearance stock.');
+      setClearanceReceipt(data.order); setClearanceCart({});
+      if (clearanceCustomer.paymentMethod === 'PayFast') {
+        const linkResponse = await fetch(`${API_BASE_URL}/orders/${data.order.id}/create-payment-link`,{method:'POST'});
+        const linkData = await linkResponse.json();
+        if (!linkResponse.ok || !linkData.paymentUrl) throw new Error(`Order ${data.order.order_number} reserved, but PayFast link could not be created. Contact us before retrying.`);
+        window.location.assign(linkData.paymentUrl);
+      }
+    } catch (err) {setClearanceError(err.message || 'Clearance checkout unavailable.');}
+    finally {setClearanceSubmitting(false);}
+  };
+  const [clearanceLoading, setClearanceLoading] = useState(false);
+  const [clearanceError, setClearanceError] = useState('');
+  useEffect(() => {
+    if (!showClearancePreview) return;
+    let active = true;
+    setClearanceLoading(true);
+    fetch(`${API_BASE_URL}/clearance-products`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error('Clearance catalogue unavailable');
+        return response.json();
+      })
+      .then((data) => {
+        if (active) setClearanceProducts(Array.isArray(data.products) ? data.products : []);
+      })
+      .catch(() => { if (active) setClearanceError('Could not load specials.'); })
+      .finally(() => { if (active) setClearanceLoading(false); });
+    return () => { active = false; };
+  }, [showClearancePreview]);
+  // Exact packet photographs supplied in public/website (Vite public assets).
+  const clearanceImageFor = (product) => {
+    const name = String(product.product_name || '').toLowerCase();
+    const pack = String(product.pack_size || '').toLowerCase();
+    let filename = '';
+    if (name.includes('peanuts blanched salted')) {
+      filename = pack === '250g' ? '250g Peantus Salted.png' : '100g Salted Peanuts.png';
+    } else if (name.includes('peanuts and raisins')) {
+      filename = pack === '250g' ? '250g Peanuts and Raisins.png' : '100g Peanuts and Raisins.png';
+    } else if (name.includes('mango chunks')) {
+      filename = pack === '500g' ? '500g Mango Chunks.png' : pack === '250g' ? '250g Mango Chunks.png' : '100g Mango Chunks.png';
+    } else if (name.includes('mixed nuts roasted salted')) {
+      filename = '100g Mixed Nuts Roasted and Salted.png';
+    } else if (name.includes('chocolate macadamia')) {
+      filename = '100g_250g Chocolate Macadamia.png';
+    }
+    return filename ? `/website/${encodeURIComponent(filename)}` : null;
+  };
+  const clearancePreviewContent = () => (
+    <div className="clearance-preview-page clearance-compact-page">
+      <style>{`
+        .clearance-compact-page{width:min(1200px,calc(100vw - 48px));max-width:none;box-sizing:border-box;margin-left:50%;margin-right:0;transform:translateX(-50%);padding:24px;min-height:unset}
+        .clearance-compact-page .clearance-preview-heading{padding:18px 16px;border-radius:12px}
+        .clearance-compact-page .clearance-preview-heading h1{font-size:clamp(26px,3.2vw,38px);margin:6px 0}
+        .clearance-compact-page .clearance-sale{font-size:19px;margin:5px 0}
+        .clearance-compact-page .clearance-preview-heading p{margin:7px 0}
+        .clearance-compact-page .clearance-preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:20px 0}
+        .clearance-compact-page .clearance-preview-card{padding:14px;border-radius:9px}
+        .clearance-compact-page .clearance-preview-card h2{font-size:16px;line-height:1.3;margin:0 0 6px}
+        .clearance-compact-page .clearance-product-photo{height:210px;width:100%;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #eee3cc;border-radius:8px;margin-bottom:12px;overflow:hidden}
+        .clearance-compact-page .clearance-product-photo img{display:block;width:100%;height:100%;object-fit:contain;padding:8px;box-sizing:border-box}
+
+        .clearance-compact-page .clearance-preview-card p{margin:6px 0;font-size:13px}
+        .clearance-compact-page .clearance-preview-card strong{font-size:19px}
+        .clearance-compact-page .clearance-quantity{margin-top:9px;gap:9px}
+        .clearance-compact-page .clearance-checkout{padding:16px 20px;margin:14px 0}
+        .clearance-compact-page .clearance-checkout h2{margin:0 0 8px;font-size:20px}
+        .clearance-compact-page .clearance-checkout form{max-width:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;text-align:left}
+        .clearance-compact-page .clearance-checkout form label{font-size:13px}
+        .clearance-compact-page .clearance-checkout form input,.clearance-compact-page .clearance-checkout form select,.clearance-compact-page .clearance-checkout form textarea{width:100%;box-sizing:border-box;min-height:38px;padding:8px;font-size:14px}
+        .clearance-compact-page .clearance-checkout form textarea{min-height:56px}
+        .clearance-compact-page .clearance-full-row{grid-column:1/-1}
+        .clearance-compact-page .clearance-open-details{background:#111;color:#d4af37;border:1px solid #d4af37;border-radius:8px;padding:10px 18px;margin-top:10px}
+        .clearance-compact-page .clearance-preview-note{font-size:12px;margin:5px 0}
+        @media(min-width:651px) and (max-width:900px){.clearance-compact-page .clearance-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+        @media(max-width:650px){.clearance-compact-page{width:calc(100vw - 20px);padding:12px 10px 30px}.clearance-compact-page .clearance-checkout form{grid-template-columns:1fr}.clearance-compact-page .clearance-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.clearance-compact-page .clearance-preview-card{padding:10px}.clearance-compact-page .clearance-preview-card h2{font-size:14px}.clearance-compact-page .clearance-product-photo{height:155px}}
+      `}</style>
+      <p style={{textAlign:'center',fontWeight:700,fontSize:12,margin:'0 0 10px'}}>LOCAL PREVIEW — NOT LIVE · CHECKOUT DISABLED</p>
+      <header className="clearance-preview-heading">
+        <span className="clearance-eyebrow">THE SNACK MERCHANT</span>
+        <h1>Shop the Specials</h1>
+        <p className="clearance-sale">30% OFF CLEARANCE SPECIALS</p>
+        <strong>WHILE STOCKS LAST!</strong>
+        <p>Best Before: 25 November 2026</p>
+      </header>
+      {clearanceLoading && <p>Loading specials…</p>}
+      {clearanceError && <p role="alert" style={{padding:12,border:'1px solid #d4af37',borderRadius:8}}>Could not load specials from the backend. This is a data connection issue, not a page layout issue.</p>}
+      {!clearanceLoading && !clearanceError && clearanceProducts.length === 0 && <p>These specials are not available yet.</p>}
+      <div className="clearance-preview-grid">
+        {clearanceProducts.map(product => (
+          <article className="clearance-preview-card" key={product.id}>
+            {clearanceImageFor(product) && (
+              <div className="clearance-product-photo">
+                <img src={clearanceImageFor(product)} alt={`${product.product_name} ${product.pack_size} packet`} loading="lazy" />
+              </div>
+            )}
+            <h2>{product.product_name}</h2>
+            <p>{product.pack_size} · {product.available_quantity > 0 ? `${product.available_quantity} packs available` : 'Sold out'}</p>
+            <p><s>R{Number(product.retail_price).toFixed(2)}</s> <strong>R{Number(product.promotional_price).toFixed(2)}</strong></p>
+            <div className="clearance-quantity">
+              <button type="button" onClick={()=>addClearance(product,-1)} disabled={!clearanceCart[product.id]}>−</button>
+              <span>{clearanceCart[product.id]||0}</span>
+              <button type="button" onClick={()=>addClearance(product,1)} disabled={Number(product.available_quantity)<= (clearanceCart[product.id]||0)}>+</button>
+            </div>
+          </article>
+        ))}
+      </div>
+      <section className="clearance-checkout">
+        <h2>Your Specials Basket</h2>
+        {clearanceSelected.length === 0 ? <p style={{margin:'6px 0'}}>Select products above to build your basket.</p> : clearanceSelected.map(p=><p key={p.id} style={{margin:'5px 0'}}>{p.product_name} · {p.pack_size} × {clearanceCart[p.id]} — R{(Number(p.promotional_price)*clearanceCart[p.id]).toFixed(2)}</p>)}
+        <p style={{margin:'8px 0',fontWeight:700}}>Subtotal: R{clearanceSubtotal.toFixed(2)}</p>
+        <button className="clearance-open-details" type="button" onClick={()=>setClearanceDetailsOpen(v=>!v)} aria-expanded={clearanceDetailsOpen}>
+          {clearanceDetailsOpen ? 'Hide checkout details' : 'View checkout details'}
+        </button>
+        {clearanceDetailsOpen && <form onSubmit={submitClearanceOrder} style={{marginTop:14}}>
+          <label>Full name<input required value={clearanceCustomer.customerName} onChange={e=>setClearanceField('customerName',e.target.value)}/></label>
+          <label>Phone<input required value={clearanceCustomer.customerPhone} onChange={e=>setClearanceField('customerPhone',e.target.value)}/></label>
+          <label>Email<input type="email" value={clearanceCustomer.customerEmail} onChange={e=>setClearanceField('customerEmail',e.target.value)}/></label>
+          <label>Fulfilment<select value={clearanceCustomer.orderType} onChange={e=>setClearanceField('orderType',e.target.value)}><option value="Collection">Collection</option><option value="Delivery">PUDO Delivery</option></select></label>
+          {clearanceCustomer.orderType === 'Delivery' && <label className="clearance-full-row">Delivery address<textarea required value={clearanceCustomer.deliveryAddress} onChange={e=>setClearanceField('deliveryAddress',e.target.value)}/></label>}
+          <label>Payment<select value={clearanceCustomer.paymentMethod} onChange={e=>setClearanceField('paymentMethod',e.target.value)}><option value="EFT">EFT</option><option value="PayFast">PayFast</option></select></label>
+          <label>Order notes<textarea value={clearanceCustomer.customerNotes} onChange={e=>setClearanceField('customerNotes',e.target.value)}/></label>
+          <p className="clearance-full-row" style={{margin:0}}>Delivery: {clearanceDelivery===null?'Weight exceeds 20 kg':`R${clearanceDelivery.toFixed(2)}`} · <strong>Total: {clearanceTotal===null?'Unavailable':`R${clearanceTotal.toFixed(2)}`}</strong></p>
+          <button className="clearance-full-row" type="submit" disabled={!clearanceCheckoutEnabled || clearanceSubmitting || !clearanceSelected.length || clearanceDelivery===null}>{clearanceSubmitting?'Processing…':'Place Clearance Order'}</button>
+          {!clearanceCheckoutEnabled && <p className="clearance-preview-note clearance-full-row">Preview only — checkout disabled until payment and stock testing passes.</p>}
+        </form>}
+        {clearanceReceipt && <p role="status">Order {clearanceReceipt.order_number} reserved. Await payment instructions or confirmation.</p>}
+      </section>
+      <button type="button" onClick={() => setShowClearancePreview(false)}>Back to Website</button>
+    </div>
+  );
   const PROMOTION_VERSION = "PROMO-004";
 
   const [showPromotionPopup, setShowPromotionPopup] = useState(false);
@@ -4872,6 +5040,9 @@ const page = categoryContent[selectedCategoryPage];
 </div>
 );
 }
+ if (showClearancePreview && !showShop) {
+    return clearancePreviewContent();
+  }
  if (showShop) {
     return (
       <div>
@@ -4911,6 +5082,15 @@ const page = categoryContent[selectedCategoryPage];
   <a href="#reseller">Become a Reseller</a>
   <a href="#contact">Contact</a>
 
+  {localClearancePreview && (
+    <button type="button" onClick={() => {
+      dismissClearanceWelcome();
+      setShowShop(false);
+      setShowClearancePreview(true);
+      window.scrollTo({top:0,behavior:'auto'});
+    }}>Shop the Specials (Preview)</button>
+  )}
+
   <button
     type="button"
     onClick={() => {
@@ -4923,6 +5103,26 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   </button>
 </nav>
       </header>
+{localClearancePreview && showClearanceWelcome && (
+  <div className="promotion-overlay" role="dialog" aria-modal="true" aria-label="November clearance preview"
+       onClick={dismissClearanceWelcome}>
+    <div className="promotion-modal" onClick={e => e.stopPropagation()}>
+      <button type="button" className="promotion-close" aria-label="Close preview"
+              onClick={dismissClearanceWelcome}>✕</button>
+      <div className="promotion-info" style={{padding:28,textAlign:'center'}}>
+        <p style={{fontWeight:700,letterSpacing:2}}>THE SNACK MERCHANT</p>
+        <h2>November Clearance — 30% OFF</h2>
+        <p><strong>WHILE STOCKS LAST!</strong></p>
+        <p>Best Before: 25 November 2026</p>
+        <p>Local preview only — checkout disabled</p>
+        <button type="button" className="promotion-shop" onClick={() => {
+          dismissClearanceWelcome(); setShowShop(false); setShowClearancePreview(true);
+          window.scrollTo({top:0,behavior:'auto'});
+        }}>Shop the Specials (Preview)</button>
+      </div>
+    </div>
+  </div>
+)}
 {false && (
   <div
     className="promotion-overlay"
