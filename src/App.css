@@ -6747,3 +6747,107 @@ html {
 .clearance-preview-page>button{background:#111;color:#d4af37;border:1px solid #d4af37;padding:12px 22px;border-radius:6px;cursor:pointer}
 
 .clearance-quantity{display:flex;align-items:center;gap:14px;margin-top:15px}.clearance-quantity button{background:#111;color:#d4af37;border:1px solid #d4af37;border-radius:5px;padding:6px 14px;cursor:pointer}.clearance-quantity button:disabled{opacity:.35;cursor:not-allowed}.clearance-checkout{background:#fff;border:1px solid #d4af37;padding:25px;margin:25px 0;border-radius:10px}.clearance-checkout form{display:grid;gap:14px;max-width:550px}.clearance-checkout label{display:grid;gap:5px;font-weight:600}.clearance-checkout input,.clearance-checkout select,.clearance-checkout textarea{padding:10px;border:1px solid #aaa;border-radius:5px;background:#fff;color:#111}.clearance-checkout button[type=submit]{background:#111;color:#d4af37;padding:12px;border:1px solid #d4af37;border-radius:6px}.clearance-checkout button:disabled{opacity:.5}
+/* NOVEMBER CLEARANCE — PROMOTIONAL POPUP */
+
+.promotion-overlay .promotion-modal {
+  width: min(94vw, 850px);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 36px 28px;
+  border: 2px solid #e5b73b;
+  border-radius: 24px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #54200f 0%, transparent 55%),
+    linear-gradient(145deg, #16100c, #090909 75%);
+  box-shadow: 0 25px 90px rgba(0,0,0,.75);
+}
+
+.promotion-overlay .promotion-info {
+  padding: 20px 15px 10px !important;
+  text-align: center;
+}
+
+.promotion-overlay .promotion-info > p:first-child {
+  color: #f5d779;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+.promotion-overlay .promotion-info h2 {
+  margin: 24px 0 16px;
+  color: #fff3cf;
+  font-size: clamp(28px, 5vw, 48px);
+  font-weight: 900;
+  line-height: 1.12;
+  text-shadow: 0 3px 15px rgba(0,0,0,.5);
+}
+
+.promotion-overlay .promotion-info h2::after {
+  content: "30% OFF";
+  display: block;
+  width: fit-content;
+  margin: 20px auto;
+  padding: 14px 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffe185, #d79a21);
+  color: #171008;
+  font-size: clamp(42px, 8vw, 78px);
+  font-weight: 950;
+  letter-spacing: -2px;
+  box-shadow: 0 8px 25px rgba(212, 175, 55, .25);
+}
+
+.promotion-overlay .promotion-info strong {
+  display: inline-block;
+  padding: 10px 24px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #8f1010, #d02020, #8f1010);
+  color: #fff;
+  font-size: clamp(17px, 3vw, 23px);
+  letter-spacing: 1px;
+}
+
+.promotion-overlay .promotion-info p {
+  color: #fff3d9;
+  font-size: 17px;
+}
+
+.promotion-overlay .promotion-shop {
+  margin-top: 22px;
+  padding: 16px 44px;
+  border: 1px solid #ffe08a;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #ffe28b, #d59b24);
+  color: #171008;
+  font-size: 19px;
+  font-weight: 900;
+  box-shadow: 0 8px 24px rgba(212,175,55,.25);
+}
+
+.promotion-overlay .promotion-shop:hover {
+  background: linear-gradient(135deg, #fff0b0, #e7b63b);
+  transform: translateY(-3px);
+}
+
+.promotion-overlay .promotion-close {
+  top: 14px;
+  right: 14px;
+  color: #f4cc5a;
+  z-index: 2;
+}
+
+@media (max-width: 600px) {
+  .promotion-overlay .promotion-modal {
+    padding: 26px 12px;
+  }
+
+  .promotion-overlay .promotion-info h2::after {
+    padding: 12px 20px;
+  }
+
+  .promotion-overlay .promotion-shop {
+    width: 100%;
+    padding: 14px 16px;
+  }
+}
