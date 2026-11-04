@@ -1727,11 +1727,10 @@ const closeNotification = () => {
 };
   // Clearance preview is opt-in locally; it does not activate the live promotion.
   const localClearancePreview = ['localhost', '127.0.0.1'].includes(window.location.hostname);
-  const [showClearanceWelcome, setShowClearanceWelcome] = useState(() =>
-    ['localhost', '127.0.0.1'].includes(window.location.hostname) &&
-    new URLSearchParams(window.location.search).get('clearancePreview') !== '1' &&
-    sessionStorage.getItem('clearance-preview-dismissed') !== '1'
-  );
+ const [showClearanceWelcome, setShowClearanceWelcome] = useState(() =>
+  new URLSearchParams(window.location.search).get('clearancePreview') !== '1' &&
+  sessionStorage.getItem('clearance-preview-dismissed') !== '1'
+);
   const dismissClearanceWelcome = () => {
     sessionStorage.setItem('clearance-preview-dismissed', '1');
     setShowClearanceWelcome(false);
@@ -1839,7 +1838,7 @@ const closeNotification = () => {
         @media(min-width:651px) and (max-width:900px){.clearance-compact-page .clearance-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
         @media(max-width:650px){.clearance-compact-page{width:calc(100vw - 20px);padding:12px 10px 30px}.clearance-compact-page .clearance-checkout form{grid-template-columns:1fr}.clearance-compact-page .clearance-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.clearance-compact-page .clearance-preview-card{padding:10px}.clearance-compact-page .clearance-preview-card h2{font-size:14px}.clearance-compact-page .clearance-product-photo{height:155px}}
       `}</style>
-      <p style={{textAlign:'center',fontWeight:700,fontSize:12,margin:'0 0 10px'}}>LOCAL PREVIEW — NOT LIVE · CHECKOUT DISABLED</p>
+      <p style={{textAlign:'center',fontWeight:700,fontSize:12,margin:'0 0 10px'}}>NOVEMBER CLEARANCE — 30% OFF</p>
       <header className="clearance-preview-heading">
         <span className="clearance-eyebrow">THE SNACK MERCHANT</span>
         <h1>Shop the Specials</h1>
@@ -5082,14 +5081,19 @@ const page = categoryContent[selectedCategoryPage];
   <a href="#reseller">Become a Reseller</a>
   <a href="#contact">Contact</a>
 
-  {localClearancePreview && (
-    <button type="button" onClick={() => {
+  {true && (
+  <button
+    type="button"
+    onClick={() => {
       dismissClearanceWelcome();
       setShowShop(false);
       setShowClearancePreview(true);
-      window.scrollTo({top:0,behavior:'auto'});
-    }}>Shop the Specials (Preview)</button>
-  )}
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }}
+  >
+    Shop the Specials
+  </button>
+)}
 
   <button
     type="button"
@@ -5103,26 +5107,46 @@ setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
   </button>
 </nav>
       </header>
-{localClearancePreview && showClearanceWelcome && (
-  <div className="promotion-overlay" role="dialog" aria-modal="true" aria-label="November clearance preview"
-       onClick={dismissClearanceWelcome}>
-    <div className="promotion-modal" onClick={e => e.stopPropagation()}>
-      <button type="button" className="promotion-close" aria-label="Close preview"
-              onClick={dismissClearanceWelcome}>✕</button>
-      <div className="promotion-info" style={{padding:28,textAlign:'center'}}>
-        <p style={{fontWeight:700,letterSpacing:2}}>THE SNACK MERCHANT</p>
-        <h2>November Clearance — 30% OFF</h2>
-        <p><strong>WHILE STOCKS LAST!</strong></p>
-        <p>Best Before: 25 November 2026</p>
-        <p>Local preview only — checkout disabled</p>
-        <button type="button" className="promotion-shop" onClick={() => {
-          dismissClearanceWelcome(); setShowShop(false); setShowClearancePreview(true);
-          window.scrollTo({top:0,behavior:'auto'});
-        }}>Shop the Specials (Preview)</button>
-      </div>
+{showClearanceWelcome && (
+  <div
+  className="promotion-overlay"
+  role="dialog"
+  aria-modal="true"
+  aria-label="November clearance promotion"
+  onClick={dismissClearanceWelcome}
+>
+  <div className="promotion-modal" onClick={e => e.stopPropagation()}>
+    <button
+      type="button"
+      className="promotion-close"
+      aria-label="Close promotion"
+      onClick={dismissClearanceWelcome}
+    >
+      ✕
+    </button>
+
+    <div className="promotion-info" style={{ padding: 28, textAlign: 'center' }}>
+      <p style={{ fontWeight: 700, letterSpacing: 2 }}>THE SNACK MERCHANT</p>
+      <h2>November Clearance — 30% OFF</h2>
+      <p><strong>WHILE STOCKS LAST!</strong></p>
+      <p>Best Before: 25 November 2026</p>
+
+      <button
+        type="button"
+        className="promotion-shop"
+        onClick={() => {
+          dismissClearanceWelcome();
+          setShowShop(false);
+          setShowClearancePreview(true);
+          window.scrollTo({ top: 0, behavior: 'auto' });
+        }}
+      >
+        Shop the Specials
+      </button>
     </div>
   </div>
-)}
+</div>
+      )}
 {false && (
   <div
     className="promotion-overlay"
