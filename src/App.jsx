@@ -6323,11 +6323,11 @@ ${data.get("eventDetails")}
   <button onClick={loadOrders}>
     Refresh Orders
   </button>
-  <label style={{display:'flex',alignItems:'center',gap:8,fontSize:12}}>
+  <label style={{display:'flex',alignItems:'center',gap:10,fontSize:13,fontWeight:600,color:'#d4af37',whiteSpace:'nowrap'}}>
     Clearance Admin Secret
     <input type="password" autoComplete="off" value={clearanceAdminSecret}
-      onChange={e=>setClearanceAdminSecret(e.target.value)} placeholder="Enter Render clearance secret"
-      style={{maxWidth:230,padding:8}} />
+      onChange={e=>setClearanceAdminSecret(e.target.value)} placeholder="Enter clearance secret"
+      style={{boxSizing:'border-box',width:220,maxWidth:'100%',height:38,padding:'8px 12px',background:'#111',color:'#f5eedb',border:'1px solid #d4af37',borderRadius:8,fontSize:13,outlineOffset:2}} />
   </label>
   <button
   onClick={() => setShowManualOrderForm(true)}
