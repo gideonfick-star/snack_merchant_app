@@ -1664,7 +1664,7 @@ function SnackNotification({ notification, onClose }) {
   };
 
   const symbols = {
-    success: "✓",
+    success: "\u2713",
     error: "!",
     warning: "!",
     info: "i",
@@ -2084,6 +2084,123 @@ const [productImages, setProductImages] = useState({});
 const [productStock, setProductStock] = useState({});
 const [productPricing, setProductPricing] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
+const [adminAuthBusy, setAdminAuthBusy] = useState(false);
+
+const loginAdministrator = async (pin) => {
+  setAdminAuthBusy(true);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin-auth/login`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ pin }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Administrator login failed");
+    }
+
+    const data = await response.json();
+
+    if (data.authenticated !== true) {
+      throw new Error("Administrator session not confirmed");
+    }
+
+    setIsAdmin(true);
+    setShowAdminPinModal(false);
+    setAdminPinInput("");
+
+    showNotification(
+      "Admin mode enabled.",
+      "success",
+      "Admin Access"
+    );
+
+    return true;
+  } catch {
+    setIsAdmin(false);
+    setAdminPinInput("");
+
+    showNotification(
+      "Incorrect PIN or authentication unavailable.",
+      "error",
+      "Access Denied"
+    );
+
+    return false;
+  } finally {
+    setAdminAuthBusy(false);
+  }
+};
+
+const logoutAdministrator = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin-auth/logout`, {
+      method: "POST",
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error("Administrator logout failed");
+    }
+
+    const data = await response.json();
+
+    if (data.authenticated !== false) {
+      throw new Error("Administrator logout not confirmed");
+    }
+
+    setIsAdmin(false);
+    setAdminView("products");
+    setClearanceAdminSecret("");
+    setShowAdminPinModal(false);
+    setAdminPinInput("");
+
+    showNotification(
+      "Administrator logged out successfully.",
+      "success",
+      "Admin Logout"
+    );
+  } catch {
+    showNotification(
+      "Logout could not be confirmed. Please try again.",
+      "error",
+      "Logout Failed"
+    );
+  }
+};
+
+useEffect(() => {
+  let active = true;
+
+  const checkAdministratorSession = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin-auth/session`, {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (!response.ok) return;
+
+      const data = await response.json();
+
+      if (active) {
+        setIsAdmin(data.authenticated === true);
+      }
+    } catch {
+      if (active) setIsAdmin(false);
+    }
+  };
+
+  checkAdministratorSession();
+
+  return () => {
+    active = false;
+  };
+}, []);
 const [adminView, setAdminView] = useState("products");
 const [orderDashboardFilter, setOrderDashboardFilter] = useState("all");
 const [orders, setOrders] = useState([]);
@@ -2205,7 +2322,7 @@ const getDashboardOrders = () => {
 };
 const loadOrders = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/orders`);
+    const response = await axios.get(`${API_BASE_URL}/orders`, { withCredentials: true });
     setOrders(response.data || []);
   } catch (err) {
     console.error("Failed to load orders:", err);
@@ -5292,27 +5409,11 @@ poster="/website/promotion.jpg"
       <form
         className="snack-notification-body"
         onSubmit={(e) => {
-          e.preventDefault();
-
-          if (adminPinInput === "7106") {
-            setIsAdmin(true);
-            setShowAdminPinModal(false);
-            setAdminPinInput("");
-            showNotification(
-              "Admin mode enabled.",
-              "success",
-              "Admin Access"
-            );
-          } else {
-            setAdminPinInput("");
-            setShowAdminPinModal(false);
-            showNotification(
-              "Incorrect PIN. Please try again.",
-              "error",
-              "Access Denied"
-            );
-          }
-        }}
+  e.preventDefault();
+  if (!adminAuthBusy) {
+    loginAdministrator(adminPinInput);
+  }
+}}
       >
         <h2>Admin Access</h2>
 
@@ -6206,9 +6307,13 @@ ${data.get("eventDetails")}
 >
   <button
     onClick={() => {
-  setAdminPinInput("");
-  setShowAdminPinModal(true);
-}}
+      if (isAdmin) {
+        logoutAdministrator();
+      } else {
+        setAdminPinInput("");
+        setShowAdminPinModal(true);
+      }
+    }}
     style={{
       background: "#111",
       color: "#d4af37",
@@ -6219,7 +6324,7 @@ ${data.get("eventDetails")}
       fontWeight: "bold",
     }}
   >
-    Admin
+    {isAdmin ? "Logout Admin" : "Admin"}
   </button>
 </div>
       <header className="hero">
@@ -7227,7 +7332,7 @@ ${data.get("eventDetails")}
                         await axios.post(`${API_BASE_URL}/product-stock`, {
                           productCode: product.code,
                           stockStatus: newStatus,
-                        });
+                        }, { withCredentials: true });
                       } catch (err) {
                         console.error("Failed to save stock:", err);
                       }
@@ -7309,7 +7414,7 @@ ${data.get("eventDetails")}
                             await axios.post(`${API_BASE_URL}/product-pricing`, {
                               key,
                               wholesalePrice: newWholesale,
-                            });
+                            }, { withCredentials: true });
                           } catch (err) {
                             console.error("Failed to save pricing:", err);
                           }
@@ -7332,7 +7437,7 @@ ${data.get("eventDetails")}
                             await axios.post(`${API_BASE_URL}/product-stock`, {
                               productCode: key,
                               stockStatus: newStatus,
-                            });
+                            }, { withCredentials: true });
                           } catch (err) {
                             console.error("Failed to save stock:", err);
                           }
@@ -7788,27 +7893,11 @@ ${data.get("eventDetails")}
             <form
               className="snack-notification-body"
               onSubmit={(e) => {
-                e.preventDefault();
-
-                if (adminPinInput === "7106") {
-                  setIsAdmin(true);
-                  setShowAdminPinModal(false);
-                  setAdminPinInput("");
-                  showNotification(
-                    "Admin mode enabled.",
-                    "success",
-                    "Admin Access"
-                  );
-                } else {
-                  setAdminPinInput("");
-                  setShowAdminPinModal(false);
-                  showNotification(
-                    "Incorrect PIN. Please try again.",
-                    "error",
-                    "Access Denied"
-                  );
-                }
-              }}
+  e.preventDefault();
+  if (!adminAuthBusy) {
+    loginAdministrator(adminPinInput);
+  }
+}}
             >
               <h2>Admin Access</h2>
               <p>Enter your Admin PIN to continue.</p>

@@ -77,6 +77,10 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Administrator authentication endpoints
+const { router: adminAuthRouter, requireAdminAuth } = require("./admin-auth");
+app.use("/admin-auth", adminAuthRouter);
+
 // ================= UPLOADS FOLDER =================
 
 const uploadsDir = path.join(__dirname, "uploads");
@@ -136,7 +140,7 @@ app.get("/visitor", (req, res) => {
 });
 // ================= IMAGE UPLOAD ROUTE =================
 
-app.post("/upload", upload.single("image"), async (req, res) => {
+app.post("/upload", requireAdminAuth, upload.single("image"), async (req, res) => {
   try {
     const { productCode } = req.body;
 
@@ -206,7 +210,7 @@ app.get("/product-images", async (req, res) => {
 
 // ================= SAVE PRODUCT STOCK STATUS =================
 
-app.post("/product-stock", async (req, res) => {
+app.post("/product-stock", requireAdminAuth, async (req, res) => {
   try {
     const { productCode, stockStatus } = req.body;
 
@@ -294,7 +298,7 @@ app.get("/product-stock", async (req, res) => {
   }
 });
 
-app.post("/product-stock", async (req, res) => {
+app.post("/product-stock", requireAdminAuth, async (req, res) => {
   try {
     const { productCode, stockStatus } = req.body;
 
@@ -346,7 +350,7 @@ app.get("/product-pricing", async (req, res) => {
   }
 });
 
-app.post("/product-pricing", async (req, res) => {
+app.post("/product-pricing", requireAdminAuth, async (req, res) => {
   try {
     const { key, wholesalePrice } = req.body;
 
@@ -378,7 +382,7 @@ require('./clearance-routes')(app, pool);
 
 // ================= LOAD ORDERS =================
 
-app.get("/orders", async (req, res) => {
+app.get("/orders", requireAdminAuth, async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT o.*,
@@ -404,7 +408,7 @@ app.get("/orders", async (req, res) => {
 
 // ================= UPDATE ORDER STATUS =================
 
-app.patch("/orders/:id/status", async (req, res) => {
+app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
   try {
     const { id } = req.params;
     const { paymentStatus, orderStatus } = req.body;
@@ -794,6 +798,22 @@ app.post("/payfast-notify", async (req, res) => {
       return res.status(409).send("Clearance reservation missing; manual reconciliation required");
     }
 
+    // Normal orders must pass the same independent PayFast checks as clearance.
+    const normalOrderResult = await pool.query(
+      `SELECT id, total_amount, payment_method FROM public.orders WHERE order_number = $1 LIMIT 1`,
+      [orderNumber]
+    );
+    const normalOrder = normalOrderResult.rows[0];
+    if (!normalOrder) return res.status(404).send("Unknown order");
+    if (normalOrder.payment_method !== "PayFast" ||
+        !await verifyClearancePayFastITN(itn, normalOrder)) {
+      console.error("NORMAL PAYFAST ITN REJECTED:", orderNumber);
+      return res.status(400).send("Invalid payment notification");
+    }
+    if (!["COMPLETE", "FAILED", "CANCELLED"].includes(paymentStatus)) {
+      return res.status(400).send("Unsupported payment status");
+    }
+
     let newPaymentStatus = "Awaiting Payment";
     let newOrderStatus = "Awaiting Payment";
 
@@ -984,6 +1004,17 @@ app.post("/create-payment", async (req, res) => {
       success: false, error: 'Clearance PayFast checkout is not enabled yet.'
     });
 
+    const verifiedOrderResult = await pool.query(
+      `SELECT order_number, total_amount, payment_method FROM public.orders WHERE order_number = $1 LIMIT 1`,
+      [orderNumber || ""]
+    );
+    const verifiedOrder = verifiedOrderResult.rows[0];
+    if (!verifiedOrder || verifiedOrder.payment_method !== "PayFast" ||
+        !Number.isFinite(Number(verifiedOrder.total_amount)) ||
+        Number(verifiedOrder.total_amount) <= 0) {
+      return res.status(400).json({ success: false, error: "Invalid PayFast order" });
+    }
+
     const paymentData = {
   merchant_id: process.env.PAYFAST_MERCHANT_ID,
   merchant_key: process.env.PAYFAST_MERCHANT_KEY,
@@ -999,7 +1030,7 @@ app.post("/create-payment", async (req, res) => {
 
   m_payment_id: orderNumber,
 
-  amount: Number(amount).toFixed(2),
+  amount: Number(verifiedOrder.total_amount).toFixed(2),
   item_name: itemName || itemDescription || "Snack Merchant Order",
 };
 

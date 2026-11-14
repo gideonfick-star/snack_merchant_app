@@ -23,3 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 snack_merchant_backend/.env
+# Temporary administrator authentication files
+snack_merchant_backend/.admin-pin-hash.tmp
