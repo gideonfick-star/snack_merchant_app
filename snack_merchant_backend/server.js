@@ -1002,6 +1002,7 @@ app.get("/orders", requireAdminAuth, async (req, res) => {
   }
 });
 
+
 // ================= UPDATE ORDER STATUS =================
 
 app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
@@ -1009,13 +1010,33 @@ app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
     const { id } = req.params;
     const { paymentStatus, orderStatus } = req.body;
 
-    // Clearance reservations require the separate verified reconciliation flow.
+    // November Specials use their own verified reconciliation.
     const clearanceGuard = await pool.query(
-      'SELECT 1 FROM public.clearance_reservations WHERE order_id = $1 LIMIT 1', [id]
+      "SELECT 1 FROM public.clearance_reservations WHERE order_id = $1 LIMIT 1",
+      [id]
     );
-    if (clearanceGuard.rowCount) return res.status(409).json({
-      success: false, error: 'Use verified clearance reconciliation for this order.'
-    });
+
+    if (clearanceGuard.rowCount) {
+      return res.status(409).json({
+        success: false,
+        error: "Use verified clearance reconciliation for this order.",
+      });
+    }
+
+    // Read the existing order before updating its status.
+    const existingResult = await pool.query(
+      "SELECT * FROM public.orders WHERE id = $1",
+      [id]
+    );
+
+    const existingOrder = existingResult.rows[0];
+
+    if (!existingOrder) {
+      return res.status(404).json({
+        success: false,
+        error: "Order not found.",
+      });
+    }
 
     const result = await pool.query(
       `
@@ -1030,19 +1051,51 @@ app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
       [paymentStatus || null, orderStatus || null, id]
     );
 
-    res.json({
+    const updatedOrder = result.rows[0];
+    let stockSync = null;
+
+    // Only synchronise confirmed, paid EFT orders.
+    // Never use an admin status change to bypass PayFast verification.
+    if (
+      updatedOrder.payment_method === "EFT" &&
+      updatedOrder.payment_status === "Paid" &&
+      updatedOrder.stock_sync_status !== "PROCESSED" &&
+      updatedOrder.stock_sync_status !== "SUPPLIER_FULFILMENT" &&
+      updatedOrder.stock_sync_status !== "MANUAL_REVIEW"
+    ) {
+      try {
+        stockSync = await syncPaidCustomerOrderToStockControl(updatedOrder);
+      } catch (syncError) {
+        console.error(
+          "EFT STOCK SYNC FAILED:",
+          updatedOrder.order_number,
+          syncError
+        );
+
+        stockSync = {
+          success: false,
+          requiresReview: true,
+          error: syncError.message,
+        };
+      }
+    }
+
+    return res.json({
       success: true,
-      order: result.rows[0],
+      order: updatedOrder,
+      stockSync,
     });
   } catch (err) {
     console.error("UPDATE ORDER STATUS ERROR:", err);
 
-    res.status(500).json({
+    return res.status(500).json({
+      success: false,
       error: "Failed to update order status",
       details: err.message,
     });
   }
 });
+
 
 // ================= CREATE ORDER =================
 
