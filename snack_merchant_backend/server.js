@@ -380,8 +380,16 @@ async function updateCustomerStockSyncStatus(
 async function syncPaidCustomerOrderToStockControl(order) {
   const orderNumber = String(order.order_number || "").trim();
 
-  if (!orderNumber) {
+      if (!orderNumber) {
     throw new Error("Customer order number is missing");
+  }
+
+  // November Specials use their own dedicated stock synchronization.
+  // Never process these orders through the normal customer sales engine.
+  if (orderNumber.startsWith("SM-CL-")) {
+    throw new Error(
+      "November Specials orders must use their dedicated stock synchronization"
+    );
   }
 
   if (order.payment_status !== "Paid") {
