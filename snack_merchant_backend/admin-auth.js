@@ -1,4 +1,4 @@
-﻿const crypto = require("crypto");
+const crypto = require("crypto");
 const express = require("express");
 
 const router = express.Router();
@@ -81,6 +81,8 @@ function allowedOrigin(req) {
 
   const allowed = [
     process.env.APP_URL,
+    "https://www.thesnackmerchant.co.za",
+    "https://thesnackmerchant.co.za",
     "http://localhost:5173",
     "http://127.0.0.1:5173"
   ].filter(Boolean);
