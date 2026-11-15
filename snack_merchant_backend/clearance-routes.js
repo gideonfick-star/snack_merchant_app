@@ -8,6 +8,45 @@ module.exports = function registerClearanceRoutes(app, pool) {
   const reservationMinutes = method => method === 'PayFast' ? 30 : 1440;
   const error = (message, status = 400) => Object.assign(new Error(message), { status });
 
+  // Live MAIN stock is authoritative; reservations remain in Customer App.
+  // Never use a stale catalogue quantity if Stock Control cannot be reached.
+  const specialVariantIds = Object.freeze({
+    1: 'b3785ee0-0ef2-4035-99a9-690292c8e392',
+    2: 'e068a584-e906-40f4-9ff0-8e28be16a27f',
+    3: '2633e7cc-ba98-4ee2-938e-baba9556cf5b',
+    4: 'eba0e514-14be-447e-9d75-f89262895b81',
+    5: 'edf37286-4c93-48f2-8ecf-ffa77ee1289a',
+    6: '9902984f-b9d9-499b-9b5f-6031c851199f',
+    7: 'aaba69f9-f39a-4389-ab67-9742a3f670a0',
+    8: 'f457a87e-35eb-4ed0-a4f6-d07792de9427',
+    9: '19d63ae9-8a3d-4a67-8d8e-b2e14c8e84c0',
+    10: 'f90f2f7f-dec0-4c0e-8631-7b0576ebd7bb',
+  });
+  async function getLiveSpecialAvailability(client, productIds) {
+    if (typeof app.locals.fetchMainStockAvailability !== 'function') {
+      throw error('Live MAIN stock is unavailable. Please try again shortly.', 503);
+    }
+    const response = await app.locals.fetchMainStockAvailability();
+    const byVariant = new Map((response.items || []).map(r => [String(r.variant_id), r]));
+    const reserved = await client.query(`
+      SELECT clearance_product_id, COALESCE(SUM(quantity), 0)::integer AS qty
+      FROM public.clearance_reservations
+      WHERE status = 'RESERVED' AND clearance_product_id = ANY($1::bigint[])
+      GROUP BY clearance_product_id`, [productIds]);
+    const reservedById = new Map(reserved.rows.map(r => [Number(r.clearance_product_id), Number(r.qty)]));
+    const result = new Map();
+    for (const id of productIds) {
+      const variantId = specialVariantIds[id];
+      const row = byVariant.get(variantId);
+      if (!variantId || !row) throw error('MAIN stock information is incomplete. Please try again shortly.', 503);
+      const onHand = row.is_active ? Number(row.quantity_on_hand) : 0;
+      if (!Number.isFinite(onHand) || onHand < 0) throw error('Invalid MAIN stock information.', 503);
+      result.set(id, Math.max(0, Math.floor(onHand) - (reservedById.get(id) || 0)));
+    }
+    return result;
+  }
+
+
   app.get('/clearance-products', async (req, res) => {
     // Local development preview only. Never expose inactive products in production.
     const remoteIp = req.socket.remoteAddress || '';
@@ -22,8 +61,10 @@ module.exports = function registerClearanceRoutes(app, pool) {
         FROM public.clearance_products
         WHERE promotion_code = $1 AND (active = TRUE OR $2::boolean = TRUE)
         ORDER BY id`, [promotionCode, localPreview]);
+      const availability = await getLiveSpecialAvailability(pool, rows.map(row => Number(row.id)));
       res.json({ success: true, promotionCode, preview: localPreview, products: rows.map(row => ({
         ...row,
+        available_quantity: availability.get(Number(row.id)) ?? 0,
         retail_price: Number(row.retail_price),
         promotional_price: Number(row.promotional_price)
       })) });
@@ -487,7 +528,18 @@ module.exports = function registerClearanceRoutes(app, pool) {
       await client.query('BEGIN');
       const result = await transitionReservation(id, action, client);
       await client.query('COMMIT');
-      res.json({ success: true, action, changed: result.changed });
+      // EFT reconciliation is authenticated above. Only a confirmed paid order
+      // can be sent to Stock Control; failures are retained for safe recovery.
+      let stockSync = null;
+      if (action === 'CONFIRMED' && typeof app.locals.syncPaidNovemberSpecialOrder === 'function') {
+        try {
+          stockSync = await app.locals.syncPaidNovemberSpecialOrder(id);
+        } catch (syncError) {
+          console.error('CLEARANCE EFT STOCK SYNC FAILED:', id, syncError);
+          stockSync = { success: false, requiresReview: true };
+        }
+      }
+      res.json({ success: true, action, changed: result.changed, stockSync });
     } catch (err) {
       if (client) await client.query('ROLLBACK');
       console.error('CLEARANCE RECONCILIATION ERROR:', err);
@@ -596,14 +648,17 @@ module.exports = function registerClearanceRoutes(app, pool) {
         WHERE promotion_code = $1 AND (active = TRUE OR $3::boolean = TRUE) AND id = ANY($2::bigint[])
         ORDER BY id FOR UPDATE`, [promotionCode, ids, dryRun]);
       if (rows.length !== ids.length) throw error('A selected special is no longer available.', 409);
+      // The product rows are locked: competing Specials reservations serialize here.
+      const liveAvailability = await getLiveSpecialAvailability(client, ids);
 
       let subtotalCents = 0;
       let weightGrams = 0;
       const savedItems = [];
       for (const row of rows) {
         const qty = quantities.get(Number(row.id));
-        if (qty > Number(row.available_quantity)) {
-          throw error(`Only ${row.available_quantity} packs remain for ${row.product_name} ${row.pack_size}.`, 409);
+        const liveAvailable = liveAvailability.get(Number(row.id)) ?? 0;
+        if (qty > liveAvailable) {
+          throw error(`Only ${liveAvailable} packs remain for ${row.product_name} ${row.pack_size}.`, 409);
         }
         const sizeMatch = /^([0-9]+)g$/i.exec(row.pack_size);
         if (!sizeMatch) throw error('Unsupported clearance pack size.', 500);
@@ -646,8 +701,11 @@ module.exports = function registerClearanceRoutes(app, pool) {
       for (const item of savedItems) {
         await client.query(`
           UPDATE public.clearance_products
-          SET available_quantity = available_quantity - $1
-          WHERE id = $2`, [item.qty, item.clearanceProductId]);
+          SET available_quantity = $1
+          WHERE id = $2`, [
+            liveAvailability.get(item.clearanceProductId) - item.qty,
+            item.clearanceProductId
+          ]);
         await client.query(`
           INSERT INTO public.clearance_reservations
             (clearance_product_id, order_id, quantity, status, expires_at)

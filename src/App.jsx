@@ -2046,7 +2046,8 @@ useEffect(() => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeStock, setActiveStock] = useState("All Stock");
   const [search, setSearch] = useState("");
-  const [cart, setCart] = useState([]);
+    const [cart, setCart] = useState([]);
+  const [selectedProductOptions, setSelectedProductOptions] = useState({});
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedCategoryPage, setSelectedCategoryPage] = useState(null);
   useEffect(() => {
@@ -2082,6 +2083,38 @@ if (categoryFromPath) {
 });
 const [productImages, setProductImages] = useState({});
 const [productStock, setProductStock] = useState({});
+// MAIN stock is authoritative for customer-facing availability.
+const [mainStockAvailability, setMainStockAvailability] = useState(null);
+const CUSTOMER_STOCK_CODE_MAP = {
+  CNL02: { Flakes: "TSM02", Ground: "TSM02-1", Slivered: "TSM02-2" },
+  CNL03: { Sprinkles: "TSM03", Nibs: "TSM03-1" },
+  CNL08: { Raw: "TSM08", Salted: "TSM08-1", "Peri-Peri": "TSM08-2" },
+  CNL24: { Raw: "TSM24", Salted: "TSM24-1", "Peri-Peri": "TSM24-2" },
+  CNL25: { BBQ: "TSM25", "Tomato Chilli": "TSM25-1" },
+  CNL26: { Salted: "TSM26", "Peri-Peri": "TSM26-1" },
+  CNL116: { Plain: "TSM116", "Spring Onion": "TSM116-1" },
+  CNL117: { Plain: "TSM117", Hot: "TSM117-1" },
+};
+const normalizeMainStockPack = (value, unit) =>
+  String(unit === undefined ? (value ?? "") : `${value ?? ""}${unit ?? ""}`)
+    .trim().toLowerCase().replace(/\\s+/g, "");
+const customerMainStockStatus = (code, option, size) => {
+  const mapped = CUSTOMER_STOCK_CODE_MAP[code];
+  const productCode = mapped
+    ? mapped[option || ""]
+    : String(code || "").replace(/^CNL/, "TSM");
+  if (!productCode || !Array.isArray(mainStockAvailability)) return null;
+  const variant = mainStockAvailability.find((item) =>
+    String(item.product_code || "").toUpperCase() === productCode.toUpperCase() &&
+    normalizeMainStockPack(item.pack_size_value, item.pack_size_unit) ===
+      normalizeMainStockPack(size)
+  );
+  if (!variant || !variant.is_active || Number(variant.quantity_on_hand) <= 0)
+    return "Available on Order";
+  return Number(variant.quantity_on_hand) <= Number(variant.minimum_quantity)
+    ? "Low Stock" : "In Stock";
+};
+
 const [productPricing, setProductPricing] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
 const [adminAuthBusy, setAdminAuthBusy] = useState(false);
@@ -2278,6 +2311,15 @@ const loadProductStock = async () => {
     setProductStock(response.data || {});
   } catch (err) {
     console.error("Failed to load stock:", err);
+  }
+  try {
+    const liveResponse = await axios.get(`${API_BASE_URL}/customer-stock-availability`);
+    if (liveResponse.data?.success && Array.isArray(liveResponse.data.items)) {
+      setMainStockAvailability(liveResponse.data.items);
+    }
+  } catch (err) {
+    console.error("MAIN stock availability temporarily unavailable:", err);
+    setMainStockAvailability(null);
   }
 };
 
@@ -3004,7 +3046,44 @@ const supplierWholesalePrices = {
   "CNL129-50g": 20,
   "CNL129-70g": 20,
 };
+// === CUSTOMER PRODUCT FLAVOUR / FORM OPTIONS ===
+// Product codes remain unchanged.
+// Flavour/form selection will be linked to individual stock variants.
 
+const CUSTOMER_PRODUCT_OPTIONS = {
+  CNL02: {
+    label: "Choose Form",
+    options: ["Flakes", "Ground", "Slivered"],
+  },
+  CNL03: {
+    label: "Choose Form",
+    options: ["Sprinkles", "Nibs"],
+  },
+  CNL08: {
+    label: "Choose Flavour",
+    options: ["Raw", "Salted", "Peri-Peri"],
+  },
+  CNL24: {
+    label: "Choose Flavour",
+    options: ["Raw", "Salted", "Peri-Peri"],
+  },
+  CNL25: {
+    label: "Choose Flavour",
+    options: ["BBQ", "Tomato Chilli"],
+  },
+  CNL26: {
+    label: "Choose Flavour",
+    options: ["Salted", "Peri-Peri"],
+  },
+  CNL116: {
+    label: "Choose Flavour",
+    options: ["Plain", "Spring Onion"],
+  },
+  CNL117: {
+    label: "Choose Flavour",
+    options: ["Plain", "Hot"],
+  },
+};
 // === PRODUCT OPTIONS BLOCK ===
 // Replace your current productOptions useMemo block with this:
  const roundUpToNearestFive = (value) => {
@@ -3025,34 +3104,46 @@ const getPricingKey = (code, size) => {
   return `${code}-${size}`;
 };
 const productOptions = useMemo(() => {
-  return catalog.flatMap((product) =>
-    product.variants.map((variant) => {
-      const pricingKey = getPricingKey(product.code, variant.size);
+  return catalog.flatMap((product) => {
+    const optionConfig = CUSTOMER_PRODUCT_OPTIONS[product.code];
+    const options = optionConfig?.options ?? [null];
 
-      const wholesalePrice =
-        productPricing[pricingKey] ??
-        supplierWholesalePrices[pricingKey] ??
-        Number(variant.price || 0);
+    return options.flatMap((option) =>
+      product.variants.map((variant) => {
+        const pricingKey = getPricingKey(product.code, variant.size);
 
-      const stockStatus =
-        productStock[pricingKey] ??
-        productStock[product.code] ??
-        "In Stock";
+        const wholesalePrice =
+          productPricing[pricingKey] ??
+          supplierWholesalePrices[pricingKey] ??
+          Number(variant.price || 0);
 
-      return {
-        id: `${product.code}-${variant.size}`,
-        code: product.code,
-        name: product.name,
-        category: product.category,
-        desc: product.desc,
-        size: variant.size,
-        wholesalePrice,
-        price: calculateSellingPrice(wholesalePrice),
-        stockStatus,
-      };
-    })
-  );
-}, [productPricing, productStock]);
+        const stockStatus =
+          customerMainStockStatus(product.code, option, variant.size) ??
+          productStock[pricingKey] ??
+          productStock[product.code] ??
+          "In Stock";
+
+        const optionSuffix = option
+          ? `-${option.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`
+          : "";
+
+        return {
+          id: `${product.code}${optionSuffix}-${variant.size}`,
+          code: product.code,
+          name: product.name,
+          category: product.category,
+          desc: product.desc,
+          size: variant.size,
+          option: option,
+          optionLabel: optionConfig?.label ?? null,
+          wholesalePrice,
+          price: calculateSellingPrice(wholesalePrice),
+          stockStatus,
+        };
+      })
+    );
+  });
+}, [productPricing, productStock, mainStockAvailability]);
 
   const filteredProducts = useMemo(() => {
   return productOptions.filter((item) => {
@@ -3066,8 +3157,8 @@ const matchesCategory =
     const matchesStock =
       activeStock === "All Stock" || stockStatus === activeStock;
 
-    const searchText =
-      `${item.code} ${item.name} ${item.size} ${item.category} ${getCustomerCategory(item)}`.toLowerCase();
+   const searchText =
+  `${item.code} ${item.name} ${item.option || ""} ${item.size} ${item.category} ${getCustomerCategory(item)}`.toLowerCase();
 
     const matchesSearch = searchText.includes(search.toLowerCase());
 
@@ -3123,19 +3214,30 @@ const cancelCurrentOrder = () => {
   window.location.hash = "#products";
 };
   const addToCart = (product) => {
+    const displayName = product.option
+  ? `${product.name.split(" / ")[0].replace(
+      new RegExp(`\\s+${CUSTOMER_PRODUCT_OPTIONS[product.code]?.options[0]}$`, "i"),
+      ""
+    )} — ${product.option}`
+  : product.name;
+
+const cartProduct = {
+  ...product,
+  name: displayName,
+};
       const existing = cart.find((item) => item.id === product.id);
 
   if (existing) {
     setCart(
       cart.map((item) =>
-        item.id === product.id ? { ...item, qty: item.qty + 1 } : item
-      )
+  item.id === cartProduct.id ? { ...item, qty: item.qty + 1 } : item
+)
     );
   } else {
-    setCart([...cart, { ...product, qty: 1 }]);
+    setCart([...cart, { ...cartProduct, qty: 1 }]);
   }
 
-  setCartToast(`${product.name} added to cart`);
+  setCartToast(`${displayName} ${product.size} added to cart`);
 
   setTimeout(() => {
     setCartToast("");
@@ -7352,12 +7454,18 @@ ${data.get("eventDetails")}
             {!isAdmin ? (
               <div
                 className={`stock-badge ${
-                  (productStock[product.code] || "In Stock")
+                  (product.variants.some((variant) => variant.stockStatus === "In Stock")
+                    ? "In Stock"
+                    : product.variants.some((variant) => variant.stockStatus === "Low Stock")
+                      ? "Low Stock" : "Available on Order")
                     .toLowerCase()
                     .replaceAll(" ", "-")
                 }`}
               >
-                {productStock[product.code] || "In Stock"}
+                {product.variants.some((variant) => variant.stockStatus === "In Stock")
+                  ? "In Stock"
+                  : product.variants.some((variant) => variant.stockStatus === "Low Stock")
+                    ? "Low Stock" : "Available on Order"}
               </div>
             ) : null}
 
@@ -7452,9 +7560,51 @@ ${data.get("eventDetails")}
                   );
                 })}
               </div>
-            ) : (
-              <div className="variant-list">
-                {product.variants.map((variant) => {
+          ) : (
+  <div className="variant-list">
+    {CUSTOMER_PRODUCT_OPTIONS[product.code] && (
+      <div className="product-option-selector">
+        <label className="product-option-label">
+          {CUSTOMER_PRODUCT_OPTIONS[product.code].label}
+        </label>
+
+        <div className="product-option-buttons">
+          {CUSTOMER_PRODUCT_OPTIONS[product.code].options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              className={`product-option-button ${
+  (selectedProductOptions[product.code] ||
+  CUSTOMER_PRODUCT_OPTIONS[product.code].options[0]) === option
+  ? "selected"
+  : ""
+}`}
+              onClick={() => {
+                setSelectedProductOptions((current) => ({
+                  ...current,
+                  [product.code]: option,
+                }));
+              }}
+            >
+              {option}
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {product.variants
+  .filter((variant) => {
+    const options = CUSTOMER_PRODUCT_OPTIONS[product.code];
+
+    if (!options) return true;
+
+    const selectedOption =
+      selectedProductOptions[product.code] || options.options[0];
+
+    return variant.option === selectedOption;
+  })
+  .map((variant) => {
                   const variantPrice = calculateSellingPrice(
                     productPricing[getPricingKey(variant.code, variant.size)] ??
                       supplierWholesalePrices[
@@ -7468,7 +7618,27 @@ ${data.get("eventDetails")}
                       type="button"
                       key={variant.id}
                       className="variant-row"
-                      onClick={() => addToCart(variant)}
+                      onClick={() => {
+  const selectedOption =
+  selectedProductOptions[product.code] ||
+  CUSTOMER_PRODUCT_OPTIONS[product.code]?.options[0] ||
+  null;
+
+  const chosenVariant = product.variants.find(
+    (item) =>
+      item.size === variant.size &&
+      (item.option || null) ===
+        (CUSTOMER_PRODUCT_OPTIONS[product.code]
+          ? selectedOption || null
+          : null)
+  );
+
+  if (chosenVariant) {
+    addToCart(chosenVariant);
+  } else {
+    setCartToast("Please select a flavour or form first.");
+  }
+}}
                     >
                       <span>{variant.size}</span>
                       <strong>R{variantPrice}</strong>

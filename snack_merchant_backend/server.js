@@ -461,8 +461,7 @@ async function syncPaidCustomerOrderToStockControl(order) {
 try {
   created = await sendStockControlSalesRequest(
     "/api/sales",
-      "/api/sales",
-      {
+    {
         sale_number: orderNumber,
         sales_channel: "ONLINE",
         sales_channel_id:
@@ -474,7 +473,7 @@ try {
         external_reference: orderNumber,
         customer_reference: orderNumber,
         sale_status: "COMPLETED",
-        payment_method: "PayFast",
+        payment_method: order.payment_method === "EFT" ? "EFT" : "PayFast",
         payment_status: "PAID",
         commission_rate: 0,
         items: saleItems,
@@ -522,6 +521,137 @@ try {
     throw error;
   }
 }
+// =====================================================
+// NOVEMBER SPECIALS — VERIFIED PAID ORDER STOCK SYNC
+// =====================================================
+// Fixed mapping for the ten approved NOV2026-30 products. Fail closed if
+// the catalogue changes; never infer a stock variant from a product name.
+const NOVEMBER_SPECIAL_VARIANTS = Object.freeze({
+  1: "b3785ee0-0ef2-4035-99a9-690292c8e392",
+  2: "e068a584-e906-40f4-9ff0-8e28be16a27f",
+  3: "2633e7cc-ba98-4ee2-938e-baba9556cf5b",
+  4: "eba0e514-14be-447e-9d75-f89262895b81",
+  5: "edf37286-4c93-48f2-8ecf-ffa77ee1289a",
+  6: "9902984f-b9d9-499b-9b5f-6031c851199f",
+  7: "aaba69f9-f39a-4389-ab67-9742a3f670a0",
+  8: "f457a87e-35eb-4ed0-a4f6-d07792de9427",
+  9: "19d63ae9-8a3d-4a67-8d8e-b2e14c8e84c0",
+  10: "f90f2f7f-dec0-4c0e-8631-7b0576ebd7bb",
+});
+
+async function syncPaidNovemberSpecialOrder(orderId) {
+  const { rows } = await pool.query(`
+    SELECT o.id, o.order_number, o.items, o.payment_method,
+           o.payment_status, o.stock_sync_status
+    FROM public.orders o
+    WHERE o.id = $1 AND o.order_number LIKE 'SM-CL-%'
+      AND o.payment_status = 'Paid'
+      AND EXISTS (
+        SELECT 1 FROM public.clearance_reservations r
+        WHERE r.order_id = o.id AND r.status = 'CONFIRMED'
+      )`, [orderId]);
+  const order = rows[0];
+  if (!order) throw new Error('Paid, confirmed November Specials order not found');
+  if (order.stock_sync_status === 'PROCESSED') return { success: true, alreadyProcessed: true };
+
+  const items = typeof order.items === 'string' ? JSON.parse(order.items) : order.items;
+  if (!Array.isArray(items) || items.length === 0) throw new Error('November Specials order has no items');
+
+  try {
+    const existingSale = await findExistingCustomerStockSale(order.order_number);
+    if (existingSale) {
+      await sendStockControlSalesRequest(`/api/sales/${existingSale.id}/process`, {});
+      await updateCustomerStockSyncStatus(order.order_number, 'PROCESSED',
+        JSON.stringify({ stockSaleId: existingSale.id, recovered: true }));
+      return { success: true, recovered: true };
+    }
+
+    const ids = items.map(i => Number(i.clearanceProductId));
+    if (ids.some(id => !Number.isSafeInteger(id) || !NOVEMBER_SPECIAL_VARIANTS[id])) {
+      throw new Error('Unknown November Specials product mapping; manual review required');
+    }
+    const catalogue = await pool.query(`
+      SELECT id, product_name, pack_size, retail_price, promotional_price
+      FROM public.clearance_products
+      WHERE promotion_code = 'NOV2026-30' AND id = ANY($1::bigint[])`, [ids]);
+    const byId = new Map(catalogue.rows.map(r => [Number(r.id), r]));
+    const saleItems = items.map(item => {
+      const id = Number(item.clearanceProductId);
+      const product = byId.get(id);
+      const qty = Number(item.qty);
+      const price = Number(item.price);
+      if (!product || !Number.isSafeInteger(qty) || qty <= 0 ||
+          !Number.isFinite(price) || price < 0 ||
+          String(item.name) !== String(product.product_name) ||
+          String(item.size) !== String(product.pack_size) ||
+          Math.abs(price - Number(product.promotional_price)) > 0.001) {
+        throw new Error(`November Specials product ${id} does not match its saved order`);
+      }
+      const original = Number(product.retail_price);
+      if (!Number.isFinite(original) || original <= 0 || price > original) {
+        throw new Error(`Invalid November Specials original price for product ${id}`);
+      }
+      // The sales API independently verifies discount percentage and amount.
+      const discountPercent = Number(((original - price) / original * 100).toFixed(6));
+      const discountAmount = Number((original * discountPercent / 100).toFixed(2));
+      if (Math.abs(Number((original - discountAmount).toFixed(2)) - price) > 0.001) {
+        throw new Error(`November Specials discount does not reconcile for product ${id}`);
+      }
+      return {
+        variant_id: NOVEMBER_SPECIAL_VARIANTS[id],
+        quantity: qty,
+        unit_price: price,
+        original_unit_price: original,
+        discount_percent: discountPercent,
+        discount_amount: discountAmount,
+        external_item_reference: `CLEARANCE-${id}`,
+      };
+    });
+
+    const availability = await fetchMainStockAvailability();
+    const stockRows = availability.items || [];
+    for (const line of saleItems) {
+      const stock = stockRows.find(row => row.variant_id === line.variant_id);
+      const required = saleItems.filter(i => i.variant_id === line.variant_id)
+        .reduce((sum, i) => sum + i.quantity, 0);
+      if (!stock || !stock.is_active || Number(stock.quantity_on_hand) < required) {
+        throw new Error(`Insufficient MAIN stock for November Specials variant ${line.variant_id}; manual review required`);
+      }
+    }
+
+    let sale;
+    try {
+      const created = await sendStockControlSalesRequest('/api/sales', {
+        sale_number: order.order_number,
+        sales_channel: 'ONLINE',
+        sales_channel_id: '438a2b69-0be0-49d6-9e01-fa4b23104ab2',
+        sales_source_id: '27fcc1b2-d3b8-421b-a70d-2defe3a71f62',
+        location_id: '0c252377-005c-4c60-ac2a-6020309d6fea',
+        external_reference: order.order_number,
+        customer_reference: order.order_number,
+        sale_status: 'COMPLETED',
+        payment_status: 'PAID',
+        payment_method: order.payment_method === 'EFT' ? 'EFT' : 'PayFast',
+        commission_rate: 0,
+        items: saleItems,
+      });
+      sale = created.sale;
+    } catch (createError) {
+      sale = await findExistingCustomerStockSale(order.order_number);
+      if (!sale) throw createError;
+    }
+    await sendStockControlSalesRequest(`/api/sales/${sale.id}/process`, {});
+    await updateCustomerStockSyncStatus(order.order_number, 'PROCESSED',
+      JSON.stringify({ stockSaleId: sale.id, promotionCode: 'NOV2026-30' }));
+    return { success: true, stockSaleId: sale.id };
+  } catch (err) {
+    await updateCustomerStockSyncStatus(order.order_number, 'SYNC_FAILED', err.message);
+    throw err;
+  }
+}
+app.locals.syncPaidNovemberSpecialOrder = syncPaidNovemberSpecialOrder;
+app.locals.fetchMainStockAvailability = fetchMainStockAvailability;
+
 // =====================================================
 // CUSTOMER APP — STOCK AVAILABILITY PROXY
 // =====================================================
@@ -1249,6 +1379,13 @@ app.post("/payfast-notify", async (req, res) => {
           await client.query('BEGIN');
           await app.locals.confirmClearanceReservation(order.id, client);
           await client.query('COMMIT');
+          // Only after verified payment and committed reservation confirmation.
+          // Do not return an ITN error if stock sync fails: retry is safe.
+          try {
+            await app.locals.syncPaidNovemberSpecialOrder(order.id);
+          } catch (syncError) {
+            console.error('CLEARANCE STOCK SYNC FAILED:', orderNumber, syncError);
+          }
         } catch (err) {
           await client.query('ROLLBACK');
           console.error('CLEARANCE PAYMENT RECONCILIATION FAILED:', err);
@@ -1270,7 +1407,7 @@ app.post("/payfast-notify", async (req, res) => {
         payment_method, payment_status, stock_sync_status
  FROM public.orders
  WHERE order_number = $1
- LIMIT 1`
+ LIMIT 1`,
   [orderNumber]
 );
     const normalOrder = normalOrderResult.rows[0];

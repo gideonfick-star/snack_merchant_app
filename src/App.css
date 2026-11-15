@@ -994,17 +994,23 @@ body {
 }
 .cart-toast {
   position: fixed;
-  bottom: 20px;
-  right: 20px;
+  top: 28px;
+  right: 96px;
+  bottom: auto;
+  max-width: min(340px, calc(100vw - 116px));
   background: #111;
-  color: white;
-  padding: 12px 18px;
+  color: #f5c542;
+  padding: 12px 16px;
+  border: 1px solid #d4a017;
   border-radius: 10px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  z-index: 9999;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  line-height: 1.4;
+  text-align: left;
+  z-index: 9998;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
   animation: fadeInOut 1.8s ease;
+  pointer-events: none;
 }
 
 @keyframes fadeInOut {
@@ -6849,5 +6855,75 @@ html {
   .promotion-overlay .promotion-shop {
     width: 100%;
     padding: 14px 16px;
+  }
+}
+/* =========================================
+   CUSTOMER PRODUCT FLAVOUR / FORM SELECTOR
+   ========================================= */
+
+.product-option-selector {
+  width: 100%;
+  margin: 12px 0;
+}
+
+.product-option-label {
+  display: block;
+  margin-bottom: 8px;
+  color: #3b3020;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.product-option-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.product-option-button {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid #c9aa60;
+  border-radius: 8px;
+  background: #fffaf0;
+  color: #3b3020;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.3;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.product-option-button:hover {
+  background: #f3e5c4;
+  border-color: #b89445;
+}
+
+.product-option-button.selected {
+  background: #171717;
+  color: #e8c66a;
+  border-color: #c9a34a;
+}
+
+.product-option-button:focus-visible {
+  outline: 2px solid #c9a34a;
+  outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  .product-option-selector {
+    margin: 10px 0;
+  }
+
+  .product-option-buttons {
+    gap: 6px;
+  }
+
+  .product-option-button {
+    padding: 8px 9px;
+    font-size: 11px;
   }
 }
