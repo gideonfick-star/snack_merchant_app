@@ -2188,7 +2188,6 @@ const logoutAdministrator = async () => {
 
     setIsAdmin(false);
     setAdminView("products");
-    setClearanceAdminSecret("");
     setShowAdminPinModal(false);
     setAdminPinInput("");
 
@@ -2237,14 +2236,12 @@ useEffect(() => {
 const [adminView, setAdminView] = useState("products");
 const [orderDashboardFilter, setOrderDashboardFilter] = useState("all");
 const [orders, setOrders] = useState([]);
-const [clearanceAdminSecret, setClearanceAdminSecret] = useState('');
 const [clearanceAdminBusy, setClearanceAdminBusy] = useState(false);
 const changeClearanceOrderStatus = async (order, nextStatus) => {
-  if (!clearanceAdminSecret) {
-    showNotification('Enter the clearance administration secret in the Orders Dashboard before changing a clearance order.', 'warning', 'Clearance Admin Secret Required');
+  if (!isAdmin) {
+    showNotification('Administrator login required.', 'warning', 'Admin Access Required');
     return;
   }
-  const headers = { 'x-clearance-admin-secret': clearanceAdminSecret };
   if (!['Paid', 'Cancelled', 'Ready for Collection', 'Dispatched', 'Closed'].includes(nextStatus)) {
     showNotification('Use Paid, Cancelled, Ready for Collection, Dispatched or Closed for clearance orders.', 'warning', 'Invalid Clearance Status');
     return;
@@ -2263,9 +2260,9 @@ const changeClearanceOrderStatus = async (order, nextStatus) => {
   setClearanceAdminBusy(true);
   try {
     if (isCancel || isPay) {
-      await axios.post(`${API_BASE_URL}/clearance-orders/${order.id}/reconcile`, {action: isCancel ? 'RELEASED' : 'CONFIRMED'}, {headers});
+      await axios.post(`${API_BASE_URL}/clearance-orders/${order.id}/reconcile`, {action: isCancel ? 'RELEASED' : 'CONFIRMED'}, {withCredentials: true});
     } else {
-      await axios.patch(`${API_BASE_URL}/clearance-orders/${order.id}/fulfilment`, {orderStatus: nextStatus}, {headers});
+      await axios.patch(`${API_BASE_URL}/clearance-orders/${order.id}/fulfilment`, {orderStatus: nextStatus}, {withCredentials: true});
     }
     await loadOrders();
     showNotification('Clearance order updated successfully.', 'success', 'Order Updated');
@@ -6530,13 +6527,6 @@ ${data.get("eventDetails")}
   <button onClick={loadOrders}>
     Refresh Orders
   </button>
-  <label style={{display:'flex',alignItems:'center',gap:12,padding:'7px 14px',border:'1px solid rgba(212,175,55,0.55)',borderRadius:14,background:'#111',color:'#d4af37',fontSize:14,fontWeight:700,lineHeight:1.4,whiteSpace:'nowrap',boxSizing:'border-box',maxWidth:'100%'}}>
-    <span style={{fontSize:14,fontWeight:700,letterSpacing:'0.1px'}}>Clearance Admin Secret</span>
-    <input type="password" autoComplete="off" value={clearanceAdminSecret}
-      onChange={e=>setClearanceAdminSecret(e.target.value)} placeholder="Enter secret"
-      aria-label="Clearance Admin Secret"
-      style={{boxSizing:'border-box',width:185,maxWidth:'100%',height:38,padding:'8px 13px',background:'#1d1d1d',color:'#f5eedb',border:'1px solid #d4af37',borderRadius:9,fontFamily:'inherit',fontSize:14,fontWeight:500,lineHeight:1.4,outlineOffset:3}} />
-  </label>
   <button
   onClick={() => setShowManualOrderForm(true)}
 >
@@ -7483,7 +7473,9 @@ ${data.get("eventDetails")}
                   <span>Status</span>
                 </div>
 
-                {product.variants.map((variant) => {
+                {product.variants.filter((variant, index, variants) =>
+                  variants.findIndex((item) => item.size === variant.size) === index
+                ).map((variant) => {
                   const key = getPricingKey(variant.code, variant.size);
 
                   const wholesaleValue =
@@ -7568,26 +7560,18 @@ ${data.get("eventDetails")}
           {CUSTOMER_PRODUCT_OPTIONS[product.code].label}
         </label>
 
-        <div className="product-option-buttons">
+        <div className="product-option-radios" role="radiogroup" aria-label={CUSTOMER_PRODUCT_OPTIONS[product.code].label}>
           {CUSTOMER_PRODUCT_OPTIONS[product.code].options.map((option) => (
-            <button
-              key={option}
-              type="button"
-              className={`product-option-button ${
-  (selectedProductOptions[product.code] ||
-  CUSTOMER_PRODUCT_OPTIONS[product.code].options[0]) === option
-  ? "selected"
-  : ""
-}`}
-              onClick={() => {
-                setSelectedProductOptions((current) => ({
-                  ...current,
-                  [product.code]: option,
-                }));
-              }}
-            >
-              {option}
-            </button>
+            <label className="product-option-radio" key={option}>
+              <input
+                type="radio"
+                name={`product-option-${product.code}`}
+                value={option}
+                checked={(selectedProductOptions[product.code] || CUSTOMER_PRODUCT_OPTIONS[product.code].options[0]) === option}
+                onChange={() => setSelectedProductOptions((current) => ({ ...current, [product.code]: option }))}
+              />
+              <span>{option}</span>
+            </label>
           ))}
         </div>
       </div>

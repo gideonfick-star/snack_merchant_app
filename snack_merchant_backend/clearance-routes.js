@@ -1,6 +1,6 @@
 // November 2026 clearance. Isolated from ordinary /orders checkout.
 // This is a staged module: checkout remains OFF until payment lifecycle integration.
-module.exports = function registerClearanceRoutes(app, pool) {
+module.exports = function registerClearanceRoutes(app, pool, requireAdminAuth) {
   const promotionCode = 'NOV2026-30';
   // Checkout stays disabled until payment verification is tested end-to-end.
   const enabled = () => process.env.CLEARANCE_CHECKOUT_ENABLED === 'true' && process.env.CLEARANCE_PAYMENT_INTEGRATION_VERIFIED === 'true';
@@ -498,15 +498,8 @@ module.exports = function registerClearanceRoutes(app, pool) {
 
   // The current website's admin order-status endpoint has no authentication.
   // Use a separate, fail-closed admin token for clearance status changes.
-  app.post('/clearance-orders/:id/reconcile', async (req, res) => {
-    const secret = process.env.CLEARANCE_ADMIN_SECRET;
-    const supplied = req.get('x-clearance-admin-secret');
-    const crypto = require('crypto');
-    if (!secret || !supplied ||
-        Buffer.byteLength(secret) !== Buffer.byteLength(supplied) ||
-        !crypto.timingSafeEqual(Buffer.from(secret), Buffer.from(supplied))) {
-      return res.status(403).json({ success: false, error: 'Clearance admin access denied.' });
-    }
+  app.post('/clearance-orders/:id/reconcile', requireAdminAuth, async (req, res) => {
+
     const action = req.body?.action;
     if (!['CONFIRMED', 'RELEASED'].includes(action)) {
       return res.status(400).json({ success: false, error: 'Invalid action.' });
@@ -550,14 +543,8 @@ module.exports = function registerClearanceRoutes(app, pool) {
   });
 
   // Authenticated clearance fulfilment changes. Payment confirmation is NOT handled here.
-  app.patch('/clearance-orders/:id/fulfilment', async (req, res) => {
-    const secret = process.env.CLEARANCE_ADMIN_SECRET;
-    const supplied = req.get('x-clearance-admin-secret');
-    const crypto = require('crypto');
-    if (!secret || !supplied || Buffer.byteLength(secret) !== Buffer.byteLength(supplied) ||
-        !crypto.timingSafeEqual(Buffer.from(secret), Buffer.from(supplied))) {
-      return res.status(403).json({ success: false, error: 'Clearance admin access denied.' });
-    }
+  app.patch('/clearance-orders/:id/fulfilment', requireAdminAuth, async (req, res) => {
+
     const id = Number(req.params.id);
     const status = req.body?.orderStatus;
     if (!Number.isSafeInteger(id) || id <= 0 || !['Ready for Collection', 'Dispatched', 'Closed'].includes(status)) {

@@ -974,7 +974,7 @@ app.post("/product-pricing", requireAdminAuth, async (req, res) => {
 });
 
 // Clearance catalogue is isolated from the normal shop and remains inactive until approved.
-require('./clearance-routes')(app, pool);
+require('./clearance-routes')(app, pool, requireAdminAuth);
 
 // ================= LOAD ORDERS =================
 

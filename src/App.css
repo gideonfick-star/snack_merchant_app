@@ -6927,3 +6927,12 @@ html {
     font-size: 11px;
   }
 }
+/* November 2026: compact, accessible flavour selector and legible product/admin text */
+.product-option-selector .product-option-label { color: #fff !important; font-size: 13px; }
+.product-option-radios { display: flex; flex-wrap: wrap; gap: 8px 13px; margin: 7px 0 11px; }
+.product-option-radio { display: inline-flex; align-items: center; gap: 5px; color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.product-option-radio input { accent-color: #d4af37; width: 15px; height: 15px; margin: 0; cursor: pointer; }
+.admin-product-card .admin-variant-row strong, .admin-product-card .admin-variant-row span,
+.admin-product-card .admin-variant-header, .admin-product-card .description,
+.admin-product-card .category { color: #fff !important; }
+.admin-product-card .admin-variant-row select, .admin-product-card .admin-variant-input { color: #fff !important; background: #161616; }
