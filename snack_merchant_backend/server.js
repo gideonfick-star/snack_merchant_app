@@ -481,7 +481,9 @@ try {
         external_reference: orderNumber,
         customer_reference: orderNumber,
         sale_status: "COMPLETED",
-        payment_method: order.payment_method === "EFT" ? "EFT" : "PayFast",
+        payment_method: String(order.payment_method || "").startsWith("EFT")
+          ? "EFT"
+          : "PayFast",
         payment_status: "PAID",
         commission_rate: 0,
         items: saleItems,
@@ -1065,7 +1067,7 @@ app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
     // Only synchronise confirmed, paid EFT orders.
     // Never use an admin status change to bypass PayFast verification.
     if (
-      updatedOrder.payment_method === "EFT" &&
+      String(updatedOrder.payment_method || "").startsWith("EFT") &&
       updatedOrder.payment_status === "Paid" &&
       updatedOrder.stock_sync_status !== "PROCESSED" &&
       updatedOrder.stock_sync_status !== "SUPPLIER_FULFILMENT" &&
