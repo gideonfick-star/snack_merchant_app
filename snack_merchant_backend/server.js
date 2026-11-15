@@ -76,7 +76,473 @@ app.use(cookieParser());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+// =====================================================
+// STOCK CONTROL 3.0 — SERVER-TO-SERVER CONNECTION
+// =====================================================
 
+const STOCK_CONTROL_API_URL = (
+  process.env.STOCK_CONTROL_API_URL || ""
+).replace(/\/+$/, "");
+
+const CUSTOMER_STOCK_INTEGRATION_SECRET =
+  process.env.CUSTOMER_STOCK_INTEGRATION_SECRET || "";
+
+async function fetchMainStockAvailability() {
+  if (
+    !STOCK_CONTROL_API_URL ||
+    !CUSTOMER_STOCK_INTEGRATION_SECRET
+  ) {
+    throw new Error("Stock Control integration is not configured");
+  }
+
+  const response = await fetch(
+    `${STOCK_CONTROL_API_URL}/api/customer-stock-availability`,
+    {
+      method: "GET",
+      headers: {
+        "x-customer-stock-secret":
+          CUSTOMER_STOCK_INTEGRATION_SECRET,
+      },
+      signal: AbortSignal.timeout(10000),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Stock Control availability request failed: ${response.status}`
+    );
+  }
+
+  const data = await response.json();
+
+  if (!data.success || !Array.isArray(data.items)) {
+    throw new Error("Invalid Stock Control availability response");
+  }
+
+  return data;
+}
+// =====================================================
+// CUSTOMER APP - STOCK CONTROL PRODUCT MAPPING
+// =====================================================
+
+const CUSTOMER_STOCK_PRODUCT_MAPPING = {
+  CNL02: {
+    Flakes: "TSM02",
+    Ground: "TSM02-1",
+    Slivered: "TSM02-2",
+  },
+  CNL03: {
+    Sprinkles: "TSM03",
+    Nibs: "TSM03-1",
+  },
+  CNL08: {
+    Raw: "TSM08",
+    Salted: "TSM08-1",
+    "Peri-Peri": "TSM08-2",
+  },
+  CNL24: {
+    Raw: "TSM24",
+    Salted: "TSM24-1",
+    "Peri-Peri": "TSM24-2",
+  },
+  CNL25: {
+    BBQ: "TSM25",
+    "Tomato Chilli": "TSM25-1",
+  },
+  CNL26: {
+    Salted: "TSM26",
+    "Peri-Peri": "TSM26-1",
+  },
+  CNL116: {
+    Plain: "TSM116",
+    "Spring Onion": "TSM116-1",
+  },
+  CNL117: {
+    Plain: "TSM117",
+    Hot: "TSM117-1",
+  },
+};
+
+function resolveCustomerStockProductCode(item) {
+  const code = String(item.code || "").trim().toUpperCase();
+  const option = String(item.option || "").trim();
+
+  const mapping = CUSTOMER_STOCK_PRODUCT_MAPPING[code];
+
+  if (mapping) {
+    return mapping[option] || null;
+  }
+
+  return code.replace(/^CNL/, "TSM");
+}
+// =====================================================
+// CUSTOMER APP - STOCK CONTROL VARIANT MATCHING
+// =====================================================
+
+function normalizeCustomerPackSize(value, unit) {
+  if (unit === undefined) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "");
+  }
+
+  return `${value}${unit}`.toLowerCase().replace(/\s+/g, "");
+}
+
+function matchCustomerStockVariant(item, stockItems) {
+  const productCode = resolveCustomerStockProductCode(item);
+
+  if (!productCode) return null;
+
+  const customerSize = normalizeCustomerPackSize(item.size);
+
+  return (
+    stockItems.find((stockItem) => {
+      return (
+        String(stockItem.product_code || "").toUpperCase() ===
+          productCode &&
+        normalizeCustomerPackSize(
+          stockItem.pack_size_value,
+          stockItem.pack_size_unit
+        ) === customerSize
+      );
+    }) || null
+  );
+}
+// =====================================================
+// CUSTOMER APP - STOCK FULFILMENT CLASSIFICATION
+// =====================================================
+
+function classifyCustomerOrderStock(orderItems, stockItems) {
+  const available = new Map();
+
+  for (const stockItem of stockItems) {
+    available.set(
+      stockItem.variant_id,
+      Number(stockItem.quantity_on_hand || 0)
+    );
+  }
+
+  const stockedItems = [];
+  const reviewItems = [];
+  const supplierItems = [];
+
+  for (const item of orderItems) {
+    const variant = matchCustomerStockVariant(item, stockItems);
+    const quantity = Number(item.qty);
+
+    if (!Number.isInteger(quantity) || quantity <= 0) {
+      throw new Error("Invalid customer order quantity");
+    }
+
+    if (!variant || !variant.is_active) {
+      supplierItems.push(item);
+      continue;
+    }
+
+    const remaining = available.get(variant.variant_id) || 0;
+
+    if (remaining < quantity) {
+      reviewItems.push({
+        ...item,
+        stock_variant_id: variant.variant_id,
+        quantity_available: remaining,
+      });
+      continue;
+    }
+
+    available.set(variant.variant_id, remaining - quantity);
+
+    stockedItems.push({
+      ...item,
+      stock_variant_id: variant.variant_id,
+    });
+  }
+
+  return {
+    stockedItems,
+    reviewItems,
+    supplierItems,
+  };
+}
+// =====================================================
+// CUSTOMER APP — STOCK CONTROL SALES REQUEST HELPER
+// =====================================================
+
+async function sendStockControlSalesRequest(endpoint, payload) {
+  if (
+    !STOCK_CONTROL_API_URL ||
+    !CUSTOMER_STOCK_INTEGRATION_SECRET
+  ) {
+    throw new Error(
+      "Stock Control sales integration is not configured"
+    );
+  }
+
+  const response = await fetch(
+    `${STOCK_CONTROL_API_URL}${endpoint}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-customer-stock-secret":
+          CUSTOMER_STOCK_INTEGRATION_SECRET,
+      },
+      body: JSON.stringify(payload || {}),
+      signal: AbortSignal.timeout(15000),
+    }
+  );
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.message ||
+      `Stock Control request failed: ${response.status}`
+    );
+  }
+
+  return result;
+}
+// =====================================================
+// CUSTOMER APP - STOCK SYNC STATUS TRACKING
+// =====================================================
+// =====================================================
+// CUSTOMER APP - STOCK CONTROL SALE RECOVERY LOOKUP
+// =====================================================
+
+async function findExistingCustomerStockSale(orderNumber) {
+  if (
+    !STOCK_CONTROL_API_URL ||
+    !CUSTOMER_STOCK_INTEGRATION_SECRET
+  ) {
+    throw new Error(
+      "Stock Control sales integration is not configured"
+    );
+  }
+
+  const response = await fetch(
+    `${STOCK_CONTROL_API_URL}/api/sales/by-number/${encodeURIComponent(orderNumber)}`,
+    {
+      method: "GET",
+      headers: {
+        "x-customer-stock-secret":
+          CUSTOMER_STOCK_INTEGRATION_SECRET,
+      },
+      signal: AbortSignal.timeout(10000),
+    }
+  );
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok || !result.success) {
+    throw new Error(
+      result.message ||
+      `Stock Control sale lookup failed: ${response.status}`
+    );
+  }
+
+  return result.found ? result.sale : null;
+}
+async function updateCustomerStockSyncStatus(
+  orderNumber,
+  status,
+  notes = null
+) {
+  const result = await pool.query(
+    `
+    UPDATE public.orders
+    SET
+      stock_sync_status = $2,
+      stock_sync_notes = $3,
+      stock_synced_at = CASE
+        WHEN $2 = 'PROCESSED' THEN NOW()
+        ELSE stock_synced_at
+      END,
+      updated_at = NOW()
+    WHERE order_number = $1
+    RETURNING id
+    `,
+    [orderNumber, status, notes]
+  );
+
+  if (result.rowCount !== 1) {
+    throw new Error(
+      `Unable to update stock sync status for order ${orderNumber}`
+    );
+  }
+}
+// =====================================================
+// CUSTOMER APP - PAID ORDER STOCK SYNCHRONISATION
+// =====================================================
+
+async function syncPaidCustomerOrderToStockControl(order) {
+  const orderNumber = String(order.order_number || "").trim();
+
+  if (!orderNumber) {
+    throw new Error("Customer order number is missing");
+  }
+
+  if (order.payment_status !== "Paid") {
+    throw new Error("Only paid customer orders can be synchronised");
+  }
+
+  try {
+    // Resume an existing sale before attempting to create another.
+    const existingSale =
+      await findExistingCustomerStockSale(orderNumber);
+
+    if (existingSale) {
+      await sendStockControlSalesRequest(
+        `/api/sales/${existingSale.id}/process`,
+        {}
+      );
+
+      await updateCustomerStockSyncStatus(
+        orderNumber,
+        "PROCESSED",
+        "Existing Stock Control sale processed successfully"
+      );
+
+      return { success: true, resumed: true };
+    }
+
+    const orderItems =
+      typeof order.items === "string"
+        ? JSON.parse(order.items)
+        : order.items;
+
+    if (!Array.isArray(orderItems) || orderItems.length === 0) {
+      throw new Error("Customer order contains no valid items");
+    }
+
+    const availability = await fetchMainStockAvailability();
+
+    const classification = classifyCustomerOrderStock(
+      orderItems,
+      availability.items
+    );
+
+    const {
+      stockedItems,
+      reviewItems,
+      supplierItems,
+    } = classification;
+
+    // No physical MAIN stock needs to be deducted.
+    if (stockedItems.length === 0) {
+      const status =
+        reviewItems.length > 0
+          ? "MANUAL_REVIEW"
+          : "SUPPLIER_FULFILMENT";
+
+      await updateCustomerStockSyncStatus(
+        orderNumber,
+        status,
+        JSON.stringify({
+          reviewItems,
+          supplierItems,
+        })
+      );
+
+      return { success: true, status };
+    }
+
+    const saleItems = stockedItems.map((item) => ({
+      variant_id: item.stock_variant_id,
+      quantity: Number(item.qty),
+      unit_price: Number(item.price),
+      external_item_reference: String(item.id || ""),
+    }));
+
+    let created;
+
+try {
+  created = await sendStockControlSalesRequest(
+    "/api/sales",
+      "/api/sales",
+      {
+        sale_number: orderNumber,
+        sales_channel: "ONLINE",
+        sales_channel_id:
+          "438a2b69-0be0-49d6-9e01-fa4b23104ab2",
+        sales_source_id:
+          "27fcc1b2-d3b8-421b-a70d-2defe3a71f62",
+        location_id:
+          "0c252377-005c-4c60-ac2a-6020309d6fea",
+        external_reference: orderNumber,
+        customer_reference: orderNumber,
+        sale_status: "COMPLETED",
+        payment_method: "PayFast",
+        payment_status: "PAID",
+        commission_rate: 0,
+        items: saleItems,
+      }
+      );
+} catch (createError) {
+  const recoveredSale =
+    await findExistingCustomerStockSale(orderNumber);
+
+  if (!recoveredSale) {
+    throw createError;
+  }
+
+  created = { sale: recoveredSale };
+}
+
+    await sendStockControlSalesRequest(
+      `/api/sales/${created.sale.id}/process`,
+      {}
+    );
+
+    const status =
+  reviewItems.length > 0
+    ? "MANUAL_REVIEW"
+    : "PROCESSED";
+
+    await updateCustomerStockSyncStatus(
+      orderNumber,
+      status,
+      JSON.stringify({
+        reviewItems,
+        supplierItems,
+        stockSaleId: created.sale.id,
+      })
+    );
+
+    return { success: true, status };
+  } catch (error) {
+    await updateCustomerStockSyncStatus(
+      orderNumber,
+      "SYNC_FAILED",
+      error.message
+    );
+
+    throw error;
+  }
+}
+// =====================================================
+// CUSTOMER APP — STOCK AVAILABILITY PROXY
+// =====================================================
+app.get("/customer-stock-availability", async (req, res) => {
+  try {
+    const data = await fetchMainStockAvailability();
+
+    return res.json({
+      success: true,
+      location_code: "MAIN",
+      items: data.items,
+    });
+  } catch (error) {
+    console.error("Customer stock availability error:", error.message);
+
+    return res.status(503).json({
+      success: false,
+      message: "Stock availability is temporarily unavailable",
+    });
+  }
+});
 // Administrator authentication endpoints
 const { router: adminAuthRouter, requireAdminAuth } = require("./admin-auth");
 app.use("/admin-auth", adminAuthRouter);
@@ -800,9 +1266,13 @@ app.post("/payfast-notify", async (req, res) => {
 
     // Normal orders must pass the same independent PayFast checks as clearance.
     const normalOrderResult = await pool.query(
-      `SELECT id, total_amount, payment_method FROM public.orders WHERE order_number = $1 LIMIT 1`,
-      [orderNumber]
-    );
+  `SELECT id, order_number, items, total_amount,
+        payment_method, payment_status, stock_sync_status
+ FROM public.orders
+ WHERE order_number = $1
+ LIMIT 1`
+  [orderNumber]
+);
     const normalOrder = normalOrderResult.rows[0];
     if (!normalOrder) return res.status(404).send("Unknown order");
     if (normalOrder.payment_method !== "PayFast" ||
@@ -865,7 +1335,39 @@ if (
 
   console.log("GA4 PURCHASE SENT:", orderNumber);
 }
-    res.status(200).send("OK");
+    // Synchronise verified, paid customer orders with Stock Control.
+if (paymentStatus === "COMPLETE") {
+  try {
+    const paidOrderResult = await pool.query(
+      `SELECT order_number, items, payment_method,
+              payment_status, stock_sync_status
+       FROM public.orders
+       WHERE order_number = $1
+       LIMIT 1`,
+      [orderNumber]
+    );
+
+    const paidOrder = paidOrderResult.rows[0];
+
+    if (!paidOrder || paidOrder.payment_status !== "Paid") {
+      throw new Error("Verified customer order is not marked Paid");
+    }
+
+    if (paidOrder.stock_sync_status !== "PROCESSED" &&
+        paidOrder.stock_sync_status !== "SUPPLIER_FULFILMENT" &&
+        paidOrder.stock_sync_status !== "MANUAL_REVIEW") {
+      await syncPaidCustomerOrderToStockControl(paidOrder);
+    }
+  } catch (stockSyncError) {
+    console.error(
+      "CUSTOMER STOCK SYNC ERROR:",
+      orderNumber,
+      stockSyncError
+    );
+  }
+}
+
+res.status(200).send("OK");
   } catch (err) {
     console.error("PAYFAST ITN ERROR:", err);
     res.status(500).send("ITN failed");
