@@ -1739,6 +1739,42 @@ const closeNotification = () => {
     () => new URLSearchParams(window.location.search).get('clearancePreview') === '1'
   );
   const [clearanceProducts, setClearanceProducts] = useState([]);
+  const [catalogueSpecials, setCatalogueSpecials] = useState([]);
+
+useEffect(() => {
+  let active = true;
+
+  const loadCatalogueSpecials = async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/clearance-products`
+      );
+
+      if (active) {
+        setCatalogueSpecials(
+          Array.isArray(response.data?.products)
+            ? response.data.products
+            : []
+        );
+      }
+    } catch (error) {
+      console.error(
+        "November Specials pricing unavailable:",
+        error
+      );
+
+      if (active) {
+        setCatalogueSpecials([]);
+      }
+    }
+  };
+
+  loadCatalogueSpecials();
+
+  return () => {
+    active = false;
+  };
+}, []);
   const [clearanceDetailsOpen, setClearanceDetailsOpen] = useState(false);
   const [clearanceCart, setClearanceCart] = useState({});
   const [clearanceCustomer, setClearanceCustomer] = useState({customerName:'',customerPhone:'',customerEmail:'',orderType:'Collection',deliveryAddress:'',customerNotes:'',paymentMethod:'EFT'});
@@ -2114,7 +2150,41 @@ const customerMainStockStatus = (code, option, size) => {
   return Number(variant.quantity_on_hand) <= Number(variant.minimum_quantity)
     ? "Low Stock" : "In Stock";
 };
+const getCatalogueSpecial = (code, option, size) => {
+  const mapped = CUSTOMER_STOCK_CODE_MAP[code];
 
+  const productCode = mapped
+    ? mapped[option || ""]
+    : String(code || "").replace(/^CNL/, "TSM");
+
+  if (!productCode || !Array.isArray(mainStockAvailability)) {
+    return null;
+  }
+
+  const stockVariant = mainStockAvailability.find(
+    (item) =>
+      String(item.product_code || "").toUpperCase() ===
+        productCode.toUpperCase() &&
+      normalizeMainStockPack(
+        item.pack_size_value,
+        item.pack_size_unit
+      ) === normalizeMainStockPack(size)
+  );
+
+  if (!stockVariant?.variant_id) return null;
+
+  return (
+    catalogueSpecials.find(
+      (special) =>
+        String(special.stock_variant_id || "").toLowerCase() ===
+          String(stockVariant.variant_id).toLowerCase() &&
+        Number(special.available_quantity) > 0 &&
+        Number(special.promotional_price) >= 0 &&
+        Number(special.promotional_price) <
+          Number(special.retail_price)
+    ) || null
+  );
+};
 const [productPricing, setProductPricing] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
 const [adminAuthBusy, setAdminAuthBusy] = useState(false);
@@ -7596,7 +7666,16 @@ ${data.get("eventDetails")}
                       ] ??
                       variant.wholesalePrice
                   );
+                  const selectedOption =
+                    selectedProductOptions[product.code] ||
+                    CUSTOMER_PRODUCT_OPTIONS[product.code]?.options[0] ||
+                    null;
 
+                  const catalogueSpecial = getCatalogueSpecial(
+                    product.code,
+                    selectedOption,
+                    variant.size
+                  );
                   return (
                     <button
                       type="button"
@@ -7617,6 +7696,24 @@ ${data.get("eventDetails")}
           : null)
   );
 
+    if (catalogueSpecial) {
+    setClearanceCart((current) => ({
+      ...current,
+      [catalogueSpecial.id]: Math.max(
+        1,
+        Math.min(
+          Number(catalogueSpecial.available_quantity),
+          Number(current[catalogueSpecial.id] || 0) + 1
+        )
+      ),
+    }));
+
+    setShowShop(false);
+    setShowClearancePreview(true);
+    window.scrollTo({ top: 0, behavior: "auto" });
+    return;
+  }
+
   if (chosenVariant) {
     addToCart(chosenVariant);
   } else {
@@ -7624,8 +7721,37 @@ ${data.get("eventDetails")}
   }
 }}
                     >
-                      <span>{variant.size}</span>
-                      <strong>R{variantPrice}</strong>
+                                            <span>{variant.size}</span>
+
+                      {catalogueSpecial ? (
+                        <span style={{ textAlign: "right" }}>
+                          <span
+                            style={{
+                              textDecoration: "line-through",
+                              opacity: 0.65,
+                              marginRight: 8,
+                            }}
+                          >
+                            R{variantPrice}
+                          </span>
+
+                          <strong>
+                            R{Number(catalogueSpecial.promotional_price).toFixed(2)}
+                          </strong>
+
+                          <span
+                            style={{
+                              display: "block",
+                              fontSize: 11,
+                              fontWeight: 700,
+                            }}
+                          >
+                            30% OFF · November Special
+                          </span>
+                        </span>
+                      ) : (
+                        <strong>R{variantPrice}</strong>
+                      )}
                     </button>
                   );
                 })}

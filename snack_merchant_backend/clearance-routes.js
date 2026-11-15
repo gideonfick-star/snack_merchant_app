@@ -73,8 +73,9 @@ module.exports = function registerClearanceRoutes(app, pool, requireAdminAuth) {
         ORDER BY id`, [promotionCode, localPreview]);
       const availability = await getLiveSpecialAvailability(pool, rows.map(row => Number(row.id)));
       res.json({ success: true, promotionCode, preview: localPreview, products: rows.map(row => ({
-        ...row,
-        available_quantity: availability.get(Number(row.id)) ?? 0,
+  ...row,
+  stock_variant_id: specialVariantIds[Number(row.id)] || null,
+  available_quantity: availability.get(Number(row.id)) ?? 0,
         retail_price: Number(row.retail_price),
         promotional_price: Number(row.promotional_price)
       })) });
