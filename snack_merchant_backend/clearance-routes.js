@@ -29,10 +29,20 @@ module.exports = function registerClearanceRoutes(app, pool, requireAdminAuth) {
     const response = await app.locals.fetchMainStockAvailability();
     const byVariant = new Map((response.items || []).map(r => [String(r.variant_id), r]));
     const reserved = await client.query(`
-      SELECT clearance_product_id, COALESCE(SUM(quantity), 0)::integer AS qty
-      FROM public.clearance_reservations
-      WHERE status = 'RESERVED' AND clearance_product_id = ANY($1::bigint[])
-      GROUP BY clearance_product_id`, [productIds]);
+  SELECT
+    r.clearance_product_id,
+    COALESCE(SUM(r.quantity), 0)::integer AS qty
+  FROM public.clearance_reservations r
+  JOIN public.orders o ON o.id = r.order_id
+  WHERE r.clearance_product_id = ANY($1::bigint[])
+    AND (
+      r.status = 'RESERVED'
+      OR (
+        r.status = 'CONFIRMED'
+        AND o.stock_sync_status IS DISTINCT FROM 'PROCESSED'
+      )
+    )
+  GROUP BY r.clearance_product_id`, [productIds]);
     const reservedById = new Map(reserved.rows.map(r => [Number(r.clearance_product_id), Number(r.qty)]));
     const result = new Map();
     for (const id of productIds) {
