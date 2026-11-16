@@ -71,11 +71,27 @@ module.exports = function registerClearanceRoutes(app, pool, requireAdminAuth) {
         FROM public.clearance_products
         WHERE promotion_code = $1 AND (active = TRUE OR $2::boolean = TRUE)
         ORDER BY id`, [promotionCode, localPreview]);
-      const availability = await getLiveSpecialAvailability(pool, rows.map(row => Number(row.id)));
+      let availability = new Map();
+let stockAvailabilityVerified = false;
+
+try {
+  availability = await getLiveSpecialAvailability(
+    pool,
+    rows.map(row => Number(row.id))
+  );
+  stockAvailabilityVerified = true;
+} catch (stockError) {
+  console.error(
+    "NOVEMBER SPECIALS STOCK AVAILABILITY ERROR:",
+    stockError.message
+  );
+}
       res.json({ success: true, promotionCode, preview: localPreview, products: rows.map(row => ({
   ...row,
   stock_variant_id: specialVariantIds[Number(row.id)] || null,
-  available_quantity: availability.get(Number(row.id)) ?? 0,
+  available_quantity: stockAvailabilityVerified
+  ? (availability.get(Number(row.id)) ?? 0)
+  : 0,
         retail_price: Number(row.retail_price),
         promotional_price: Number(row.promotional_price)
       })) });

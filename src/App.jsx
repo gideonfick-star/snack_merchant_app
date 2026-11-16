@@ -2192,7 +2192,7 @@ const getCatalogueSpecial = (code, option, size) => {
 
       return (
         (sameStockVariant || sameNamedSpecial) &&
-        Number(special.available_quantity) > 0 &&
+        Number(special.available_quantity) >= 0 &&
         Number(special.promotional_price) >= 0 &&
         Number(special.promotional_price) < Number(special.retail_price)
       );
