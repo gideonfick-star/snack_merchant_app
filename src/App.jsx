@@ -4185,8 +4185,13 @@ const saveOrderOnly = async () => {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to save order");
-  }
+  const errorData = await response.json().catch(() => ({}));
+  throw new Error(
+    errorData.error ||
+    errorData.message ||
+    `Failed to save order (HTTP ${response.status})`
+  );
+}
 
  const data = await response.json();
 
