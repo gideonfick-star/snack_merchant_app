@@ -6389,11 +6389,35 @@ ${data.get("eventDetails")}
       ← Back to Website
     </button>
 
-    {cartToast && (
-      <div className="cart-toast">
-        {cartToast}
-      </div>
+    
+{cartToast && (
+  <div className="cart-toast" role="status">
+    {cartToast.includes("Available on Order") ? (
+      <>
+        <div className="cart-toast-header">
+          <span className="cart-toast-check">✓</span>
+          <div>
+            <strong>Added to Cart</strong>
+            <div className="cart-toast-product">
+              {cartToast.split(" added to cart")[0]}
+            </div>
+          </div>
+        </div>
+
+        <div className="cart-toast-order">
+          <span className="cart-toast-clock">◷</span>
+          <div>
+            <strong>Available on Order</strong>
+            <div>Estimated lead time: 2–3 working days</div>
+          </div>
+        </div>
+      </>
+    ) : (
+      <div className="cart-toast-normal">{cartToast}</div>
     )}
+  </div>
+)}
+
 {showOrderSuccess && (
   <div className="order-success-overlay">
     <div className="order-success-card">
