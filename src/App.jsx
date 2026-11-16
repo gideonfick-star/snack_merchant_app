@@ -2157,11 +2157,9 @@ const getCatalogueSpecial = (code, option, size) => {
     ? mapped[option || ""]
     : String(code || "").replace(/^CNL/, "TSM");
 
-  if (!productCode || !Array.isArray(mainStockAvailability)) {
-    return null;
-  }
+  if (!productCode) return null;
 
-  const stockVariant = mainStockAvailability.find(
+  const stockVariant = (mainStockAvailability || []).find(
     (item) =>
       String(item.product_code || "").toUpperCase() ===
         productCode.toUpperCase() &&
@@ -2171,18 +2169,34 @@ const getCatalogueSpecial = (code, option, size) => {
       ) === normalizeMainStockPack(size)
   );
 
-  if (!stockVariant?.variant_id) return null;
+  // Match the exact stock variant where available. For the November promotion,
+  // use the named catalogue item as a fallback when the MAIN stock lookup
+  // has not loaded or cannot resolve a flavour-specific variant.
+  // This does not invent a price: only the backend's active specials qualify.
+  const expectedSpecialName = {
+    CNL24: {
+      Salted: "peanuts blanched salted",
+    },
+  }[code]?.[option || ""];
 
   return (
-    catalogueSpecials.find(
-      (special) =>
-        String(special.stock_variant_id || "").toLowerCase() ===
-          String(stockVariant.variant_id).toLowerCase() &&
+    catalogueSpecials.find((special) => {
+      const sameStockVariant =
+        Boolean(stockVariant?.variant_id && special.stock_variant_id) &&
+        String(special.stock_variant_id).toLowerCase() ===
+          String(stockVariant.variant_id).toLowerCase();
+      const sameNamedSpecial =
+        Boolean(expectedSpecialName) &&
+        String(special.product_name || "").trim().toLowerCase() === expectedSpecialName &&
+        normalizeMainStockPack(special.pack_size) === normalizeMainStockPack(size);
+
+      return (
+        (sameStockVariant || sameNamedSpecial) &&
         Number(special.available_quantity) > 0 &&
         Number(special.promotional_price) >= 0 &&
-        Number(special.promotional_price) <
-          Number(special.retail_price)
-    ) || null
+        Number(special.promotional_price) < Number(special.retail_price)
+      );
+    }) || null
   );
 };
 const [productPricing, setProductPricing] = useState({});
