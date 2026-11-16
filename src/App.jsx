@@ -1779,10 +1779,8 @@ useEffect(() => {
   const [clearanceCart, setClearanceCart] = useState({});
   const [clearanceCustomer, setClearanceCustomer] = useState({customerName:'',customerPhone:'',customerEmail:'',orderType:'Collection',deliveryAddress:'',customerNotes:'',paymentMethod:'EFT'});
   const [clearanceSubmitting, setClearanceSubmitting] = useState(false);
-  const [clearanceReceipt, setClearanceReceipt] = useState(() => {
-    try { return JSON.parse(sessionStorage.getItem('snackMerchantClearanceReceipt') || 'null'); }
-    catch { return null; }
-  });
+  const [clearanceReceipt, setClearanceReceipt] = useState(null);
+ ;
   const [clearanceCheckoutEnabled, setClearanceCheckoutEnabled] = useState(true);
   const clearanceSelected = clearanceProducts.filter(p => (clearanceCart[p.id] || 0) > 0);
   const clearanceSubtotal = clearanceSelected.reduce((sum,p) => sum + Number(p.promotional_price) * clearanceCart[p.id], 0);
@@ -1951,7 +1949,27 @@ useEffect(() => {
         <p style={{fontSize:13}}>Please keep your order number. A new-order notification is not confirmation of payment.</p>
         <button type="button" onClick={() => {sessionStorage.removeItem('snackMerchantClearanceReceipt');setClearanceReceipt(null);setClearanceCustomer({customerName:'',customerPhone:'',customerEmail:'',orderType:'Collection',deliveryAddress:'',customerNotes:'',paymentMethod:'EFT'});setClearanceCart({});setClearanceDetailsOpen(false);}}>Place Another Clearance Order</button>
       </section>}
-      <button type="button" onClick={() => setShowClearancePreview(false)}>Back to Website</button>
+      <button
+  type="button"
+  onClick={() => {
+    sessionStorage.removeItem("snackMerchantClearanceReceipt");
+    setClearanceReceipt(null);
+    setClearanceCart({});
+    setClearanceCustomer({
+      customerName: "",
+      customerPhone: "",
+      customerEmail: "",
+      orderType: "Collection",
+      deliveryAddress: "",
+      customerNotes: "",
+      paymentMethod: "EFT",
+    });
+    setClearanceDetailsOpen(false);
+    setShowClearancePreview(false);
+  }}
+>
+  Back to Website
+</button>
     </div>
   );
   const PROMOTION_VERSION = "PROMO-004";
