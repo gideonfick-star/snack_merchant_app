@@ -2145,10 +2145,16 @@ const customerMainStockStatus = (code, option, size) => {
     normalizeMainStockPack(item.pack_size_value, item.pack_size_unit) ===
       normalizeMainStockPack(size)
   );
-  if (!variant || !variant.is_active || Number(variant.quantity_on_hand) <= 0)
-    return "Available on Order";
-  return Number(variant.quantity_on_hand) <= Number(variant.minimum_quantity)
-    ? "Low Stock" : "In Stock";
+    // Preserve existing fallback when no matching Stock Control variant exists.
+  if (!variant) return null;
+
+  // Do not offer deactivated products as available on order.
+  if (!variant.is_active) return "Seasonal";
+
+  // Only zero physical stock requires a customer-facing availability message.
+  return Number(variant.quantity_on_hand) <= 0
+    ? "Available on Order"
+    : "In Stock";
 };
 const getCatalogueSpecial = (code, option, size) => {
   const mapped = CUSTOMER_STOCK_CODE_MAP[code];
@@ -3318,7 +3324,15 @@ const cartProduct = {
     setCart([...cart, { ...cartProduct, qty: 1 }]);
   }
 
-  setCartToast(`${displayName} ${product.size} added to cart`);
+    const availableOnOrder =
+    !product.isNovemberSpecial &&
+    product.stockStatus === "Available on Order";
+
+  setCartToast(
+    availableOnOrder
+      ? `${displayName} ${product.size} added to cart. Available on Order — estimated lead time 2–3 working days.`
+      : `${displayName} ${product.size} added to cart`
+  );
 
   setTimeout(() => {
     setCartToast("");
@@ -7516,24 +7530,6 @@ ${data.get("eventDetails")}
 
             <div className="badge">{product.code}</div>
 
-            {!isAdmin ? (
-              <div
-                className={`stock-badge ${
-                  (product.variants.some((variant) => variant.stockStatus === "In Stock")
-                    ? "In Stock"
-                    : product.variants.some((variant) => variant.stockStatus === "Low Stock")
-                      ? "Low Stock" : "Available on Order")
-                    .toLowerCase()
-                    .replaceAll(" ", "-")
-                }`}
-              >
-                {product.variants.some((variant) => variant.stockStatus === "In Stock")
-                  ? "In Stock"
-                  : product.variants.some((variant) => variant.stockStatus === "Low Stock")
-                    ? "Low Stock" : "Available on Order"}
-              </div>
-            ) : null}
-
             <h3>{product.name}</h3>
 
             <p className="category">{product.category}</p>
@@ -7794,9 +7790,16 @@ ${data.get("eventDetails")}
                   <strong>
                     {item.code} — {item.name}
                   </strong>
-                  <p>
+                                    <p>
                     {item.size} • R{item.price} each
                   </p>
+
+                  {!item.isNovemberSpecial &&
+                    item.stockStatus === "Available on Order" && (
+                      <p style={{ fontSize: "12px", marginTop: "4px" }}>
+                        Available on Order — estimated lead time 2–3 working days.
+                      </p>
+                    )}
                 </div>
 
                 <div className="cart-actions">
@@ -8088,8 +8091,21 @@ ${data.get("eventDetails")}
       <div className="confirm-order-items">
         {cart.map((item, index) => (
           <div key={index} className="confirm-order-row">
-            <span>
+                        <span>
               {item.name} ({item.size})
+
+              {!item.isNovemberSpecial &&
+                item.stockStatus === "Available on Order" && (
+                  <small
+                    style={{
+                      display: "block",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                    }}
+                  >
+                    Available on Order — estimated lead time 2–3 working days.
+                  </small>
+                )}
             </span>
 
             <span>
