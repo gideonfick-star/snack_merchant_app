@@ -6630,18 +6630,32 @@ ${data.get("eventDetails")}
 )}
    {isAdmin && adminView === "orders" && (
   <section className="orders-admin-panel" id="orders-dashboard">
-    <div className="orders-dashboard-header">
+    
+<div className="orders-dashboard-header">
   <h2>Admin Orders Dashboard</h2>
 
-  <button onClick={loadOrders}>
-    Refresh Orders
-  </button>
-  <button
-  onClick={() => setShowManualOrderForm(true)}
->
-  + Manual Order
-</button>
+  <div
+    className="orders-dashboard-actions"
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "10px",
+      flexWrap: "wrap",
+    }}
+  >
+    <button type="button" onClick={loadOrders}>
+      Refresh Orders
+    </button>
+
+    <button
+      type="button"
+      onClick={() => setShowManualOrderForm(true)}
+    >
+      + Manual Order
+    </button>
+  </div>
 </div>
+
 {showManualOrderForm && (
   <div className="manual-order-form">
     <div className="manual-order-form-header">
