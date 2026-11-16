@@ -7268,7 +7268,10 @@ ${data.get("eventDetails")}
   .toLowerCase()
   .replace(/[\/\s]+/g, "-")}`}
           value={normalizeOrderStatus(order.order_status)}
-          disabled={Boolean(order.is_clearance && (clearanceAdminBusy || ['Expired', 'Cancelled'].includes(order.order_status)))}
+          disabled={Boolean(
+  String(order.order_number || "").startsWith("SM-CL-") &&
+  (clearanceAdminBusy || ["Expired", "Cancelled"].includes(order.order_status))
+)}
           style={{
   backgroundColor:
     normalizeOrderStatus(order.order_status) === "Pending Stock Confirmation"
@@ -7296,10 +7299,10 @@ ${data.get("eventDetails")}
           onChange={async (e) => {
             const newOrderStatus = e.target.value;
 
-            if (order.is_clearance) {
-              await changeClearanceOrderStatus(order, newOrderStatus);
-              return;
-            }
+            if (String(order.order_number || "").startsWith("SM-CL-")) {
+  await changeClearanceOrderStatus(order, newOrderStatus);
+  return;
+}
             await axios.patch(
   `${API_BASE_URL}/orders/${order.id}/status`,
   {
