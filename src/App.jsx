@@ -2208,8 +2208,18 @@ const getCatalogueSpecial = (code, option, size) => {
 const [productPricing, setProductPricing] = useState({});
 const [isAdmin, setIsAdmin] = useState(false);
 const [adminAuthBusy, setAdminAuthBusy] = useState(false);
+const [adminSessionReady, setAdminSessionReady] = useState(false);
 
 const loginAdministrator = async (pin) => {
+  if (!adminSessionReady || adminAuthBusy) {
+    showNotification(
+      "Please wait for the previous Admin session to close.",
+      "warning",
+      "Admin Security"
+    );
+    return false;
+  }
+
   setAdminAuthBusy(true);
 
   try {
@@ -2298,26 +2308,48 @@ const logoutAdministrator = async () => {
 useEffect(() => {
   let active = true;
 
-  const checkAdministratorSession = async () => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/admin-auth/session`, {
-        credentials: "include",
-        cache: "no-store",
-      });
+ const clearPreviousAdminSession = async () => {
+  let logoutConfirmed = false;
 
-      if (!response.ok) return;
+  try {
+    const response = await fetch(`${API_BASE_URL}/admin-auth/logout`, {
+      method: "POST",
+      credentials: "include",
+      cache: "no-store",
+    });
 
-      const data = await response.json();
-
-      if (active) {
-        setIsAdmin(data.authenticated === true);
-      }
-    } catch {
-      if (active) setIsAdmin(false);
+    if (!response.ok) {
+      throw new Error("Admin logout request failed.");
     }
-  };
 
-  checkAdministratorSession();
+    const data = await response.json();
+
+    if (data.authenticated !== false) {
+      throw new Error("Admin logout was not confirmed.");
+    }
+
+    logoutConfirmed = true;
+  } catch (error) {
+    console.error("Admin session cleanup failed:", error);
+  }
+
+  if (active) {
+    setIsAdmin(false);
+    setShowAdminPinModal(false);
+    setAdminPinInput("");
+    setAdminSessionReady(logoutConfirmed);
+
+    if (!logoutConfirmed) {
+      showNotification(
+        "Previous Admin session could not be cleared. Please refresh the page and try again.",
+        "error",
+        "Admin Security"
+      );
+    }
+  }
+};
+
+  clearPreviousAdminSession();
 
   return () => {
     active = false;

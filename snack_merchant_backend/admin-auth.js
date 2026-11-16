@@ -4,7 +4,7 @@ const express = require("express");
 const router = express.Router();
 
 const COOKIE_NAME = "tsm_admin_session";
-const SESSION_MS = 8 * 60 * 60 * 1000;
+const SESSION_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 15 * 60 * 1000;
 
