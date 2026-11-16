@@ -1110,11 +1110,25 @@ app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
     const { paymentStatus, orderStatus } = req.body;
 
     // November Specials use their own verified reconciliation.
-    const clearanceGuard = await pool.query(
-      "SELECT 1 FROM public.clearance_reservations WHERE order_id = $1 LIMIT 1",
-      [id]
-    );
-
+   const clearanceGuard = await pool.query(
+  `SELECT 1
+   FROM public.orders o
+   WHERE o.id = $1
+     AND (
+       EXISTS (
+         SELECT 1
+         FROM public.clearance_reservations r
+         WHERE r.order_id = o.id
+       )
+       OR EXISTS (
+         SELECT 1
+         FROM jsonb_array_elements(o.items::jsonb) AS item
+         WHERE item->>'isNovemberSpecial' = 'true'
+       )
+     )
+   LIMIT 1`,
+  [id]
+);
     if (clearanceGuard.rowCount) {
       const existing = await pool.query('SELECT * FROM public.orders WHERE id = $1', [id]);
       const order = existing.rows[0];
@@ -1356,9 +1370,9 @@ app.post("/orders", async (req, res) => {
           process.env.CLEARANCE_PAYMENT_INTEGRATION_VERIFIED !== 'true') {
         return res.status(503).json({success:false,error:'November Specials checkout is not enabled.'});
       }
-      if (!['PayFast', 'EFT'].includes(paymentMethod)) {
-        return res.status(400).json({success:false,error:'Choose PayFast or EFT for November Specials.'});
-      }
+     if (!['PayFast', 'EFT', 'EFT / Proof of Payment'].includes(paymentMethod)) {
+  return res.status(400).json({success:false,error:'Choose PayFast or EFT for November Specials.'});
+}
       // Serialize mixed reservations with the dedicated Specials checkout.
       orderClient = await pool.connect();
       await orderClient.query('BEGIN');

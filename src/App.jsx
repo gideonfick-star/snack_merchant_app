@@ -7426,7 +7426,7 @@ ${data.get("eventDetails")}
               <strong>{item.name}</strong>
               <span>{item.size}</span>
               <span>x {item.qty}</span>
-              <span>R{item.price}</span>
+              <span>R{(Number(item.price || 0) * Number(item.qty || 0)).toFixed(2)}</span>
             </div>
           ))}
         </div>
