@@ -3336,7 +3336,7 @@ const cartProduct = {
 
   setTimeout(() => {
     setCartToast("");
-  }, 1800);
+  }, 3000);
 };
 const cartItemCount = cart.reduce((total, item) => total + item.qty, 0);
 const getItemWeightKg = (item) => {
@@ -7796,7 +7796,14 @@ ${data.get("eventDetails")}
 
                   {!item.isNovemberSpecial &&
                     item.stockStatus === "Available on Order" && (
-                      <p style={{ fontSize: "12px", marginTop: "4px" }}>
+                      <p
+  style={{
+    fontSize: "13px",
+    marginTop: "4px",
+    color: "#0077CC",
+    fontWeight: 600,
+  }}
+>
                         Available on Order — estimated lead time 2–3 working days.
                       </p>
                     )}
@@ -8097,14 +8104,16 @@ ${data.get("eventDetails")}
               {!item.isNovemberSpecial &&
                 item.stockStatus === "Available on Order" && (
                   <small
-                    style={{
-                      display: "block",
-                      fontSize: "12px",
-                      marginTop: "4px",
-                    }}
-                  >
-                    Available on Order — estimated lead time 2–3 working days.
-                  </small>
+  style={{
+    display: "block",
+    fontSize: "13px",
+    marginTop: "4px",
+    color: "#0077CC",
+    fontWeight: 600,
+  }}
+>
+  Available on Order — estimated lead time 2–3 working days.
+</small>
                 )}
             </span>
 
