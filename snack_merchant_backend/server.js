@@ -191,6 +191,16 @@ function normalizeCustomerPackSize(value, unit) {
 }
 
 function matchCustomerStockVariant(item, stockItems) {
+    // November Specials carry their exact approved Stock Control variant.
+  // Never try to identify these products by name.
+  if (item.isNovemberSpecial) {
+    const expectedVariantId = NOVEMBER_SPECIAL_VARIANTS[Number(item.clearanceProductId)];
+    if (!expectedVariantId || String(item.stock_variant_id) !== expectedVariantId) {
+      throw new Error("Invalid November Specials stock variant mapping");
+    }
+    return stockItems.find(row => String(row.variant_id) === expectedVariantId) || null;
+  }
+  // Only Specials may supply an authoritative stock variant ID.
   const productCode = resolveCustomerStockProductCode(item);
 
   if (!productCode) return null;
@@ -237,6 +247,10 @@ function classifyCustomerOrderStock(orderItems, stockItems) {
     }
 
     if (!variant || !variant.is_active) {
+      // A reserved November Special must never silently become a supplier order.
+      if (item.isNovemberSpecial === true) {
+        throw new Error('Reserved November Special is missing from active MAIN stock. Manual reconciliation required.');
+      }
       supplierItems.push(item);
       continue;
     }
@@ -244,6 +258,10 @@ function classifyCustomerOrderStock(orderItems, stockItems) {
     const remaining = available.get(variant.variant_id) || 0;
 
     if (remaining < quantity) {
+      // Do not partially process a paid mixed order while leaving a Special undeducted.
+      if (item.isNovemberSpecial === true) {
+        throw new Error('Insufficient MAIN stock to process reserved November Special. Manual reconciliation required.');
+      }
       reviewItems.push({
         ...item,
         stock_variant_id: variant.variant_id,
@@ -427,6 +445,23 @@ async function syncPaidCustomerOrderToStockControl(order) {
 
     const availability = await fetchMainStockAvailability();
 
+    // Mixed checkout reservations must be represented by their corresponding
+    // saved order lines; never silently process an incomplete paid order.
+    if (orderItems.some(item => item.isNovemberSpecial === true)) {
+      const reservedRows = await pool.query(`SELECT clearance_product_id, SUM(quantity)::integer AS qty
+        FROM public.clearance_reservations WHERE order_id = $1 AND status = 'CONFIRMED'
+        GROUP BY clearance_product_id`, [order.id]);
+      const ordered = new Map();
+      for (const item of orderItems.filter(item => item.isNovemberSpecial === true)) {
+        const id = Number(item.clearanceProductId);
+        ordered.set(id, (ordered.get(id) || 0) + Number(item.qty));
+      }
+      if (reservedRows.rows.length !== ordered.size || reservedRows.rows.some(row =>
+        ordered.get(Number(row.clearance_product_id)) !== Number(row.qty))) {
+        throw new Error('Confirmed November Specials reservations do not match the paid order.');
+      }
+    }
+
     const classification = classifyCustomerOrderStock(
       orderItems,
       availability.items
@@ -457,12 +492,39 @@ async function syncPaidCustomerOrderToStockControl(order) {
       return { success: true, status };
     }
 
-    const saleItems = stockedItems.map((item) => ({
-      variant_id: item.stock_variant_id,
-      quantity: Number(item.qty),
-      unit_price: Number(item.price),
-      external_item_reference: String(item.id || ""),
-    }));
+    const saleItems = stockedItems.map((item) => {
+      const unitPrice = Number(item.price);
+      const originalPrice = Number(
+        item.originalPrice ?? item.price
+      );
+
+      const discountPercent =
+        item.isNovemberSpecial
+          ? Number(
+              ((originalPrice - unitPrice) / originalPrice * 100)
+                .toFixed(6)
+            )
+          : 0;
+
+      const discountAmount =
+        item.isNovemberSpecial
+          ? Number(
+              (originalPrice * discountPercent / 100).toFixed(2)
+            )
+          : 0;
+
+      return {
+        variant_id: item.stock_variant_id,
+        quantity: Number(item.qty),
+        unit_price: unitPrice,
+        original_unit_price: originalPrice,
+        discount_percent: discountPercent,
+        discount_amount: discountAmount,
+        external_item_reference: item.isNovemberSpecial
+          ? `CLEARANCE-${item.clearanceProductId}`
+          : String(item.id || ""),
+      };
+    });
 
     let created;
 
@@ -1027,10 +1089,29 @@ app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
     );
 
     if (clearanceGuard.rowCount) {
-      return res.status(409).json({
-        success: false,
-        error: "Use verified clearance reconciliation for this order.",
-      });
+      const existing = await pool.query('SELECT * FROM public.orders WHERE id = $1', [id]);
+      const order = existing.rows[0];
+      if (!order || String(order.order_number).startsWith('SM-CL-') ||
+          !String(order.payment_method || '').startsWith('EFT')) {
+        return res.status(409).json({success:false,error:'Use verified clearance reconciliation for this order.'});
+      }
+      if (paymentStatus !== 'Paid' || (order.payment_status === 'Paid' && order.stock_sync_status === 'PROCESSED')) {
+        return res.status(409).json({success:false,error:'Use verified EFT confirmation for mixed orders.'});
+      }
+      const client = await pool.connect();
+      try {
+        await client.query('BEGIN');
+        await app.locals.transitionClearanceReservation(id, 'CONFIRMED', client);
+        await client.query('COMMIT');
+      } catch (err) {
+        await client.query('ROLLBACK');
+        return res.status(err.status || 409).json({success:false,error:err.message});
+      } finally { client.release(); }
+      const paid = await pool.query('SELECT * FROM public.orders WHERE id = $1', [id]);
+      let stockSync;
+      try { stockSync = await syncPaidCustomerOrderToStockControl(paid.rows[0]); }
+      catch (err) { stockSync = {success:false,requiresReview:true,error:err.message}; }
+      return res.json({success:true,order:paid.rows[0],stockSync});
     }
 
     // Read the existing order before updating its status.
@@ -1108,8 +1189,12 @@ app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
 
 
 // ================= CREATE ORDER =================
-
+// Mixed November Specials orders:
+// Validate promotional prices and available MAIN stock before saving.
+// Create order and promotional reservations in one database transaction.
+// Preserve the existing checkout and paid-order Stock Control sync.
 app.post("/orders", async (req, res) => {
+  let orderClient = null;
   try {
     const {
       customerName,
@@ -1130,10 +1215,177 @@ app.post("/orders", async (req, res) => {
         error: "Missing required order fields",
       });
     }
+    // Validate the structure and quantities of every submitted item.
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Your cart is empty or invalid.",
+      });
+    }
 
+    for (const item of items) {
+      const qty = Number(item.qty);
+      const price = Number(item.price);
+
+      if (
+        !Number.isSafeInteger(qty) ||
+        qty <= 0 ||
+        !Number.isFinite(price) ||
+        price < 0
+      ) {
+        return res.status(400).json({
+          success: false,
+          error: "Your cart contains an invalid quantity or price.",
+        });
+      }
+    }
+
+    // Prevent a submitted total from differing from the cart.
+    const subtotalCents = items.reduce(
+      (sum, item) =>
+        sum + Math.round(Number(item.price) * 100) * Number(item.qty),
+      0
+    );
+
+    const feeCents = Math.round(Number(deliveryFee || 0) * 100);
+    const submittedTotalCents = Math.round(Number(totalAmount) * 100);
+
+    if (
+      !Number.isSafeInteger(subtotalCents) ||
+      !Number.isSafeInteger(feeCents) ||
+      feeCents < 0 ||
+      !Number.isSafeInteger(submittedTotalCents) ||
+      submittedTotalCents !== subtotalCents + feeCents
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "Order total does not match the cart. Please refresh and try again.",
+      });
+    }
+        // Independently verify November Specials against saved catalogue prices.
+    const specialItems = items.filter(
+      (item) => item.isNovemberSpecial === true
+    );
+    if (items.some(item => item.clearanceProductId != null && item.isNovemberSpecial !== true)) {
+      return res.status(400).json({success:false,error:'Invalid promotional cart item.'});
+    }
+
+    if (specialItems.length > 0) {
+      const specialIds = specialItems.map((item) =>
+        Number(item.clearanceProductId)
+      );
+
+      if (
+        specialIds.some(
+          (id) => !Number.isSafeInteger(id) || !NOVEMBER_SPECIAL_VARIANTS[id]
+        )
+      ) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid November Specials product.",
+        });
+      }
+
+      const specialResult = await pool.query(
+        `SELECT id, product_name, pack_size, promotional_price, retail_price, active
+         FROM public.clearance_products
+         WHERE promotion_code = 'NOV2026-30'
+           AND id = ANY($1::bigint[])`,
+        [specialIds]
+      );
+
+      const specialsById = new Map(
+        specialResult.rows.map((row) => [Number(row.id), row])
+      );
+
+      for (const item of specialItems) {
+        const id = Number(item.clearanceProductId);
+        const product = specialsById.get(id);
+
+        if (
+          !product ||
+          !product.active ||
+          String(item.name) !== String(product.product_name) ||
+          String(item.size) !== String(product.pack_size) ||
+          Math.abs(Number(item.price) - Number(product.promotional_price)) > 0.001 ||
+          Math.abs(Number(item.originalPrice) - Number(product.retail_price)) > 0.001 ||
+          String(item.stock_variant_id) !== NOVEMBER_SPECIAL_VARIANTS[id]
+        ) {
+          return res.status(409).json({
+            success: false,
+            error: "A November Special has changed. Please refresh your cart.",
+          });
+        }
+      }
+    }
+        // Mixed checkout: reserve November Specials atomically with order creation.
+    const hasNovemberSpecials = specialItems.length > 0;
     const orderNumber = `SM-${Date.now()}`;
 
-    const result = await pool.query(
+    let specialQuantities = new Map();
+    let liveSpecialAvailable = new Map();
+    if (hasNovemberSpecials) {
+      if (process.env.CLEARANCE_CHECKOUT_ENABLED !== 'true' ||
+          process.env.CLEARANCE_PAYMENT_INTEGRATION_VERIFIED !== 'true') {
+        return res.status(503).json({success:false,error:'November Specials checkout is not enabled.'});
+      }
+      if (!['PayFast', 'EFT'].includes(paymentMethod)) {
+        return res.status(400).json({success:false,error:'Choose PayFast or EFT for November Specials.'});
+      }
+      // Serialize mixed reservations with the dedicated Specials checkout.
+      orderClient = await pool.connect();
+      await orderClient.query('BEGIN');
+      try {
+        for (const item of specialItems) {
+          const id = Number(item.clearanceProductId);
+          specialQuantities.set(id, (specialQuantities.get(id) || 0) + Number(item.qty));
+        }
+        const ids = [...specialQuantities.keys()].sort((a, b) => a - b);
+        const locked = await orderClient.query(`SELECT id, product_name, pack_size,
+          promotional_price, retail_price, active FROM public.clearance_products
+          WHERE promotion_code = 'NOV2026-30' AND id = ANY($1::bigint[])
+          ORDER BY id FOR UPDATE`, [ids]);
+        if (locked.rows.length !== ids.length) throw new Error('Special no longer available');
+        const byId = new Map(locked.rows.map(row => [Number(row.id), row]));
+        for (const item of specialItems) {
+          const row = byId.get(Number(item.clearanceProductId));
+          if (!row || !row.active || String(item.name) !== String(row.product_name) ||
+              String(item.size) !== String(row.pack_size) ||
+              Math.round(Number(item.price) * 100) !== Math.round(Number(row.promotional_price) * 100) ||
+              Math.round(Number(item.originalPrice) * 100) !== Math.round(Number(row.retail_price) * 100) ||
+              String(item.stock_variant_id) !== NOVEMBER_SPECIAL_VARIANTS[Number(row.id)]) {
+            const err = new Error('A November Special changed; refresh your cart.');
+            err.status = 409; throw err;
+          }
+        }
+        const stock = await fetchMainStockAvailability();
+        const byVariant = new Map(stock.items.map(row => [String(row.variant_id), row]));
+        const reserved = await orderClient.query(`SELECT r.clearance_product_id,
+          COALESCE(SUM(r.quantity),0)::int AS qty FROM public.clearance_reservations r
+          JOIN public.orders o ON o.id = r.order_id
+          WHERE r.clearance_product_id = ANY($1::bigint[])
+            AND (r.status = 'RESERVED' OR (r.status = 'CONFIRMED'
+              AND o.stock_sync_status IS DISTINCT FROM 'PROCESSED'))
+          GROUP BY r.clearance_product_id`, [ids]);
+        const reservedById = new Map(reserved.rows.map(row => [Number(row.clearance_product_id), Number(row.qty)]));
+        for (const id of ids) {
+          const stockRow = byVariant.get(NOVEMBER_SPECIAL_VARIANTS[id]);
+          const available = stockRow && stockRow.is_active
+            ? Math.max(0, Number(stockRow.quantity_on_hand) - (reservedById.get(id) || 0)) : 0;
+          liveSpecialAvailable.set(id, available);
+          if (specialQuantities.get(id) > available) {
+            const err = new Error(`Only ${available} packs remain for November Special ${id}.`);
+            err.status = 409; throw err;
+          }
+        }
+      } catch (err) {
+        await orderClient.query('ROLLBACK');
+        orderClient.release(); orderClient = null;
+        return res.status(err.status || 503).json({success:false,error:err.message});
+      }
+    }
+
+    const result = await (orderClient || pool).query(
       `
       INSERT INTO public.orders (
   order_number,
@@ -1169,6 +1421,23 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     );
 
     const savedOrder = result.rows[0];
+
+    if (hasNovemberSpecials) {
+      for (const [id, qty] of specialQuantities) {
+        await orderClient.query(`UPDATE public.clearance_products
+          SET available_quantity = $1 WHERE id = $2`,
+          [liveSpecialAvailable.get(id) - qty, id]);
+        await orderClient.query(`INSERT INTO public.clearance_reservations
+          (clearance_product_id, order_id, quantity, status, expires_at)
+          VALUES ($1, $2, $3, 'RESERVED', CURRENT_TIMESTAMP + ($4::integer * INTERVAL '1 minute'))`,
+          [id, savedOrder.id, qty, paymentMethod === 'PayFast' ? 30 : 1440]);
+      }
+    }
+    if (orderClient) {
+      await orderClient.query('COMMIT');
+      orderClient.release();
+      orderClient = null;
+    }
 
     // ================= NEW ORDER EMAIL NOTIFICATION =================
 
@@ -1315,6 +1584,12 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       order: savedOrder,
     });
   } catch (err) {
+    if (orderClient) {
+      try { await orderClient.query('ROLLBACK'); } catch (rollbackError) {
+        console.error('MIXED ORDER ROLLBACK ERROR:', rollbackError);
+      }
+      orderClient.release();
+    }
     console.error("CREATE ORDER ERROR:", err);
 
     res.status(500).json({
@@ -1445,7 +1720,12 @@ app.post("/payfast-notify", async (req, res) => {
           // Only after verified payment and committed reservation confirmation.
           // Do not return an ITN error if stock sync fails: retry is safe.
           try {
-            await app.locals.syncPaidNovemberSpecialOrder(order.id);
+            if (String(orderNumber).startsWith('SM-CL-')) {
+              await app.locals.syncPaidNovemberSpecialOrder(order.id);
+            } else {
+              const mixedPaid = await pool.query('SELECT * FROM public.orders WHERE id = $1', [order.id]);
+              await syncPaidCustomerOrderToStockControl(mixedPaid.rows[0]);
+            }
           } catch (syncError) {
             console.error('CLEARANCE STOCK SYNC FAILED:', orderNumber, syncError);
           }

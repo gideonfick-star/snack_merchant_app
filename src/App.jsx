@@ -4250,39 +4250,21 @@ const payWithPayFast = async () => {
     const savedOrder = await saveOrderOnly();
     localStorage.setItem("pendingPayfastOrderId", savedOrder.id);
 
-    const orderDescription = cart
-      .map((item) => `${item.code} ${item.name} ${item.size} x${item.qty}`)
-      .join(" | ")
-      .slice(0, 240);
-
     const response = await fetch(
-      `${API_BASE_URL}/create-payment`,
+      `${API_BASE_URL}/orders/${savedOrder.id}/create-payment-link`,
       {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: total,
-          customerName: customer.name,
-          customerEmail: customer.email || "customer@example.com",
-          orderNumber: savedOrder.order_number,
-          itemName: cart
-             .map((item) => `${item.code} ${item.name} ${item.size} x${item.qty}`)
-             .join(", ")
-              .slice(0, 100),
-        }),
       }
     );
 
     const data = await response.json();
 
-    if (!data.paymentUrl) {
+    if (!response.ok || !data.paymentUrl) {
       showNotification(
-  "Your order was saved, but the PayFast payment link could not be created. Please contact us for assistance.",
-  "warning",
-  "Order Saved — Payment Pending"
-);
+        "Your order was saved, but the PayFast payment link could not be created. Please contact us before trying again.",
+        "warning",
+        "Order Saved - Payment Pending"
+      );
       return;
     }
 
@@ -7697,29 +7679,34 @@ ${data.get("eventDetails")}
           : null)
   );
 
-    if (catalogueSpecial) {
-    setClearanceCart((current) => ({
-      ...current,
-      [catalogueSpecial.id]: Math.max(
-        1,
-        Math.min(
-          Number(catalogueSpecial.available_quantity),
-          Number(current[catalogueSpecial.id] || 0) + 1
-        )
-      ),
-    }));
+          if (catalogueSpecial) {
+      if (!chosenVariant) {
+        setCartToast("Please select a flavour or form first.");
+        return;
+      }
 
-    setShowShop(false);
-    setShowClearancePreview(true);
-    window.scrollTo({ top: 0, behavior: "auto" });
-    return;
-  }
+      const specialCartItem = {
+  ...chosenVariant,
+  id: `clearance-${catalogueSpecial.id}`,
+        name: catalogueSpecial.product_name || chosenVariant.name,
+        size: catalogueSpecial.pack_size || chosenVariant.size,
+        price: Number(catalogueSpecial.promotional_price),
+        originalPrice: Number(catalogueSpecial.retail_price),
+        clearanceProductId: Number(catalogueSpecial.id),
+        stock_variant_id: catalogueSpecial.stock_variant_id,
+        promotionCode: "NOV2026-30",
+        isNovemberSpecial: true,
+      };
 
-  if (chosenVariant) {
-    addToCart(chosenVariant);
-  } else {
-    setCartToast("Please select a flavour or form first.");
-  }
+      addToCart(specialCartItem);
+      return;
+    }
+
+    if (chosenVariant) {
+      addToCart(chosenVariant);
+    } else {
+      setCartToast("Please select a flavour or form first.");
+    }
 }}
                     >
                                             <span>{variant.size}</span>

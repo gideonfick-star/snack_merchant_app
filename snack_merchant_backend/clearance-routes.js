@@ -162,7 +162,10 @@ module.exports = function registerClearanceRoutes(app, pool, requireAdminAuth) {
     }
     throw error('Invalid reservation action.');
   }
-
+  // Shared reservation transition for combined customer checkout.
+  // The caller must authenticate/verify payment where applicable,
+  // and owns the database transaction.
+  app.locals.transitionClearanceReservation = transitionReservation;
   // Expire online clearance reservations only; never touch Stock Control.
   // Lock the order first, as PayFast confirmation does, to serialize races.
   async function sweepExpiredReservations() {
@@ -525,6 +528,16 @@ module.exports = function registerClearanceRoutes(app, pool, requireAdminAuth) {
     const id = Number(req.params.id);
     if (!Number.isSafeInteger(id) || id <= 0) {
       return res.status(400).json({ success: false, error: 'Invalid order ID.' });
+    }
+    // This endpoint belongs exclusively to the separate Specials checkout.
+    // Mixed SM-* orders use the normal Orders Dashboard and its EFT workflow.
+    const orderLookup = await pool.query(
+      'SELECT order_number FROM public.orders WHERE id = $1', [id]
+    );
+    if (!orderLookup.rows.length ||
+        !String(orderLookup.rows[0].order_number).startsWith('SM-CL-')) {
+      return res.status(409).json({ success: false,
+        error: 'Use the normal Orders Dashboard for mixed customer orders.' });
     }
     let client;
     try {
