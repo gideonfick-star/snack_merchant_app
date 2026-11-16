@@ -7381,29 +7381,40 @@ ${data.get("eventDetails")}
   color: "#fff",
   borderColor: "#d9a928",
 }}
-          onChange={async (e) => {
-            const newOrderStatus = e.target.value;
+         onChange={async (e) => {
+  const newOrderStatus = e.target.value;
 
-            if (String(order.order_number || "").startsWith("SM-CL-")) {
-  await changeClearanceOrderStatus(order, newOrderStatus);
-  return;
-}
-            await axios.patch(
-  `${API_BASE_URL}/orders/${order.id}/status`,
-  {
-    orderStatus: newOrderStatus,
-        paymentStatus:
-      newOrderStatus === "Paid"
-        ? "Paid"
-        : newOrderStatus === "Cancelled"
-        ? "Cancelled"
-        : order.payment_status,
-  },
-  { withCredentials: true }
-);
+  try {
+    const response = await axios.patch(
+      `${API_BASE_URL}/orders/${order.id}/admin-status`,
+      { orderStatus: newOrderStatus },
+      { withCredentials: true }
+    );
 
-            loadOrders();
-          }}
+    if (
+      response.data?.success !== true ||
+      response.data?.order?.order_status !== newOrderStatus
+    ) {
+      throw new Error("Order status update was not confirmed.");
+    }
+
+    await loadOrders();
+
+    showNotification(
+      `Order ${order.order_number} successfully updated to ${newOrderStatus}.`,
+      "success",
+      "Order Status Updated"
+    );
+  } catch (err) {
+    showNotification(
+      err.response?.data?.error ||
+        err.message ||
+        "Could not update order status.",
+      "error",
+      "Order Update Failed"
+    );
+  }
+}}
         >
          <option style={{ backgroundColor: "#111", color: "#fff" }}>
   New Order

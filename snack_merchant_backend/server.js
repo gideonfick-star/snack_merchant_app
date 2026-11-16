@@ -1227,7 +1227,70 @@ app.patch("/orders/:id/status", requireAdminAuth, async (req, res) => {
     });
   }
 });
+// ================= ADMIN ORDER STATUS ONLY =================
+// Administrative status changes only.
+// Does NOT change payment status, reservations, stock or sales.
 
+app.patch("/orders/:id/admin-status", requireAdminAuth, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const { orderStatus } = req.body || {};
+
+    const allowedStatuses = [
+      "New Order",
+      "Pending Stock Confirmation",
+      "Collection Approved",
+      "Converted to PUDO Delivery",
+      "Awaiting Payment",
+      "Paid",
+      "Ready for Collection",
+      "Dispatched",
+      "Closed",
+      "Cancelled",
+    ];
+
+    if (
+      !Number.isSafeInteger(id) ||
+      id <= 0 ||
+      !allowedStatuses.includes(orderStatus)
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid order status request.",
+      });
+    }
+
+    const result = await pool.query(
+      `
+      UPDATE public.orders
+      SET order_status = $1,
+          updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING id, order_number, order_status
+      `,
+      [orderStatus, id]
+    );
+
+    if (!result.rows.length) {
+      return res.status(404).json({
+        success: false,
+        error: "Order not found.",
+      });
+    }
+
+    return res.json({
+      success: true,
+      order: result.rows[0],
+    });
+  } catch (err) {
+    console.error("ADMIN ORDER STATUS ERROR:", err);
+
+    return res.status(500).json({
+      success: false,
+      error: "Unable to update order status.",
+    });
+  }
+});
 
 // ================= CREATE ORDER =================
 // Mixed November Specials orders:
