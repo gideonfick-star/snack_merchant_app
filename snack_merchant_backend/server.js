@@ -87,6 +87,33 @@ const STOCK_CONTROL_API_URL = (
 const CUSTOMER_STOCK_INTEGRATION_SECRET =
   process.env.CUSTOMER_STOCK_INTEGRATION_SECRET || "";
 
+// Public catalogue requests share a short-lived snapshot so each visitor does
+// not trigger a separate Stock Control API request. Payment/stock sync still
+// calls fetchMainStockAvailability directly and always requests fresh stock.
+const CATALOGUE_STOCK_CACHE_MS = 30000;
+let catalogueStockSnapshot = null;
+let catalogueStockExpiresAt = 0;
+let catalogueStockPending = null;
+
+async function fetchCatalogueStockAvailability() {
+  if (catalogueStockSnapshot && Date.now() < catalogueStockExpiresAt) {
+    return catalogueStockSnapshot;
+  }
+  if (catalogueStockPending) return catalogueStockPending;
+
+  catalogueStockPending = (async () => {
+    const data = await fetchMainStockAvailability();
+    catalogueStockSnapshot = data;
+    catalogueStockExpiresAt = Date.now() + CATALOGUE_STOCK_CACHE_MS;
+    return data;
+  })();
+  try {
+    return await catalogueStockPending;
+  } finally {
+    catalogueStockPending = null;
+  }
+}
+
 async function fetchMainStockAvailability() {
   if (
     !STOCK_CONTROL_API_URL ||
@@ -722,14 +749,14 @@ async function syncPaidNovemberSpecialOrder(orderId) {
   }
 }
 app.locals.syncPaidNovemberSpecialOrder = syncPaidNovemberSpecialOrder;
-app.locals.fetchMainStockAvailability = fetchMainStockAvailability;
+app.locals.fetchMainStockAvailability = fetchCatalogueStockAvailability;
 
 // =====================================================
 // CUSTOMER APP — STOCK AVAILABILITY PROXY
 // =====================================================
 app.get("/customer-stock-availability", async (req, res) => {
   try {
-    const data = await fetchMainStockAvailability();
+    const data = await fetchCatalogueStockAvailability();
 
     return res.json({
       success: true,
