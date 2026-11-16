@@ -582,6 +582,62 @@ try {
     }
   });
 
+
+  // Admin-only order status override.
+  // This updates Customer App status only.
+  // It does NOT alter payments, reservations, stock or sales.
+  app.patch('/clearance-orders/:id/admin-status', requireAdminAuth, async (req, res) => {
+    const id = Number(req.params.id);
+    const status = req.body?.orderStatus;
+
+    const allowedStatuses = [
+      'Paid',
+      'Cancelled',
+      'Ready for Collection',
+      'Dispatched',
+      'Closed'
+    ];
+
+    if (!Number.isSafeInteger(id) || id <= 0 ||
+        !allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid order status request.'
+      });
+    }
+
+    try {
+      const result = await pool.query(
+        `UPDATE public.orders
+         SET order_status = $1,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $2
+           AND order_number LIKE 'SM-CL-%'
+         RETURNING id, order_number, order_status`,
+        [status, id]
+      );
+
+      if (!result.rows.length) {
+        return res.status(404).json({
+          success: false,
+          error: 'Clearance order not found.'
+        });
+      }
+
+      return res.json({
+        success: true,
+        order: result.rows[0]
+      });
+    } catch (err) {
+      console.error('ADMIN CLEARANCE STATUS UPDATE ERROR:', err);
+      return res.status(500).json({
+        success: false,
+        error: 'Unable to update order status.'
+      });
+    }
+  });
+
+
   // Authenticated clearance fulfilment changes. Payment confirmation is NOT handled here.
   app.patch('/clearance-orders/:id/fulfilment', requireAdminAuth, async (req, res) => {
 

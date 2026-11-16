@@ -2327,39 +2327,72 @@ const [adminView, setAdminView] = useState("products");
 const [orderDashboardFilter, setOrderDashboardFilter] = useState("all");
 const [orders, setOrders] = useState([]);
 const [clearanceAdminBusy, setClearanceAdminBusy] = useState(false);
+
 const changeClearanceOrderStatus = async (order, nextStatus) => {
   if (!isAdmin) {
-    showNotification('Administrator login required.', 'warning', 'Admin Access Required');
+    showNotification(
+      "Administrator login required.",
+      "warning",
+      "Admin Access Required"
+    );
     return;
   }
-  if (!['Paid', 'Cancelled', 'Ready for Collection', 'Dispatched', 'Closed'].includes(nextStatus)) {
-    showNotification('Use Paid, Cancelled, Ready for Collection, Dispatched or Closed for clearance orders.', 'warning', 'Invalid Clearance Status');
+
+  const allowedStatuses = [
+    "Paid",
+    "Cancelled",
+    "Ready for Collection",
+    "Dispatched",
+    "Closed",
+  ];
+
+  if (!allowedStatuses.includes(nextStatus)) {
+    showNotification(
+      "Invalid order status selected.",
+      "warning",
+      "Invalid Status"
+    );
     return;
   }
-  const isPaid = order.payment_status === 'Paid';
-  const isCancel = nextStatus === 'Cancelled';
-  const isPay = nextStatus === 'Paid';
-  if (isPay && order.payment_method === 'PayFast') {
-    showNotification('PayFast payments must be confirmed by PayFast. Manual confirmation is blocked.', 'warning', 'PayFast Confirmation Required');
-    return;
-  }
-  if (isCancel && isPaid) {
-    showNotification('Paid clearance orders require manual refund and stock reconciliation. Cancellation is blocked.', 'warning', 'Paid Order');
-    return;
-  }
+
+  if (clearanceAdminBusy) return;
+
   setClearanceAdminBusy(true);
+
   try {
-    if (isCancel || isPay) {
-      await axios.post(`${API_BASE_URL}/clearance-orders/${order.id}/reconcile`, {action: isCancel ? 'RELEASED' : 'CONFIRMED'}, {withCredentials: true});
-    } else {
-      await axios.patch(`${API_BASE_URL}/clearance-orders/${order.id}/fulfilment`, {orderStatus: nextStatus}, {withCredentials: true});
+    const response = await axios.patch(
+      `${API_BASE_URL}/clearance-orders/${order.id}/admin-status`,
+      { orderStatus: nextStatus },
+      { withCredentials: true }
+    );
+
+    if (
+      response.data?.success !== true ||
+      response.data?.order?.order_status !== nextStatus
+    ) {
+      throw new Error("The order status was not confirmed.");
     }
+
     await loadOrders();
-    showNotification('Clearance order updated successfully.', 'success', 'Order Updated');
+
+    showNotification(
+      `Order ${order.order_number} successfully updated to ${nextStatus}.`,
+      "success",
+      "Order Status Updated"
+    );
   } catch (err) {
-    showNotification(err.response?.data?.error || 'Could not update clearance order.', 'error', 'Clearance Update Failed');
-  } finally { setClearanceAdminBusy(false); }
+    showNotification(
+      err.response?.data?.error ||
+        err.message ||
+        "Could not update order status.",
+      "error",
+      "Order Update Failed"
+    );
+  } finally {
+    setClearanceAdminBusy(false);
+  }
 };
+
 const [expandedOrderId, setExpandedOrderId] = useState(null);
 const [showOrderConfirm, setShowOrderConfirm] = useState(false);
 const [paymentMethod, setPaymentMethod] = useState("EFT / Proof of Payment");
