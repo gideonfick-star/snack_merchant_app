@@ -65,6 +65,103 @@ const pool = process.env.DATABASE_URL
           : { rejectUnauthorized: false },
     });
 
+// =====================================================
+// PUDO DELIVERY REVENUE — READ ONLY FINANCIAL REPORT
+// =====================================================
+
+app.get("/api/reports/pudo-delivery-revenue", async (req, res) => {
+  try {
+    const configured = process.env.CUSTOMER_STOCK_INTEGRATION_SECRET;
+    const provided = req.get("x-customer-stock-secret");
+
+    if (!configured || !provided) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const a = Buffer.from(provided, "utf8");
+    const b = Buffer.from(configured, "utf8");
+
+    if (
+      a.length !== b.length ||
+      !crypto.timingSafeEqual(a, b)
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const { dateFrom, dateTo } = req.query;
+
+    if (
+      (dateFrom && !/^\d{4}-\d{2}-\d{2}$/.test(dateFrom)) ||
+      (dateTo && !/^\d{4}-\d{2}-\d{2}$/.test(dateTo)) ||
+      (dateFrom && dateTo && dateFrom > dateTo)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date range",
+      });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        order_number,
+        created_at,
+        order_type,
+        payment_status,
+        order_status,
+        delivery_fee
+      FROM public.orders
+      WHERE order_type = 'Delivery'
+        AND payment_status = 'Paid'
+        AND COALESCE(order_status, '') <> 'Cancelled'
+        AND ($1::date IS NULL OR created_at >= $1::date)
+        AND ($2::date IS NULL OR created_at < $2::date + INTERVAL '1 day')
+      ORDER BY created_at DESC
+      `,
+      [dateFrom || null, dateTo || null]
+    );
+
+    const orders = result.rows.map((order) => ({
+      order_number: order.order_number,
+      date: order.created_at,
+      delivery_fee: Number(order.delivery_fee || 0),
+    }));
+
+    const totalRevenue = orders.reduce(
+      (sum, order) => sum + order.delivery_fee,
+      0
+    );
+
+    return res.json({
+      success: true,
+      read_only: true,
+      report: "PUDO Delivery Revenue",
+      filters: {
+        dateFrom: dateFrom || null,
+        dateTo: dateTo || null,
+      },
+      summary: {
+        delivery_orders: orders.length,
+        delivery_revenue: totalRevenue,
+      },
+      orders,
+    });
+  } catch (error) {
+    console.error("PUDO delivery revenue report error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to retrieve PUDO delivery revenue",
+    });
+  }
+});
+
 // ================= MIDDLEWARE =================
 
 app.use(cors({
