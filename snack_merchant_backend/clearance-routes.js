@@ -89,9 +89,10 @@ try {
       res.json({ success: true, promotionCode, preview: localPreview, products: rows.map(row => ({
   ...row,
   stock_variant_id: specialVariantIds[Number(row.id)] || null,
-  available_quantity: stockAvailabilityVerified
+ stock_availability_verified: stockAvailabilityVerified,
+available_quantity: stockAvailabilityVerified
   ? (availability.get(Number(row.id)) ?? 0)
-  : 0,
+  : null,
         retail_price: Number(row.retail_price),
         promotional_price: Number(row.promotional_price)
       })) });

@@ -1900,7 +1900,14 @@ useEffect(() => {
               </div>
             )}
             <h2>{product.product_name}</h2>
-            <p>{product.pack_size} · {product.available_quantity > 0 ? `${product.available_quantity} packs available` : 'Sold out'}</p>
+            <p>
+  {product.pack_size} ·{" "}
+  {!product.stock_availability_verified
+    ? "Stock temporarily unavailable"
+    : Number(product.available_quantity) > 0
+      ? `${product.available_quantity} packs available`
+      : "Sold out"}
+</p>
             <p><s>R{Number(product.retail_price).toFixed(2)}</s> <strong>R{Number(product.promotional_price).toFixed(2)}</strong></p>
             <div className="clearance-quantity">
               <button type="button" onClick={()=>addClearance(product,-1)} disabled={!clearanceCart[product.id]}>−</button>

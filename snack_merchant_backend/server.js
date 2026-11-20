@@ -188,28 +188,63 @@ const CUSTOMER_STOCK_INTEGRATION_SECRET =
 // not trigger a separate Stock Control API request. Payment/stock sync still
 // calls fetchMainStockAvailability directly and always requests fresh stock.
 const CATALOGUE_STOCK_CACHE_MS = 30000;
+const CATALOGUE_STOCK_429_BACKOFF_MS = 60000;
+
 let catalogueStockSnapshot = null;
 let catalogueStockExpiresAt = 0;
 let catalogueStockPending = null;
+let catalogueStockRetryAfter = 0;
 
 async function fetchCatalogueStockAvailability() {
-  if (catalogueStockSnapshot && Date.now() < catalogueStockExpiresAt) {
+  const now = Date.now();
+
+  // Reuse verified stock during the normal cache period.
+  if (catalogueStockSnapshot && now < catalogueStockExpiresAt) {
     return catalogueStockSnapshot;
   }
-  if (catalogueStockPending) return catalogueStockPending;
+
+  // Do not repeatedly contact Stock Control during a rate-limit cooldown.
+  if (now < catalogueStockRetryAfter) {
+    throw new Error(
+      "Stock Control catalogue availability is temporarily rate limited"
+    );
+  }
+
+  // Multiple simultaneous visitors share one stock request.
+  if (catalogueStockPending) {
+    return catalogueStockPending;
+  }
 
   catalogueStockPending = (async () => {
-    const data = await fetchMainStockAvailability();
-    catalogueStockSnapshot = data;
-    catalogueStockExpiresAt = Date.now() + CATALOGUE_STOCK_CACHE_MS;
-    return data;
+    try {
+      const data = await fetchMainStockAvailability();
+
+      catalogueStockSnapshot = data;
+      catalogueStockExpiresAt =
+        Date.now() + CATALOGUE_STOCK_CACHE_MS;
+
+      catalogueStockRetryAfter = 0;
+
+      return data;
+    } catch (error) {
+      if (error.message.includes("429")) {
+        catalogueStockRetryAfter =
+          Date.now() + CATALOGUE_STOCK_429_BACKOFF_MS;
+      }
+
+      // Never return stale quantities as verified stock.
+      throw error;
+    }
   })();
+
   try {
     return await catalogueStockPending;
   } finally {
     catalogueStockPending = null;
   }
 }
+
+
 
 async function fetchMainStockAvailability() {
   if (
@@ -232,10 +267,20 @@ async function fetchMainStockAvailability() {
   );
 
   if (!response.ok) {
-    throw new Error(
-      `Stock Control availability request failed: ${response.status}`
-    );
-  }
+  const responseText = (await response.text()).slice(0, 500);
+
+  console.error("Stock Control availability failure:", {
+    status: response.status,
+    retryAfter: response.headers.get("retry-after"),
+    contentType: response.headers.get("content-type"),
+    server: response.headers.get("server"),
+    responseBody: responseText,
+  });
+
+  throw new Error(
+    `Stock Control availability request failed: ${response.status}`
+  );
+}
 
   const data = await response.json();
 
