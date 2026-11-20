@@ -7413,7 +7413,7 @@ ${data.get("eventDetails")}
           : "#ca8a04",
     }}
   >
-    {order.stock_sync_status || "Not synchronised"}
+   {order.stock_sync_status || "Not tracked"}
   </strong>
 </p>
         {order.is_clearance && <p><span>Reservation</span>{order.clearance_reservation_status || 'Unknown'}</p>}
@@ -7431,7 +7431,13 @@ ${data.get("eventDetails")}
           className={`status-select order-${normalizeOrderStatus(order.order_status)
   .toLowerCase()
   .replace(/[\/\s]+/g, "-")}`}
-          value={normalizeOrderStatus(order.order_status)}
+          value={
+  normalizeOrderStatus(order.order_status) === "Paid" &&
+  order.payment_status !== "Paid" &&
+  String(order.payment_method || "").trim().toUpperCase().startsWith("EFT")
+    ? "Awaiting Payment"
+    : normalizeOrderStatus(order.order_status)
+}
           disabled={Boolean(
   String(order.order_number || "").startsWith("SM-CL-") &&
   (clearanceAdminBusy || ["Expired", "Cancelled"].includes(order.order_status))
@@ -7469,7 +7475,9 @@ ${data.get("eventDetails")}
   .toUpperCase()
   .startsWith("EFT");
 
-const confirmingPayment = newOrderStatus === "Paid";
+const confirmingPayment =
+  newOrderStatus === "Paid" &&
+  order.payment_status !== "Paid";
 
 if (confirmingPayment && !isEFT) {
   throw new Error(
