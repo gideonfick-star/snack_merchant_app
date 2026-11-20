@@ -7394,6 +7394,28 @@ ${data.get("eventDetails")}
         <p><span>Email</span>{order.customer_email || "Not provided"}</p>
         <p><span>Type</span>{order.order_type}</p>
         <p><span>Method</span>{order.payment_method || "-"}</p>
+        <p>
+  <span>Payment Status</span>
+  <strong>
+    {order.payment_status || "Unknown"}
+  </strong>
+</p>
+
+<p>
+  <span>Stock Sync Status</span>
+  <strong
+    style={{
+      color:
+        order.stock_sync_status === "PROCESSED"
+          ? "#15803d"
+          : order.stock_sync_status === "SYNC_FAILED"
+          ? "#dc2626"
+          : "#ca8a04",
+    }}
+  >
+    {order.stock_sync_status || "Not synchronised"}
+  </strong>
+</p>
         {order.is_clearance && <p><span>Reservation</span>{order.clearance_reservation_status || 'Unknown'}</p>}
        <p>
   <span>Delivery Fee</span>
@@ -7442,11 +7464,31 @@ ${data.get("eventDetails")}
   const newOrderStatus = e.target.value;
 
   try {
-    const response = await axios.patch(
-      `${API_BASE_URL}/orders/${order.id}/admin-status`,
-      { orderStatus: newOrderStatus },
-      { withCredentials: true }
-    );
+   const isEFT = String(order.payment_method || "")
+  .trim()
+  .toUpperCase()
+  .startsWith("EFT");
+
+const confirmEFT =
+  newOrderStatus === "Paid" &&
+  isEFT &&
+  !order.is_clearance;
+
+if (newOrderStatus === "Paid" && !confirmEFT) {
+  throw new Error(
+    "This payment must be confirmed through its verified payment process."
+  );
+}
+
+const response = await axios.patch(
+  confirmEFT
+    ? `${API_BASE_URL}/orders/${order.id}/status`
+    : `${API_BASE_URL}/orders/${order.id}/admin-status`,
+  confirmEFT
+    ? { paymentStatus: "Paid", orderStatus: "Paid" }
+    : { orderStatus: newOrderStatus },
+  { withCredentials: true }
+);
 
     if (
       response.data?.success !== true ||
@@ -7454,7 +7496,17 @@ ${data.get("eventDetails")}
     ) {
       throw new Error("Order status update was not confirmed.");
     }
+if (
+  confirmEFT &&
+  response.data?.stockSync?.success !== true
+) {
+  await loadOrders();
 
+  throw new Error(
+    response.data?.stockSync?.error ||
+    "Payment was updated, but the Stock Control sale was not confirmed. Check Stock Sync Status before retrying."
+  );
+}
     await loadOrders();
 
     showNotification(
