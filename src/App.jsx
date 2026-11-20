@@ -7464,40 +7464,53 @@ ${data.get("eventDetails")}
   const newOrderStatus = e.target.value;
 
   try {
-   const isEFT = String(order.payment_method || "")
+  const isEFT = String(order.payment_method || "")
   .trim()
   .toUpperCase()
   .startsWith("EFT");
 
-const confirmEFT =
-  newOrderStatus === "Paid" &&
-  isEFT &&
-  !order.is_clearance;
+const confirmingPayment = newOrderStatus === "Paid";
 
-if (newOrderStatus === "Paid" && !confirmEFT) {
+if (confirmingPayment && !isEFT) {
   throw new Error(
-    "This payment must be confirmed through its verified payment process."
+    "PayFast payments must be verified through PayFast."
   );
 }
 
-const response = await axios.patch(
-  confirmEFT
-    ? `${API_BASE_URL}/orders/${order.id}/status`
-    : `${API_BASE_URL}/orders/${order.id}/admin-status`,
-  confirmEFT
-    ? { paymentStatus: "Paid", orderStatus: "Paid" }
-    : { orderStatus: newOrderStatus },
-  { withCredentials: true }
-);
+const isSeparateSpecial =
+  String(order.order_number || "").startsWith("SM-CL-");
 
-    if (
-      response.data?.success !== true ||
-      response.data?.order?.order_status !== newOrderStatus
-    ) {
-      throw new Error("Order status update was not confirmed.");
-    }
+const confirmEFT = confirmingPayment && !isSeparateSpecial;
+const confirmSpecialEFT = confirmingPayment && isSeparateSpecial;
+
+const response = confirmSpecialEFT
+  ? await axios.post(
+      `${API_BASE_URL}/clearance-orders/${order.id}/reconcile`,
+      { action: "CONFIRMED" },
+      { withCredentials: true }
+    )
+  : await axios.patch(
+      confirmEFT
+        ? `${API_BASE_URL}/orders/${order.id}/status`
+        : `${API_BASE_URL}/orders/${order.id}/admin-status`,
+      confirmEFT
+        ? { paymentStatus: "Paid", orderStatus: "Paid" }
+        : { orderStatus: newOrderStatus },
+      { withCredentials: true }
+    );
+
+   if (response.data?.success !== true) {
+  throw new Error("Order update was not confirmed.");
+}
+
 if (
-  confirmEFT &&
+  !confirmSpecialEFT &&
+  response.data?.order?.order_status !== newOrderStatus
+) {
+  throw new Error("Order status update was not confirmed.");
+}
+if (
+  (confirmEFT || confirmSpecialEFT) &&
   response.data?.stockSync?.success !== true
 ) {
   await loadOrders();
